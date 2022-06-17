@@ -21,6 +21,7 @@ def disconnect(sid):
 @sio.event
 def message(sid, data):
     print(sid, ' says: ', data)
+    sio.emit('message', [1, 2, 3, 4])
 
 
 if __name__ == '__main__':

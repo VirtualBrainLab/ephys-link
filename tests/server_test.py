@@ -3,6 +3,7 @@ import socketio
 sio = socketio.Client()
 
 
+# Connection events
 @sio.event
 def connect():
     print('connection established')
@@ -11,6 +12,12 @@ def connect():
 @sio.event
 def disconnect():
     print('disconnected from server')
+
+
+# Message events
+@sio.event
+def message(data):
+    print('message received: ', data)
 
 
 sio.connect('http://localhost:5000')
