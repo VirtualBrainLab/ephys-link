@@ -17,17 +17,25 @@ def disconnect():
     print('disconnected from server')
 
 
-# Message events
+# Message handlers
 @sio.event
-def message(data):
+def get_pos(data):
     """
-    Receive message from the server
-    :param data: Message data
+    Received position message from the server
+    :param data: Position data
     """
-    print('message received: ', data)
+    manipulator_id = data['manipulator_id']
+    pos = data['pos']
+    print(
+        f'[MESSAGE]: Received position for manipulator {manipulator_id}: {pos}'
+    )
 
 
 # Connect to the server and send message
 sio.connect('http://localhost:5000')
-sio.emit('message', 'hello world')
+sio.emit('get_pos', 1)
+sio.emit('register_manipulator', 1)
+sio.emit('register_manipulator', 2)
+sio.emit('get_pos', 1)
+sio.emit('get_pos', 2)
 sio.wait()
