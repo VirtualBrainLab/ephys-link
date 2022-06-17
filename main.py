@@ -16,13 +16,13 @@ registered_manipulators = {}
 @sio.event
 def connect(sid, environ, auth):
     """Acknowledge connection to the server."""
-    print(f'[CONNECTION]: {sid}')
+    print(f'[CONNECTION]: {sid}\n')
 
 
 @sio.event
 def disconnect(sid):
     """Acknowledge disconnection from the server."""
-    print(f'[DISCONNECTION]: {sid}')
+    print(f'[DISCONNECTION]: {sid}\n')
 
 
 # Message events
@@ -37,12 +37,21 @@ def register_manipulator(sid, manipulator_id):
 
     # Check if manipulator is already registered
     if manipulator_id in registered_manipulators:
-        print(f'Manipulator already registered: {manipulator_id}')
+        print(f'[ERROR] Manipulator already registered: {manipulator_id}\n')
         return
 
-    # Register manipulator
-    registered_manipulators[manipulator_id] = ump.get_device(manipulator_id)
-    print(f'Registered manipulator: {manipulator_id}')
+    try:
+        # Register manipulator
+        registered_manipulators[manipulator_id] = ump.get_device(
+            manipulator_id)
+        print(f'[SUCCESS] Registered manipulator: {manipulator_id}')
+    except ValueError:
+        print(f'[ERROR] Manipulator not found: {manipulator_id}')
+    except Exception as e:
+        print(f'[ERROR] registering manipulator: {manipulator_id}')
+        print(e)
+
+    print()
 
 
 @sio.event
@@ -55,16 +64,20 @@ def get_pos(sid, manipulator_id):
     """
     print(f'[MESSAGE {sid}] Get position of manipulator {manipulator_id}')
 
-    # Check if manipulator is registered
-    if manipulator_id not in registered_manipulators:
-        print(f'Manipulator not registered: {manipulator_id}')
-        return
+    try:
+        # Get position
+        sio.emit('get_pos', {
+            'manipulator_id': manipulator_id,
+            'pos': registered_manipulators[manipulator_id].get_pos()
+        })
+        print(f'[SUCCESS] Sent position of manipulator {manipulator_id}')
+    except KeyError:
+        print(f'[ERROR] Manipulator not registered: {manipulator_id}')
+    except Exception as e:
+        print(f'[ERROR] getting position of manipulator {manipulator_id}')
+        print(e)
 
-    # Get position
-    sio.emit('get_pos', {
-        'manipulator_id': manipulator_id,
-        'pos': registered_manipulators[manipulator_id].get_pos()
-    })
+    print()
 
 
 # Start server
