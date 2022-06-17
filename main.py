@@ -27,13 +27,6 @@ def disconnect(sid):
 
 # Message events
 @sio.event
-def message(sid, data):
-    """Receive message from the a client and respond."""
-    print(f'[MESSAGE {sid}]: {data}')
-    sio.emit('message', [1, 2, 3, 4])
-
-
-@sio.event
 def register_manipulator(sid, manipulator_id):
     """
     Register a manipulator with the server
