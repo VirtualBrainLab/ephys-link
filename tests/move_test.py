@@ -17,29 +17,35 @@ def disconnect():
     print('disconnected from server')
 
 
-# Message handlers
-@sio.event
-def goto_pos(data):
+# Event callbacks
+def goto_callback(manipulator_id, success, position):
     """
-    Received position message from the server
-    :param data: Position data
+    Callback for the goto command
+    :param manipulator_id: Response from the server
+    :param success: Success of the command
+    :param position: Position of the manipulator
     """
-    manipulator_id = data['manipulator_id']
-    pos = data['pos']
-    print(f'[MESSAGE]: Manipulator {manipulator_id} moved to position: {pos}')
+    print(
+        f'[MESSAGE]: Manipulator {manipulator_id} '
+        f'{"successfully" if success else "unsuccessfully"}'
+        f' moved to position: {position}'
+    )
 
 
 # Connect to the server and send message
 sio.connect('http://localhost:8080')
 sio.emit('register_manipulator', 1)
 sio.emit('register_manipulator', 2)
-sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                      'speed': 1000})
-sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [0, 0, 0, 0],
-                      'speed': 1000})
-#
-sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [10000, 10000, 10000, 10000],
-                      'speed': 1000})
-sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [10000, 10000, 10000, 10000],
-                      'speed': 1000})
+for _ in range(2):
+    sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
+                          'speed': 2000}, callback=goto_callback)
+    sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [0, 0, 0, 0],
+                          'speed': 2000}, callback=goto_callback)
+
+    sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [10000, 10000, 10000,
+                                                       10000],
+                          'speed': 2000}, callback=goto_callback)
+    sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [10000, 10000, 10000,
+                                                       10000],
+                          'speed': 2000}, callback=goto_callback)
 sio.wait()

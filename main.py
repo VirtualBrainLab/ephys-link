@@ -13,7 +13,6 @@ sio.attach(app)
 # Setup Sensapex
 ump = UMP.get_ump()
 registered_manipulators = {}
-registered_manipulators_movement_queue = {}
 
 
 # Handle connection events
@@ -29,7 +28,7 @@ async def disconnect(sid):
     print(f'[DISCONNECTION]: {sid}\n')
 
 
-# Message events
+# Events
 @sio.event
 async def register_manipulator(sid, manipulator_id):
     """
@@ -37,22 +36,23 @@ async def register_manipulator(sid, manipulator_id):
     :param sid: Socket session ID
     :param manipulator_id: ID of the manipulator to register
     """
-    print(f'[MESSAGE {sid}] Register manipulator: {manipulator_id}')
+    print(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
 
     # Check if manipulator is already registered
     if manipulator_id in registered_manipulators:
-        print(f'[ERROR] Manipulator already registered: {manipulator_id}\n')
+        print(f'[ERROR]\t\t Manipulator already registered:'
+              f' {manipulator_id}\n')
         return
 
     try:
         # Register manipulator
         registered_manipulators[manipulator_id] = ump.get_device(
             manipulator_id)
-        print(f'[SUCCESS] Registered manipulator: {manipulator_id}')
+        print(f'[SUCCESS]\t Registered manipulator: {manipulator_id}')
     except ValueError:
-        print(f'[ERROR] Manipulator not found: {manipulator_id}')
+        print(f'[ERROR]\t\t Manipulator not found: {manipulator_id}')
     except Exception as e:
-        print(f'[ERROR] registering manipulator: {manipulator_id}')
+        print(f'[ERROR]\t\t registering manipulator: {manipulator_id}')
         print(e)
 
     print()
@@ -66,7 +66,8 @@ async def get_pos(sid, manipulator_id):
     :param manipulator_id: ID of manipulator to pull position from
     :return: Position of manipulator in [x, y, z, w]
     """
-    print(f'[MESSAGE {sid}] Get position of manipulator {manipulator_id}')
+    print(f'[MESSAGE]\t Get position of manipulator'
+          f' {manipulator_id}')
 
     try:
         # Get position
@@ -74,11 +75,11 @@ async def get_pos(sid, manipulator_id):
             'manipulator_id': manipulator_id,
             'pos': registered_manipulators[manipulator_id].get_pos()
         })
-        print(f'[SUCCESS] Sent position of manipulator {manipulator_id}')
+        print(f'[SUCCESS]\t Sent position of manipulator {manipulator_id}')
     except KeyError:
-        print(f'[ERROR] Manipulator not registered: {manipulator_id}')
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
     except Exception as e:
-        print(f'[ERROR] getting position of manipulator {manipulator_id}')
+        print(f'[ERROR]\t\t getting position of manipulator {manipulator_id}')
         print(e)
 
     print()
@@ -96,56 +97,32 @@ async def goto_pos(sid, data):
     pos = data['pos']
     speed = data['speed']
     print(
-        f'[MESSAGE {sid}] Move manipulator {manipulator_id} to position {pos}'
+        f'[EVENT]\t\t Move manipulator {manipulator_id} '
+        f'to position {pos}'
     )
-
-    try:
-        # Wait for last movement to finish
-        registered_manipulators_movement_queue[manipulator_id][
-            0].finished_event.wait()
-    except KeyError:
-        # A queue for this manipulator doesn't exist yet
-        pass
-    except IndexError:
-        # The queue for this manipulator is empty
-        pass
-    except Exception as e:
-        print(f'[ERROR] waiting for last movement to finish: {manipulator_id}')
-        print(e)
-        return
 
     try:
         # Move manipulator
         movement = registered_manipulators[manipulator_id].goto_pos(pos, speed)
 
-        try:
-            # Add movement to queue
-            registered_manipulators_movement_queue[manipulator_id].appendleft(
-                movement)
-        except KeyError:
-            # Create movement queue
-            registered_manipulators_movement_queue[manipulator_id] = \
-                collections.deque([movement])
-        except Exception as e:
-            print(f'[ERROR] adding movement to queue: {manipulator_id}')
-            print(e)
-            return
-
         # Wait for movement to finish
         movement.finished_event.wait()
 
         print(
-            f'[SUCCESS] Moved manipulator {manipulator_id} to position {pos}\n'
+            f'[SUCCESS]\t Moved manipulator {manipulator_id} to position'
+            f' {pos}\n'
         )
-        await sio.emit('goto_pos',
-                       {'manipulator_id': manipulator_id, 'pos': pos})
+        return manipulator_id, True, registered_manipulators[
+            manipulator_id].get_pos()
     except KeyError:
-        print(f'[ERROR] Manipulator not registered: {manipulator_id}')
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
     except Exception as e:
-        print(f'[ERROR] moving manipulator {manipulator_id} to position {pos}')
+        print(f'[ERROR]\t\t moving manipulator {manipulator_id} to position'
+              f' {pos}')
         print(e)
 
     print()
+    return manipulator_id, False, pos
 
 
 # Start server
