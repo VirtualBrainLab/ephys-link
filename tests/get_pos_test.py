@@ -1,41 +1,39 @@
+from unittest import TestCase
+from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
 
-sio = socketio.Client()
 
+class GetPosTestCase(TestCase):
+    """Tests get_pos event"""
 
-# Connection events
-@sio.event
-def connect():
-    """Acknowledge connection to the server."""
-    print('connection established')
+    def setUp(self):
+        """Setup test case"""
+        self.sio = socketio.Client()
+        self.mock = Mock()
 
+        self.sio.connect('http://localhost:8080')
 
-@sio.event
-def disconnect():
-    """Acknowledge disconnection from the server."""
-    print('disconnected from server')
+    def test_get_pos_unregistered(self):
+        """Test get_pos event with unregistered manipulator"""
+        self.sio.emit('get_pos', 1, callback=self.mock)
+        self.wait_for_callback()
 
+        self.mock.assert_called_with([], 'Manipulator not registered')
 
-# Message handlers
-@sio.event
-def get_pos(data):
-    """
-    Received position message from the server
-    :param data: Position data
-    """
-    manipulator_id = data['manipulator_id']
-    pos = data['pos']
-    print(
-        f'[MESSAGE]: Received position for manipulator {manipulator_id}: {pos}'
-    )
+    def test_get_pos_registered(self):
+        """Test get_pos event with registered manipulator"""
+        self.sio.emit('register_manipulator', 1)
+        self.sio.emit('get_pos', 1, callback=self.mock)
+        self.wait_for_callback()
 
+        args = self.mock.call_args.args
+        self.assertEqual(len(args[0]), 4)
+        self.assertEqual(args[1], '')
 
-# Connect to the server and send message
-sio.connect('http://localhost:8080')
-sio.emit('get_pos', 1)
-sio.emit('register_manipulator', 1)
-sio.emit('register_manipulator', 2)
-sio.emit('get_pos', 1)
-sio.emit('get_pos', 2)
-sio.wait()
+    def tearDown(self) -> None:
+        self.sio.disconnect()
+
+    def wait_for_callback(self):
+        while not self.mock.called:
+            pass

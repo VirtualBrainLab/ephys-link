@@ -17,13 +17,14 @@ registered_manipulators = {}
 @sio.event
 async def connect(sid, environ, auth):
     """Acknowledge connection to the server."""
-    print(f'[CONNECTION]:\t {sid}\n')
+    print(f'[CONNECTION]:\t\t {sid}\n')
 
 
 @sio.event
 async def disconnect(sid):
     """Acknowledge disconnection from the server."""
     print(f'[DISCONNECTION]:\t {sid}\n')
+    registered_manipulators.clear()
 
 
 # Events
@@ -45,8 +46,8 @@ async def register_manipulator(sid, manipulator_id):
 
     try:
         # Register manipulator
-        registered_manipulators[manipulator_id] = ump.get_device(
-            manipulator_id)
+        manipulator = ump.get_device(manipulator_id)
+        registered_manipulators[manipulator_id] = manipulator
         print(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
         return ''
     except ValueError:

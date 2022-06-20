@@ -1,51 +1,72 @@
+from unittest import TestCase
+from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
 
-sio = socketio.Client()
 
+class MoveTest(TestCase):
+    """Tests movement event"""
 
-# Connection events
-@sio.event
-def connect():
-    """Acknowledge connection to the server."""
-    print('connection established')
+    def setUp(self) -> None:
+        """Setup test case"""
+        self.sio = socketio.Client()
+        self.mock = Mock()
 
+        self.sio.connect('http://localhost:8080')
 
-@sio.event
-def disconnect():
-    """Acknowledge disconnection from the server."""
-    print('disconnected from server')
+    def test_move_no_asserts(self):
+        """Test movement without asserts"""
+        self.sio.emit('register_manipulator', 1)
+        self.sio.emit('register_manipulator', 2)
 
+        self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
+                                   'speed': 2000},
+                      callback=self.mock)
+        self.sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [0, 0, 0, 0],
+                                   'speed': 2000},
+                      callback=self.mock)
 
-# Event callbacks
-def goto_callback(manipulator_id, success, position):
-    """
-    Callback for the goto command
-    :param manipulator_id: Response from the server
-    :param success: Success of the command
-    :param position: Position of the manipulator
-    """
-    print(
-        f'[MESSAGE]: Manipulator {manipulator_id} '
-        f'{"successfully" if success else "unsuccessfully"}'
-        f' moved to position: {position}'
-    )
+        self.sio.emit('goto_pos',
+                      {'manipulator_id': 1,
+                       'pos': [10000, 10000, 10000, 10000],
+                       'speed': 2000}, callback=self.mock)
+        self.sio.emit('goto_pos',
+                      {'manipulator_id': 2,
+                       'pos': [10000, 10000, 10000, 10000],
+                       'speed': 2000}, callback=self.mock)
 
+        while self.mock.call_count != 4:
+            pass
 
-# Connect to the server and send message
-sio.connect('http://localhost:8080')
-sio.emit('register_manipulator', 1)
-sio.emit('register_manipulator', 2)
-for _ in range(2):
-    sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                          'speed': 2000}, callback=goto_callback)
-    sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [0, 0, 0, 0],
-                          'speed': 2000}, callback=goto_callback)
+    def test_move_with_asserts(self):
+        """Test movement with asserts"""
+        self.sio.emit('register_manipulator', 1)
+        self.sio.emit('register_manipulator', 2)
 
-    sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [10000, 10000, 10000,
-                                                       10000],
-                          'speed': 2000}, callback=goto_callback)
-    sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [10000, 10000, 10000,
-                                                       10000],
-                          'speed': 2000}, callback=goto_callback)
-sio.wait()
+        self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
+                                   'speed': 2000},
+                      callback=self.mock)
+        self.wait_for_callback()
+        args = self.mock.call_args.args
+        self.assertEqual(args[0], 1)
+        self.assertEqual(len(args[1]), 4)
+        self.assertEqual(args[2], '')
+
+        self.sio.emit('goto_pos', {'manipulator_id': 1,
+                                   'pos': [10000, 10000, 10000, 10000],
+                                   'speed': 2000})
+
+    def test_move_unregistered(self):
+        """Test movement with unregistered manipulator"""
+        self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
+                                   'speed': 2000},
+                      callback=self.mock)
+        self.wait_for_callback()
+        self.mock.assert_called_with(1, [], 'Manipulator not registered')
+
+    def tearDown(self) -> None:
+        self.sio.disconnect()
+
+    def wait_for_callback(self):
+        while not self.mock.called:
+            pass
