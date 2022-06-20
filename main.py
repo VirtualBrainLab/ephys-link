@@ -1,5 +1,3 @@
-import collections
-
 from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
@@ -19,13 +17,14 @@ registered_manipulators = {}
 @sio.event
 async def connect(sid, environ, auth):
     """Acknowledge connection to the server."""
-    print(f'[CONNECTION]: {sid}\n')
+    print(f'[CONNECTION]:\t\t {sid}\n')
 
 
 @sio.event
 async def disconnect(sid):
     """Acknowledge disconnection from the server."""
-    print(f'[DISCONNECTION]: {sid}\n')
+    print(f'[DISCONNECTION]:\t {sid}\n')
+    registered_manipulators.clear()
 
 
 # Events
@@ -35,6 +34,7 @@ async def register_manipulator(sid, manipulator_id):
     Register a manipulator with the server
     :param sid: Socket session ID
     :param manipulator_id: ID of the manipulator to register
+    :return: Error message if error, otherwise an empty string
     """
     print(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
 
@@ -42,20 +42,21 @@ async def register_manipulator(sid, manipulator_id):
     if manipulator_id in registered_manipulators:
         print(f'[ERROR]\t\t Manipulator already registered:'
               f' {manipulator_id}\n')
-        return
+        return 'Manipulator already registered'
 
     try:
         # Register manipulator
-        registered_manipulators[manipulator_id] = ump.get_device(
-            manipulator_id)
-        print(f'[SUCCESS]\t Registered manipulator: {manipulator_id}')
+        manipulator = ump.get_device(manipulator_id)
+        registered_manipulators[manipulator_id] = manipulator
+        print(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
+        return ''
     except ValueError:
-        print(f'[ERROR]\t\t Manipulator not found: {manipulator_id}')
+        print(f'[ERROR]\t\t Manipulator not found: {manipulator_id}\n')
+        return 'Manipulator not found'
     except Exception as e:
         print(f'[ERROR]\t\t registering manipulator: {manipulator_id}')
-        print(e)
-
-    print()
+        print(f'{e}\n')
+        return 'Error registering manipulator'
 
 
 @sio.event
@@ -64,25 +65,24 @@ async def get_pos(sid, manipulator_id):
     Position of manipulator request
     :param sid: Socket session ID
     :param manipulator_id: ID of manipulator to pull position from
-    :return: Position of manipulator in [x, y, z, w]
+    :return: [Manipulator ID, position in [x, y, z, w] (or an empty array
+    on error), error message]
     """
     print(f'[MESSAGE]\t Get position of manipulator'
           f' {manipulator_id}')
 
     try:
         # Get position
-        await sio.emit('get_pos', {
-            'manipulator_id': manipulator_id,
-            'pos': registered_manipulators[manipulator_id].get_pos()
-        })
-        print(f'[SUCCESS]\t Sent position of manipulator {manipulator_id}')
+        position = registered_manipulators[manipulator_id].get_pos()
+        print(f'[SUCCESS]\t Sent position of manipulator {manipulator_id}\n')
+        return position, ''
     except KeyError:
-        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return [], 'Manipulator not registered'
     except Exception as e:
         print(f'[ERROR]\t\t getting position of manipulator {manipulator_id}')
-        print(e)
-
-    print()
+        print(f'{e}\n')
+        return [], 'Error getting position'
 
 
 @sio.event
@@ -91,7 +91,8 @@ async def goto_pos(sid, data):
     Move manipulator to position
     :param sid: Socket session ID
     :param data: Data containing manipulator ID, position, and speed
-    :return: Position of manipulator in [x, y, z, w]
+    :return: [Manipulator ID, position in [x, y, z, w] (or an empty array on
+    error), error message]
     """
     manipulator_id = data['manipulator_id']
     pos = data['pos']
@@ -112,17 +113,16 @@ async def goto_pos(sid, data):
             f'[SUCCESS]\t Moved manipulator {manipulator_id} to position'
             f' {pos}\n'
         )
-        return manipulator_id, True, registered_manipulators[
-            manipulator_id].get_pos()
+        return manipulator_id, registered_manipulators[
+            manipulator_id].get_pos(), ''
     except KeyError:
-        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return manipulator_id, [], 'Manipulator not registered'
     except Exception as e:
         print(f'[ERROR]\t\t moving manipulator {manipulator_id} to position'
               f' {pos}')
-        print(e)
-
-    print()
-    return manipulator_id, False, pos
+        print(f'{e}\n')
+        return manipulator_id, [], 'Error moving manipulator'
 
 
 # Start server

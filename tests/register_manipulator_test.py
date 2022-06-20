@@ -1,25 +1,44 @@
+from unittest import TestCase
+from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
 
-sio = socketio.Client()
 
+class RegisterManipulatorTestCase(TestCase):
+    """Tests manipulator registration"""
 
-# Connection events
-@sio.event
-def connect():
-    """Acknowledge connection to the server."""
-    print('connection established')
+    def setUp(self) -> None:
+        """Setup test case"""
+        self.sio = socketio.Client()
+        self.mock = Mock()
 
+        self.sio.connect('http://localhost:8080')
 
-@sio.event
-def disconnect():
-    """Acknowledge disconnection from the server."""
-    print('disconnected from server')
+    def test_register_manipulator(self):
+        """Tests registering a manipulator"""
+        self.sio.emit('register_manipulator', 1, callback=self.mock)
+        self.wait_for_callback()
 
+        self.mock.assert_called_with('')
 
-# Connect to the server and send message
-sio.connect('http://localhost:5000')
-sio.emit('register_manipulator', 1)
-sio.emit('register_manipulator', 1)
-sio.emit('register_manipulator', 2)
-sio.wait()
+    def test_re_register_manipulator(self):
+        """Test re-registering a manipulator"""
+        self.sio.emit('register_manipulator', 1)
+        self.sio.emit('register_manipulator', 1, callback=self.mock)
+        self.wait_for_callback()
+
+        self.mock.assert_called_with('Manipulator already registered')
+
+    def test_register_unknown_manipulator(self):
+        """Test registering an unknown manipulator"""
+        self.sio.emit('register_manipulator', 3, callback=self.mock)
+        self.wait_for_callback()
+
+        self.mock.assert_called_with('Manipulator not found')
+
+    def tearDown(self) -> None:
+        self.sio.disconnect()
+
+    def wait_for_callback(self):
+        while not self.mock.called:
+            pass
