@@ -1,5 +1,3 @@
-import collections
-
 from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
