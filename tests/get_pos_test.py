@@ -32,8 +32,10 @@ class GetPosTestCase(TestCase):
         self.assertEqual(args[1], '')
 
     def tearDown(self) -> None:
+        """Cleanup test case"""
         self.sio.disconnect()
 
     def wait_for_callback(self):
+        """Wait for callback to be called"""
         while not self.mock.called:
             pass
