@@ -1,13 +1,14 @@
 import collections
 
-import eventlet
+from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
 from sensapex import UMP
 
 # Setup server
-sio = socketio.Server()
-app = socketio.WSGIApp(sio)
+sio = socketio.AsyncServer()
+app = web.Application()
+sio.attach(app)
 
 # Setup Sensapex
 ump = UMP.get_ump()
@@ -17,20 +18,20 @@ registered_manipulators_movement_queue = {}
 
 # Handle connection events
 @sio.event
-def connect(sid, environ, auth):
+async def connect(sid, environ, auth):
     """Acknowledge connection to the server."""
     print(f'[CONNECTION]: {sid}\n')
 
 
 @sio.event
-def disconnect(sid):
+async def disconnect(sid):
     """Acknowledge disconnection from the server."""
     print(f'[DISCONNECTION]: {sid}\n')
 
 
 # Message events
 @sio.event
-def register_manipulator(sid, manipulator_id):
+async def register_manipulator(sid, manipulator_id):
     """
     Register a manipulator with the server
     :param sid: Socket session ID
@@ -58,7 +59,7 @@ def register_manipulator(sid, manipulator_id):
 
 
 @sio.event
-def get_pos(sid, manipulator_id):
+async def get_pos(sid, manipulator_id):
     """
     Position of manipulator request
     :param sid: Socket session ID
@@ -69,7 +70,7 @@ def get_pos(sid, manipulator_id):
 
     try:
         # Get position
-        sio.emit('get_pos', {
+        await sio.emit('get_pos', {
             'manipulator_id': manipulator_id,
             'pos': registered_manipulators[manipulator_id].get_pos()
         })
@@ -84,7 +85,7 @@ def get_pos(sid, manipulator_id):
 
 
 @sio.event
-def goto_pos(sid, data):
+async def goto_pos(sid, data):
     """
     Move manipulator to position
     :param sid: Socket session ID
@@ -136,7 +137,8 @@ def goto_pos(sid, data):
         print(
             f'[SUCCESS] Moved manipulator {manipulator_id} to position {pos}\n'
         )
-        sio.emit('goto_pos', {'manipulator_id': manipulator_id, 'pos': pos})
+        await sio.emit('goto_pos',
+                       {'manipulator_id': manipulator_id, 'pos': pos})
     except KeyError:
         print(f'[ERROR] Manipulator not registered: {manipulator_id}')
     except Exception as e:
@@ -149,4 +151,4 @@ def goto_pos(sid, data):
 # Start server
 if __name__ == '__main__':
     # noinspection PyUnresolvedReferences
-    eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
+    web.run_app(app)

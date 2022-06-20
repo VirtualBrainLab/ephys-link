@@ -32,7 +32,7 @@ def get_pos(data):
 
 
 # Connect to the server and send message
-sio.connect('http://localhost:5000')
+sio.connect('http://localhost:8080')
 sio.emit('get_pos', 1)
 sio.emit('register_manipulator', 1)
 sio.emit('register_manipulator', 2)

@@ -30,9 +30,16 @@ def goto_pos(data):
 
 
 # Connect to the server and send message
-sio.connect('http://localhost:5000')
+sio.connect('http://localhost:8080')
 sio.emit('register_manipulator', 1)
-sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0], 'speed': 2000})
+sio.emit('register_manipulator', 2)
+sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
+                      'speed': 1000})
+sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [0, 0, 0, 0],
+                      'speed': 1000})
+#
 sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [10000, 10000, 10000, 10000],
-                      'speed': 2000})
+                      'speed': 1000})
+sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [10000, 10000, 10000, 10000],
+                      'speed': 1000})
 sio.wait()
