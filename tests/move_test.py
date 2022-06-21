@@ -54,7 +54,9 @@ class MoveTest(TestCase):
 
         self.sio.emit('goto_pos', {'manipulator_id': 1,
                                    'pos': [10000, 10000, 10000, 10000],
-                                   'speed': 2000})
+                                   'speed': 2000}, callback=self.mock)
+        while self.mock.call_count != 2:
+            pass
 
     def test_move_unregistered(self):
         """Test movement with unregistered manipulator"""
