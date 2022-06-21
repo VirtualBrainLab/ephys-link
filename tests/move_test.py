@@ -18,22 +18,24 @@ class MoveTest(TestCase):
         """Test movement without asserts"""
         self.sio.emit('register_manipulator', 1)
         self.sio.emit('register_manipulator', 2)
+        self.sio.emit('bypass_calibration', 1)
+        self.sio.emit('bypass_calibration', 2)
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                                   'speed': 2000},
+                                   'speed': 4000},
                       callback=self.mock)
         self.sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [0, 0, 0, 0],
-                                   'speed': 2000},
+                                   'speed': 4000},
                       callback=self.mock)
 
         self.sio.emit('goto_pos',
                       {'manipulator_id': 1,
                        'pos': [10000, 10000, 10000, 10000],
-                       'speed': 2000}, callback=self.mock)
+                       'speed': 4000}, callback=self.mock)
         self.sio.emit('goto_pos',
                       {'manipulator_id': 2,
                        'pos': [10000, 10000, 10000, 10000],
-                       'speed': 2000}, callback=self.mock)
+                       'speed': 4000}, callback=self.mock)
 
         while self.mock.call_count != 4:
             pass
@@ -42,9 +44,11 @@ class MoveTest(TestCase):
         """Test movement with asserts"""
         self.sio.emit('register_manipulator', 1)
         self.sio.emit('register_manipulator', 2)
+        self.sio.emit('bypass_calibration', 1)
+        self.sio.emit('bypass_calibration', 2)
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                                   'speed': 2000},
+                                   'speed': 4000},
                       callback=self.mock)
         self.wait_for_callback()
         args = self.mock.call_args.args
@@ -54,14 +58,14 @@ class MoveTest(TestCase):
 
         self.sio.emit('goto_pos', {'manipulator_id': 1,
                                    'pos': [10000, 10000, 10000, 10000],
-                                   'speed': 2000}, callback=self.mock)
+                                   'speed': 4000}, callback=self.mock)
         while self.mock.call_count != 2:
             pass
 
     def test_move_unregistered(self):
         """Test movement with unregistered manipulator"""
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                                   'speed': 2000},
+                                   'speed': 4000},
                       callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(1, [], 'Manipulator not registered')
