@@ -145,6 +145,16 @@ async def goto_pos(_, data):
         return manipulator_id, [], 'Error moving manipulator'
 
 
+@sio.on('*')
+async def catch_all(_, data):
+    """
+    Catch all event
+    :param _: Socket session ID (unused)
+    :param data: Data received from client
+    """
+    print(f'[UNKNOWN EVENT]:\t {data}')
+
+
 # Start server
 if __name__ == '__main__':
     web.run_app(app)
