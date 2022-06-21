@@ -2,6 +2,17 @@
 The Sensapex Link is a python server which allows any WebSocket compliant application (such as [Pinpoint (Neuropixels Trajectory Planner)](https://github.com/dbirman/NPTrajectoryPlanner/)) to have limited communication with [Sensapex uMp Micromanipulators](https://www.sensapex.com/products/ump-micromanipulators/)
 
 # Installation
+## For usage like a standalone app
+1. Ensure Python >3.5 and pip are installed
+2. `pip install nptraj-sensapex-link`
+3. Run `python -m nptraj-sensapex-link`
+
+## For usage like a library
+1. Ensure Python >3.5 and pip are installed
+2. `pip install nptraj-sensapex-link`
+3. Use `from nptraj_sensapex_link import launch` and call `launch()` to start the server
+   1. Alternatively, use `import nptraj_sensapex_link` and call `nptraj_sensapex_link.launch`
+## To develop this package
 1. Ensure Python >3.5 and pip are installed
 2. Clone the [repo](https://github.com/dbirman/nptraj-sensapex-link)
 3. `cd nptraj-sensapex-link` and run `pip install requirements.txt`
