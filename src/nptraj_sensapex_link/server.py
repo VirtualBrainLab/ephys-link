@@ -157,6 +157,6 @@ async def catch_all(_, data):
     print(f'[UNKNOWN EVENT]:\t {data}')
 
 
-# Start server
-if __name__ == '__main__':
+def launch():
+    """Launch the server"""
     web.run_app(app)
