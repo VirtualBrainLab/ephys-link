@@ -42,25 +42,25 @@ async def register_manipulator(_, manipulator_id):
     if manipulator_id in registered_manipulators:
         print(f'[ERROR]\t\t Manipulator already registered:'
               f' {manipulator_id}\n')
-        return 'Manipulator already registered'
+        return manipulator_id, 'Manipulator already registered'
 
     try:
         # Register manipulator
         registered_manipulators[manipulator_id] = ump.get_device(
             manipulator_id)
         print(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
-        return ''
+        return manipulator_id, ''
 
     except ValueError:
         # Manipulator not found in UMP
         print(f'[ERROR]\t\t Manipulator not found: {manipulator_id}\n')
-        return 'Manipulator not found'
+        return manipulator_id, 'Manipulator not found'
 
     except Exception as e:
         # Other error
         print(f'[ERROR]\t\t registering manipulator: {manipulator_id}')
         print(f'{e}\n')
-        return 'Error registering manipulator'
+        return manipulator_id, 'Error registering manipulator'
 
 
 @sio.event
@@ -72,25 +72,25 @@ async def get_pos(_, manipulator_id):
     :return: [Manipulator ID, position in [x, y, z, w] (or an empty array
     on error), error message]
     """
-    print(f'[MESSAGE]\t Get position of manipulator'
+    print(f'[EVENT]\t\t Get position of manipulator'
           f' {manipulator_id}')
 
     try:
         # Get position
         position = registered_manipulators[manipulator_id].get_pos()
         print(f'[SUCCESS]\t Sent position of manipulator {manipulator_id}\n')
-        return position, ''
+        return manipulator_id, position, ''
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
-        return [], 'Manipulator not registered'
+        return manipulator_id, [], 'Manipulator not registered'
 
     except Exception as e:
         # Other error
         print(f'[ERROR]\t\t getting position of manipulator {manipulator_id}')
         print(f'{e}\n')
-        return [], 'Error getting position'
+        return manipulator_id, [], 'Error getting position'
 
 
 @sio.event
