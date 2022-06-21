@@ -16,13 +16,21 @@ registered_manipulators = {}
 # Handle connection events
 @sio.event
 async def connect(sid, _, __):
-    """Acknowledge connection to the server."""
+    """
+    Acknowledge connection to the server
+    :param sid: Socket session ID
+    :param _: WSGI formatted dictionary with request info (unused)
+    :param __: Authentication details (unused)
+    """
     print(f'[CONNECTION]:\t\t {sid}\n')
 
 
 @sio.event
 async def disconnect(sid):
-    """Acknowledge disconnection from the server."""
+    """
+    Acknowledge disconnection from the server
+    :param sid: Socket session ID
+    """
     print(f'[DISCONNECTION]:\t {sid}\n')
     registered_manipulators.clear()
 
