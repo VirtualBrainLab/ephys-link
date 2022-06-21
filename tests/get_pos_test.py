@@ -19,7 +19,7 @@ class GetPosTestCase(TestCase):
         self.sio.emit('get_pos', 1, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with([], 'Manipulator not registered')
+        self.mock.assert_called_with(1, [], 'Manipulator not registered')
 
     def test_get_pos_registered(self):
         """Test get_pos event with registered manipulator"""
@@ -28,12 +28,15 @@ class GetPosTestCase(TestCase):
         self.wait_for_callback()
 
         args = self.mock.call_args.args
-        self.assertEqual(len(args[0]), 4)
-        self.assertEqual(args[1], '')
+        self.assertEqual(args[0], 1)
+        self.assertEqual(len(args[1]), 4)
+        self.assertEqual(args[2], '')
 
     def tearDown(self) -> None:
+        """Cleanup test case"""
         self.sio.disconnect()
 
     def wait_for_callback(self):
+        """Wait for callback to be called"""
         while not self.mock.called:
             pass

@@ -65,8 +65,10 @@ class MoveTest(TestCase):
         self.mock.assert_called_with(1, [], 'Manipulator not registered')
 
     def tearDown(self) -> None:
+        """Cleanup test case"""
         self.sio.disconnect()
 
     def wait_for_callback(self):
+        """Wait for callback to be called"""
         while not self.mock.called:
             pass
