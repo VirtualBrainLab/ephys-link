@@ -160,3 +160,7 @@ async def catch_all(_, data):
 def launch():
     """Launch the server"""
     web.run_app(app)
+
+
+if __name__ == '__main__':
+    launch()
