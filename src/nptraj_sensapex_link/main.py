@@ -1,4 +1,5 @@
 from aiohttp import web
+from pathlib import Path
 # noinspection PyPackageRequirements
 import socketio
 from sensapex import UMP
@@ -9,6 +10,7 @@ app = web.Application()
 sio.attach(app)
 
 # Setup Sensapex
+UMP.set_library_path(str(Path(__file__).parent.absolute()) + '/resources/')
 ump = UMP.get_ump()
 registered_manipulators = {}
 
