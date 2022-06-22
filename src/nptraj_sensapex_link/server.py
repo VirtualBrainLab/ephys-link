@@ -1,20 +1,12 @@
 from aiohttp import web
-from pathlib import Path
 # noinspection PyPackageRequirements
 import socketio
-from sensapex import UMP, UMError
+import sensapex_handler as sh
 
 # Setup server
 sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
-
-# Setup Sensapex
-UMP.set_library_path(str(Path(__file__).parent.absolute()) + '/resources/')
-ump = UMP.get_ump()
-
-registered_manipulators = {}
-has_calibrated = {}
 
 
 # Handle connection events
@@ -36,8 +28,7 @@ async def disconnect(sid):
     :param sid: Socket session ID
     """
     print(f'[DISCONNECTION]:\t {sid}\n')
-    registered_manipulators.clear()
-    has_calibrated.clear()
+    sh.manipulators.clear()
 
 
 # Events
@@ -51,30 +42,7 @@ async def register_manipulator(_, manipulator_id):
     """
     print(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
 
-    # Check if manipulator is already registered
-    if manipulator_id in registered_manipulators:
-        print(f'[ERROR]\t\t Manipulator already registered:'
-              f' {manipulator_id}\n')
-        return manipulator_id, 'Manipulator already registered'
-
-    try:
-        # Register manipulator
-        registered_manipulators[manipulator_id] = ump.get_device(
-            manipulator_id)
-        has_calibrated[manipulator_id] = False
-        print(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
-        return manipulator_id, ''
-
-    except ValueError:
-        # Manipulator not found in UMP
-        print(f'[ERROR]\t\t Manipulator not found: {manipulator_id}\n')
-        return manipulator_id, 'Manipulator not found'
-
-    except Exception as e:
-        # Other error
-        print(f'[ERROR]\t\t Registering manipulator: {manipulator_id}')
-        print(f'{e}\n')
-        return manipulator_id, 'Error registering manipulator'
+    return sh.register_manipulator(manipulator_id)
 
 
 @sio.event
@@ -91,12 +59,12 @@ async def get_pos(_, manipulator_id):
 
     try:
         # Check calibration status
-        if not has_calibrated[manipulator_id]:
+        if not sh.manipulators[manipulator_id].calibrated:
             print(f'[ERROR]\t\t Calibration not complete\n')
             return manipulator_id, [], 'Manipulator not calibrated'
 
         # Get position
-        position = registered_manipulators[manipulator_id].get_pos()
+        position = sh.manipulators[manipulator_id].get_pos()
         print(f'[SUCCESS]\t Sent position of manipulator {manipulator_id}\n')
         return manipulator_id, position, ''
 
@@ -131,12 +99,12 @@ async def goto_pos(_, data):
 
     try:
         # Check calibration status
-        if not has_calibrated[manipulator_id]:
+        if not sh.manipulators[manipulator_id].calibrated:
             print(f'[ERROR]\t\t Calibration not complete\n')
             return manipulator_id, [], 'Manipulator not calibrated'
 
         # Move manipulator
-        movement = registered_manipulators[manipulator_id].goto_pos(pos, speed)
+        movement = sh.manipulators[manipulator_id].goto_pos(pos, speed)
 
         # Wait for movement to finish
         movement.finished_event.wait()
@@ -145,7 +113,7 @@ async def goto_pos(_, data):
             f'[SUCCESS]\t Moved manipulator {manipulator_id} to position'
             f' {pos}\n'
         )
-        return manipulator_id, registered_manipulators[
+        return manipulator_id, sh.manipulators[
             manipulator_id].get_pos(), ''
 
     except KeyError:
@@ -174,15 +142,16 @@ async def calibrate(_, manipulator_id):
 
     try:
         # Move manipulator to max position
-        move = registered_manipulators[manipulator_id].goto_pos([20000, 20000,
-                                                                 20000, 20000],
-                                                                2000)
+        move = sh.manipulators[manipulator_id].goto_pos(
+            [20000, 20000,
+             20000, 20000],
+            2000)
         move.finished_event.wait()
 
         # Call calibrate
-        registered_manipulators[manipulator_id].calibrate_zero_position()
+        sh.manipulators[manipulator_id].calibrate_zero_position()
         await sio.sleep(70)
-        has_calibrated[manipulator_id] = True
+        sh.manipulators[manipulator_id].calibrated = True
         return manipulator_id, ''
 
     except KeyError:
@@ -190,7 +159,7 @@ async def calibrate(_, manipulator_id):
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
         return manipulator_id, 'Manipulator not registered'
 
-    except UMError as e:
+    except sh.UMError as e:
         # SDK call error
         print(f'[ERROR]\t\t Calling calibrate manipulator {manipulator_id}')
         print(f'{e}\n')
@@ -216,7 +185,7 @@ async def bypass_calibration(_, manipulator_id):
 
     try:
         # Bypass calibration
-        has_calibrated[manipulator_id] = True
+        sh.manipulators[manipulator_id].calibrated = True
         return manipulator_id, ''
 
     except KeyError:
