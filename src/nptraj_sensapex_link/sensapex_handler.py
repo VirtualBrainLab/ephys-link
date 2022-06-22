@@ -1,4 +1,4 @@
-from typing import List
+from typing import Tuple
 
 from manipulator import Manipulator
 from pathlib import Path
@@ -49,7 +49,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
         return manipulator_id, 'Error registering manipulator'
 
 
-def get_pos(manipulator_id: int) -> (int, List[float], str):
+def get_pos(manipulator_id: int) -> (int, Tuple[float], str):
     """
     Get the current position of a manipulator
     :param manipulator_id: The ID of the manipulator to get the position of.
@@ -60,7 +60,7 @@ def get_pos(manipulator_id: int) -> (int, List[float], str):
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete\n')
-            return manipulator_id, [], 'Manipulator not calibrated'
+            return manipulator_id, (), 'Manipulator not calibrated'
 
         # Get position
         return manipulators[manipulator_id].get_pos()
@@ -68,11 +68,11 @@ def get_pos(manipulator_id: int) -> (int, List[float], str):
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
-        return manipulator_id, [], 'Manipulator not registered'
+        return manipulator_id, (), 'Manipulator not registered'
 
 
-def goto_pos(manipulator_id: int, position: List[float], speed: int) -> (
-        int, List[float], str):
+def goto_pos(manipulator_id: int, position: Tuple[float], speed: int) -> (
+        int, Tuple[float], str):
     """
     Move manipulator to position
     :param manipulator_id: The ID of the manipulator to move
@@ -85,14 +85,14 @@ def goto_pos(manipulator_id: int, position: List[float], speed: int) -> (
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete\n')
-            return manipulator_id, [], 'Manipulator not calibrated'
+            return manipulator_id, (), 'Manipulator not calibrated'
 
         return manipulators[manipulator_id].goto_pos(position, speed)
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
-        return manipulator_id, [], 'Manipulator not registered'
+        return manipulator_id, (), 'Manipulator not registered'
 
 
 async def calibrate(manipulator_id: int, sio) -> (int, str):
@@ -104,14 +104,11 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
         """
     try:
         # Move manipulator to max position
-        move = manipulators[manipulator_id].device.goto_pos(
-            [20000, 20000,
-             20000, 20000],
-            2000)
-        move.finished_event.wait()
+        manipulators[manipulator_id].goto_pos([20000, 20000, 20000, 20000],
+                                              2000)
 
         # Call calibrate
-        manipulators[manipulator_id].device.calibrate_zero_position()
+        manipulators[manipulator_id].call_calibrate()
         await sio.sleep(70)
         manipulators[manipulator_id].set_calibrated()
         return manipulator_id, ''

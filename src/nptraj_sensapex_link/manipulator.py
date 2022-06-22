@@ -1,4 +1,4 @@
-from typing import List
+from typing import Tuple
 
 from sensapex import SensapexDevice
 
@@ -21,7 +21,7 @@ class Manipulator:
         w] (or an empty array on error), error message]
         """
         try:
-            position = self._device.get_pos()
+            position = tuple(self._device.get_pos())
             print(f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
             return self._id, position, ''
         except Exception as e:
@@ -29,8 +29,8 @@ class Manipulator:
             print(f'{e}\n')
             return self._id, [], 'Error getting position'
 
-    def goto_pos(self, position: List[float], speed: float) \
-            -> (int, List[float], str):
+    def goto_pos(self, position: Tuple[float], speed: float) \
+            -> (int, Tuple[float], str):
         """
         Move manipulator to position
         :param position: The position to move to
@@ -48,7 +48,7 @@ class Manipulator:
             movement.finished_event.wait()
 
             # Get position
-            manipulator_final_position = self._device.get_pos()
+            manipulator_final_position = tuple(self._device.get_pos())
 
             print(
                 f'[SUCCESS]\t Moved manipulator {self._id} to position'
@@ -60,9 +60,13 @@ class Manipulator:
                 f'[ERROR]\t\t Moving manipulator {self._id} to position'
                 f' {position}')
             print(f'{e}\n')
-            return self._id, [], 'Error moving manipulator'
+            return self._id, (), 'Error moving manipulator'
 
-    # Calibration status
+    # Calibration
+    def call_calibrate(self) -> None:
+        """Calibrate the manipulator"""
+        self._device.calibrate_zero_position()
+
     def get_calibrated(self) -> bool:
         """
         Return the calibration state of the manipulator.
