@@ -38,7 +38,7 @@ async def register_manipulator(_, manipulator_id):
     Register a manipulator with the server
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of the manipulator to register
-    :return: Error message if error, otherwise an empty string
+    :return: Callback parameters [manipulator_id, error message (on error)]
     """
     print(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
 
