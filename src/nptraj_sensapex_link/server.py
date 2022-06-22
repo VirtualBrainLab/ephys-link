@@ -28,7 +28,8 @@ async def disconnect(sid):
     :param sid: Socket session ID
     """
     print(f'[DISCONNECTION]:\t {sid}\n')
-    sh.manipulators.clear()
+
+    sh.reset()
 
 
 # Events

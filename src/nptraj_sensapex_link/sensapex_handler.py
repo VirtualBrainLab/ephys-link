@@ -12,6 +12,11 @@ ump = UMP.get_ump()
 manipulators = {}
 
 
+def reset():
+    """Reset handler"""
+    manipulators.clear()
+
+
 def register_manipulator(manipulator_id: int) -> (int, str):
     """
     Register a manipulator
