@@ -40,3 +40,33 @@ def register_manipulator(manipulator_id: int):
         print(f'[ERROR]\t\t Registering manipulator: {manipulator_id}')
         print(f'{e}\n')
         return manipulator_id, 'Error registering manipulator'
+
+
+def get_pos(manipulator_id: int):
+    """
+    Get the current position of a manipulator
+    :param manipulator_id: The ID of the manipulator to get the position of.
+    :return: Callback parameters [Manipulator ID, position in [x, y, z,
+    w] (or an empty array on error), error message]
+    """
+    try:
+        # Check calibration status
+        if not manipulators[manipulator_id].get_calibrated():
+            print(f'[ERROR]\t\t Calibration not complete\n')
+            return manipulator_id, [], 'Manipulator not calibrated'
+
+        # Get position
+        position = manipulators[manipulator_id].device.get_pos()
+        print(f'[SUCCESS]\t Sent position of manipulator {manipulator_id}\n')
+        return manipulator_id, position, ''
+
+    except KeyError:
+        # Manipulator not found in registered manipulators
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
+        return manipulator_id, [], 'Manipulator not registered'
+
+    except Exception as e:
+        # Other error
+        print(f'[ERROR]\t\t Getting position of manipulator {manipulator_id}')
+        print(f'{e}\n')
+        return manipulator_id, [], 'Error getting position'

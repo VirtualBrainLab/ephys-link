@@ -51,33 +51,13 @@ async def get_pos(_, manipulator_id):
     Position of manipulator request
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of manipulator to pull position from
-    :return: [Manipulator ID, position in [x, y, z, w] (or an empty array
-    on error), error message]
+    :return: Callback parameters [Manipulator ID, position in [x, y, z,
+    w] (or an empty array on error), error message]
     """
     print(f'[EVENT]\t\t Get position of manipulator'
           f' {manipulator_id}')
 
-    try:
-        # Check calibration status
-        if not sh.manipulators[manipulator_id].calibrated:
-            print(f'[ERROR]\t\t Calibration not complete\n')
-            return manipulator_id, [], 'Manipulator not calibrated'
-
-        # Get position
-        position = sh.manipulators[manipulator_id].get_pos()
-        print(f'[SUCCESS]\t Sent position of manipulator {manipulator_id}\n')
-        return manipulator_id, position, ''
-
-    except KeyError:
-        # Manipulator not found in registered manipulators
-        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
-        return manipulator_id, [], 'Manipulator not registered'
-
-    except Exception as e:
-        # Other error
-        print(f'[ERROR]\t\t Getting position of manipulator {manipulator_id}')
-        print(f'{e}\n')
-        return manipulator_id, [], 'Error getting position'
+    return sh.get_pos(manipulator_id)
 
 
 @sio.event

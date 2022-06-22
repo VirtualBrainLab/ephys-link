@@ -2,12 +2,12 @@ from sensapex import SensapexDevice
 
 
 class Manipulator:
-    def __init__(self, manipulator: SensapexDevice):
+    def __init__(self, device: SensapexDevice):
         """
         Construct a new Manipulator object
-        :param manipulator: A Sensapex device
+        :param device: A Sensapex device
         """
-        self.id = manipulator
+        self.device = device
         self.calibrated = False
 
     def get_calibrated(self):
