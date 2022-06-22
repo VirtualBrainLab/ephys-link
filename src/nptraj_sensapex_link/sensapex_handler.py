@@ -63,20 +63,12 @@ def get_pos(manipulator_id: int) -> (int, List[float], str):
             return manipulator_id, [], 'Manipulator not calibrated'
 
         # Get position
-        position = manipulators[manipulator_id].device.get_pos()
-        print(f'[SUCCESS]\t Sent position of manipulator {manipulator_id}\n')
-        return manipulator_id, position, ''
+        return manipulators[manipulator_id].get_pos()
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
         return manipulator_id, [], 'Manipulator not registered'
-
-    except Exception as e:
-        # Other error
-        print(f'[ERROR]\t\t Getting position of manipulator {manipulator_id}')
-        print(f'{e}\n')
-        return manipulator_id, [], 'Error getting position'
 
 
 def goto_pos(manipulator_id: int, position: List[float], speed: int) -> (
@@ -96,8 +88,8 @@ def goto_pos(manipulator_id: int, position: List[float], speed: int) -> (
             return manipulator_id, [], 'Manipulator not calibrated'
 
         # Move manipulator
-        movement = manipulators[manipulator_id].device.goto_pos(position,
-                                                                speed)
+        movement = manipulators[manipulator_id].get_device().goto_pos(position,
+                                                                      speed)
 
         # Wait for movement to finish
         movement.finished_event.wait()
