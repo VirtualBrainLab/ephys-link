@@ -77,36 +77,7 @@ async def goto_pos(_, data):
         f'to position {pos}'
     )
 
-    try:
-        # Check calibration status
-        if not sh.manipulators[manipulator_id].calibrated:
-            print(f'[ERROR]\t\t Calibration not complete\n')
-            return manipulator_id, [], 'Manipulator not calibrated'
-
-        # Move manipulator
-        movement = sh.manipulators[manipulator_id].goto_pos(pos, speed)
-
-        # Wait for movement to finish
-        movement.finished_event.wait()
-
-        print(
-            f'[SUCCESS]\t Moved manipulator {manipulator_id} to position'
-            f' {pos}\n'
-        )
-        return manipulator_id, sh.manipulators[
-            manipulator_id].get_pos(), ''
-
-    except KeyError:
-        # Manipulator not found in registered manipulators
-        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
-        return manipulator_id, [], 'Manipulator not registered'
-
-    except Exception as e:
-        # Other error
-        print(f'[ERROR]\t\t Moving manipulator {manipulator_id} to position'
-              f' {pos}')
-        print(f'{e}\n')
-        return manipulator_id, [], 'Error moving manipulator'
+    return sh.goto_pos(manipulator_id, pos, speed)
 
 
 @sio.event
