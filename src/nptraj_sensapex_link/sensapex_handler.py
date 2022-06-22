@@ -87,34 +87,12 @@ def goto_pos(manipulator_id: int, position: List[float], speed: int) -> (
             print(f'[ERROR]\t\t Calibration not complete\n')
             return manipulator_id, [], 'Manipulator not calibrated'
 
-        # Move manipulator
-        movement = manipulators[manipulator_id].get_device().goto_pos(position,
-                                                                      speed)
-
-        # Wait for movement to finish
-        movement.finished_event.wait()
-
-        # Get position
-        manipulator_final_position = manipulators[
-            manipulator_id].device.get_pos()
-
-        print(
-            f'[SUCCESS]\t Moved manipulator {manipulator_id} to position'
-            f' {manipulator_final_position}\n'
-        )
-        return manipulator_id, manipulator_final_position, ''
+        return manipulators[manipulator_id].goto_pos(position, speed)
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
         return manipulator_id, [], 'Manipulator not registered'
-
-    except Exception as e:
-        # Other error
-        print(f'[ERROR]\t\t Moving manipulator {manipulator_id} to position'
-              f' {position}')
-        print(f'{e}\n')
-        return manipulator_id, [], 'Error moving manipulator'
 
 
 async def calibrate(manipulator_id: int, sio) -> (int, str):

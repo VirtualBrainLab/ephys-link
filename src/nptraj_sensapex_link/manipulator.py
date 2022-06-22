@@ -1,3 +1,5 @@
+from typing import List
+
 from sensapex import SensapexDevice
 
 
@@ -10,10 +12,6 @@ class Manipulator:
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
-
-    def get_device(self):
-        """Temp function"""
-        return self._device
 
     # Device functions
     def get_pos(self):
@@ -30,6 +28,39 @@ class Manipulator:
             print(f'[ERROR]\t\t Getting position of manipulator {self._id}')
             print(f'{e}\n')
             return self._id, [], 'Error getting position'
+
+    def goto_pos(self, position: List[float], speed: float) \
+            -> (int, List[float], str):
+        """
+        Move manipulator to position
+        :param position: The position to move to
+        :param speed: The speed to move at (in um/s)
+        :return: Callback parameters [Manipulator ID, position in [x, y, z,
+        w] (or an empty array on error), error message]
+        """
+        try:
+            # Move manipulator
+            movement = self._device.goto_pos(
+                position,
+                speed)
+
+            # Wait for movement to finish
+            movement.finished_event.wait()
+
+            # Get position
+            manipulator_final_position = self._device.get_pos()
+
+            print(
+                f'[SUCCESS]\t Moved manipulator {self._id} to position'
+                f' {manipulator_final_position}\n'
+            )
+            return self._id, manipulator_final_position, ''
+        except Exception as e:
+            print(
+                f'[ERROR]\t\t Moving manipulator {self._id} to position'
+                f' {position}')
+            print(f'{e}\n')
+            return self._id, [], 'Error moving manipulator'
 
     # Calibration status
     def get_calibrated(self) -> bool:
