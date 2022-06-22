@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 from manipulator import Manipulator
@@ -76,6 +77,14 @@ def get_pos(manipulator_id: int) -> (int, List[float], str):
 
 def goto_pos(manipulator_id: int, position: List[float], speed: int) -> (
         int, List[float], str):
+    """
+    Move manipulator to position
+    :param manipulator_id: The ID of the manipulator to move
+    :param position: The position to move to
+    :param speed: The speed to move at (in um/s)
+    :return: Callback parameters [Manipulator ID, position in [x, y, z,
+    w] (or an empty array on error), error message]
+    """
     try:
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
@@ -110,3 +119,66 @@ def goto_pos(manipulator_id: int, position: List[float], speed: int) -> (
               f' {position}')
         print(f'{e}\n')
         return manipulator_id, [], 'Error moving manipulator'
+
+
+async def calibrate(manipulator_id: int, sio) -> (int, str):
+    """
+        Calibrate manipulator
+        :param manipulator_id: ID of manipulator to calibrate
+        :param sio: SocketIO object (to call sleep)
+        :return: Callback parameters [Manipulator ID, error message]
+        """
+    try:
+        # Move manipulator to max position
+        move = manipulators[manipulator_id].device.goto_pos(
+            [20000, 20000,
+             20000, 20000],
+            2000)
+        move.finished_event.wait()
+
+        # Call calibrate
+        manipulators[manipulator_id].device.calibrate_zero_position()
+        await sio.sleep(70)
+        manipulators[manipulator_id].set_calibrated()
+        return manipulator_id, ''
+
+    except KeyError:
+        # Manipulator not found in registered manipulators
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return manipulator_id, 'Manipulator not registered'
+
+    except UMError as e:
+        # SDK call error
+        print(f'[ERROR]\t\t Calling calibrate manipulator {manipulator_id}')
+        print(f'{e}\n')
+        return manipulator_id, 'Error calling calibrate'
+
+    except Exception as e:
+        # Other error
+        print(f'[ERROR]\t\t Calibrate manipulator {manipulator_id}')
+        print(f'{e}\n')
+        return manipulator_id, 'Error calibrating manipulator'
+
+
+def bypass_calibration(manipulator_id: int) -> (int, str):
+    """
+    Bypass calibration of manipulator
+    :param manipulator_id: ID of manipulator to bypass calibration
+    :return: Callback parameters [Manipulator ID, error message]
+    """
+    try:
+        # Bypass calibration
+        manipulators[manipulator_id].set_calibrated()
+        return manipulator_id, ''
+
+    except KeyError:
+        # Manipulator not found in registered manipulators
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return manipulator_id, 'Manipulator not registered'
+
+    except Exception as e:
+        # Other error
+        print(
+            f'[ERROR]\t\t Bypass calibration of manipulator {manipulator_id}')
+        print(f'{e}\n')
+        return manipulator_id, 'Error bypassing calibration'
