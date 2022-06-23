@@ -1,8 +1,7 @@
-from typing import Tuple
-
 from manipulator import Manipulator
 from pathlib import Path
 from sensapex import UMP, UMError
+from typing import TypedDict
 
 # Setup Sensapex
 UMP.set_library_path(str(Path(__file__).parent.absolute()) + '/resources/')
@@ -12,7 +11,13 @@ ump = UMP.get_ump()
 manipulators = {}
 
 
-def reset():
+class GotoPositionData(TypedDict):
+    manipulator_id: int
+    pos: tuple[float]
+    speed: int
+
+
+def reset() -> None:
     """Reset handler"""
     manipulators.clear()
 
@@ -49,7 +54,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
         return manipulator_id, 'Error registering manipulator'
 
 
-def get_pos(manipulator_id: int) -> (int, Tuple[float], str):
+def get_pos(manipulator_id: int) -> (int, tuple[float], str):
     """
     Get the current position of a manipulator
     :param manipulator_id: The ID of the manipulator to get the position of.
@@ -71,8 +76,8 @@ def get_pos(manipulator_id: int) -> (int, Tuple[float], str):
         return manipulator_id, (), 'Manipulator not registered'
 
 
-def goto_pos(manipulator_id: int, position: Tuple[float], speed: int) -> (
-        int, Tuple[float], str):
+def goto_pos(manipulator_id: int, position: tuple[float], speed: int) \
+        -> (int, tuple[float], str):
     """
     Move manipulator to position
     :param manipulator_id: The ID of the manipulator to move
@@ -135,7 +140,7 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
     """
     Bypass calibration of manipulator
     :param manipulator_id: ID of manipulator to bypass calibration
-    :return: Callback parameters [Manipulator ID, error message]
+    :return: Callback parameters (Manipulator ID, error message)
     """
     try:
         # Bypass calibration

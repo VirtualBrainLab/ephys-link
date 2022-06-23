@@ -2,6 +2,7 @@ from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
 import sensapex_handler as sh
+from typing import Any
 
 # Setup server
 sio = socketio.AsyncServer()
@@ -34,12 +35,12 @@ async def disconnect(sid):
 
 # Events
 @sio.event
-async def register_manipulator(_, manipulator_id):
+async def register_manipulator(_, manipulator_id: int) -> (int, str):
     """
     Register a manipulator with the server
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of the manipulator to register
-    :return: Callback parameters [manipulator_id, error message (on error)]
+    :return: Callback parameters (manipulator_id, error message (on error))
     """
     print(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
 
@@ -47,13 +48,13 @@ async def register_manipulator(_, manipulator_id):
 
 
 @sio.event
-async def get_pos(_, manipulator_id):
+async def get_pos(_, manipulator_id: int) -> (int, tuple[float], str):
     """
     Position of manipulator request
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of manipulator to pull position from
-    :return: Callback parameters [Manipulator ID, position in [x, y, z,
-    w] (or an empty array on error), error message]
+    :return: Callback parameters (Manipulator ID, position in [x, y, z,
+    w] (or an empty array on error), error message)
     """
     print(f'[EVENT]\t\t Get position of manipulator'
           f' {manipulator_id}')
@@ -62,13 +63,13 @@ async def get_pos(_, manipulator_id):
 
 
 @sio.event
-async def goto_pos(_, data):
+async def goto_pos(_, data: sh.GotoPositionData) -> (int, tuple[float], str):
     """
     Move manipulator to position
     :param _: Socket session ID (unused)
     :param data: Data containing manipulator ID, position, and speed
-    :return: Callback parameters [Manipulator ID, position in [x, y, z,
-    w] (or an empty array on error), error message]
+    :return: Callback parameters (Manipulator ID, position in (x, y, z,
+    w) (or an empty tuple on error), error message)
     """
     manipulator_id = data['manipulator_id']
     pos = data['pos']
@@ -82,12 +83,12 @@ async def goto_pos(_, data):
 
 
 @sio.event
-async def calibrate(_, manipulator_id):
+async def calibrate(_, manipulator_id: int) -> (int, str):
     """
     Calibrate manipulator
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of manipulator to calibrate
-    :return: Callback parameters [Manipulator ID, error message]
+    :return: Callback parameters (Manipulator ID, error message)
     """
     print(f'[EVENT]\t\t Calibrate manipulator'
           f' {manipulator_id}')
@@ -96,12 +97,12 @@ async def calibrate(_, manipulator_id):
 
 
 @sio.event
-async def bypass_calibration(_, manipulator_id):
+async def bypass_calibration(_, manipulator_id: int) -> (int, str):
     """
     Bypass calibration of manipulator
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of manipulator to bypass calibration
-    :return: Callback parameters [Manipulator ID, error message]
+    :return: Callback parameters (Manipulator ID, error message)
     """
     print(f'[EVENT]\t\t Bypass calibration of manipulator'
           f' {manipulator_id}')
@@ -110,16 +111,17 @@ async def bypass_calibration(_, manipulator_id):
 
 
 @sio.on('*')
-async def catch_all(_, data):
+async def catch_all(_, data: Any) -> None:
     """
     Catch all event
     :param _: Socket session ID (unused)
     :param data: Data received from client
+    :return: None
     """
     print(f'[UNKNOWN EVENT]:\t {data}')
 
 
-def launch():
+def launch() -> None:
     """Launch the server"""
     web.run_app(app)
 

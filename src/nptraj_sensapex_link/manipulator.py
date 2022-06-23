@@ -1,24 +1,23 @@
-from typing import Tuple
-
 from sensapex import SensapexDevice
 
 
 class Manipulator:
-    def __init__(self, device: SensapexDevice):
+    def __init__(self, device: SensapexDevice) -> None:
         """
         Construct a new Manipulator object
         :param device: A Sensapex device
+        :return: None
         """
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
 
     # Device functions
-    def get_pos(self):
+    def get_pos(self) -> (int, tuple[float], str):
         """
         Get the current position of the manipulator
-        :return: Callback parameters [Manipulator ID, position in [x, y, z,
-        w] (or an empty array on error), error message]
+        :return: Callback parameters (Manipulator ID, position in (x, y, z,
+        w) (or an empty array on error), error message)
         """
         try:
             position = tuple(self._device.get_pos())
@@ -29,8 +28,8 @@ class Manipulator:
             print(f'{e}\n')
             return self._id, [], 'Error getting position'
 
-    def goto_pos(self, position: Tuple[float], speed: float) \
-            -> (int, Tuple[float], str):
+    def goto_pos(self, position: tuple[float], speed: float) \
+            -> (int, tuple[float], str):
         """
         Move manipulator to position
         :param position: The position to move to
@@ -74,6 +73,6 @@ class Manipulator:
         """
         return self._calibrated
 
-    def set_calibrated(self):
+    def set_calibrated(self) -> None:
         """Set the manipulator to calibrated"""
         self._calibrated = True

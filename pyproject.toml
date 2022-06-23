@@ -8,7 +8,7 @@ version = "0.0.4"
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 description = "A python server to connect WebSocket compliant clients to a Sensapex device"
 readme = "README.md"
-requires-python = ">=3.5"
+requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
