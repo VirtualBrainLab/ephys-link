@@ -20,7 +20,7 @@ class Manipulator:
     def get_pos(self) -> (int, tuple[float], str):
         """
         Get the current position of the manipulator
-        :return: Callback parameters (Manipulator ID, position in (x, y, z,
+        :return: Callback parameters (manipulator ID, position in (x, y, z,
         w) (or an empty array on error), error message)
         """
         try:

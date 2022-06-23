@@ -42,7 +42,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
     """
     Register a manipulator
     :param manipulator_id: The ID of the manipulator to register.
-    :return: Callback parameters (Manipulator_id, error message (on error))
+    :return: Callback parameters (manipulator_id, error message (on error))
     """
     # Check if manipulator is already registered
     if manipulator_id in manipulators:
