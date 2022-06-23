@@ -8,6 +8,7 @@ from typing import Any
 sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
+is_connected = False
 
 
 # Handle connection events
@@ -21,6 +22,12 @@ async def connect(sid, _, __):
     """
     print(f'[CONNECTION]:\t\t {sid}\n')
 
+    global is_connected
+    if not is_connected:
+        is_connected = True
+    else:
+        return False
+
 
 @sio.event
 async def disconnect(sid):
@@ -31,6 +38,8 @@ async def disconnect(sid):
     print(f'[DISCONNECTION]:\t {sid}\n')
 
     sh.reset()
+    global is_connected
+    is_connected = False
 
 
 # Events
