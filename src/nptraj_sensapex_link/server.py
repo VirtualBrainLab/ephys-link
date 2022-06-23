@@ -1,3 +1,5 @@
+import asyncio
+
 from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
@@ -88,7 +90,7 @@ async def goto_pos(_, data: sh.GotoPositionData) -> (int, tuple[float], str):
         f'to position {pos}'
     )
 
-    return sh.goto_pos(manipulator_id, pos, speed)
+    return await sh.goto_pos(manipulator_id, pos, speed)
 
 
 @sio.event

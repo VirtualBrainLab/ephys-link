@@ -1,3 +1,5 @@
+import asyncio
+from collections import deque
 from sensapex import SensapexDevice
 
 
@@ -11,6 +13,7 @@ class Manipulator:
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
+        self._move_queue = deque()
 
     # Device functions
     def get_pos(self) -> (int, tuple[float], str):
@@ -28,7 +31,7 @@ class Manipulator:
             print(f'{e}\n')
             return self._id, [], 'Error getting position'
 
-    def goto_pos(self, position: tuple[float], speed: float) \
+    async def goto_pos(self, position: tuple[float], speed: float) \
             -> (int, tuple[float], str):
         """
         Move manipulator to position
@@ -37,6 +40,13 @@ class Manipulator:
         :return: Callback parameters [Manipulator ID, position in [x, y, z,
         w] (or an empty array on error), error message]
         """
+        # Add movement flag to queue
+        self._move_queue.appendleft(asyncio.Event())
+
+        # Wait for preceding movement to finish
+        if len(self._move_queue) > 1:
+            await self._move_queue[1].wait()
+
         try:
             # Move manipulator
             movement = self._device.goto_pos(
@@ -44,10 +54,14 @@ class Manipulator:
                 speed)
 
             # Wait for movement to finish
-            movement.finished_event.wait()
+            while not movement.finished:
+                await asyncio.sleep(0.1)
 
             # Get position
             manipulator_final_position = tuple(self._device.get_pos())
+
+            # Remove event from queue and mark as completed
+            self._move_queue.pop().set()
 
             print(
                 f'[SUCCESS]\t Moved manipulator {self._id} to position'
