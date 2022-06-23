@@ -119,6 +119,8 @@ async def inside_brain(manipulator_id: int, inside: bool) -> (int, str):
             return manipulator_id, 'Manipulator not calibrated'
 
         manipulators[manipulator_id].set_inside_brain(inside)
+        print(f'[SUCCESS]\t Set inside brain status for manipulator:'
+              f' {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:
@@ -150,6 +152,7 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
         manipulators[manipulator_id].call_calibrate()
         await sio.sleep(70)
         manipulators[manipulator_id].set_calibrated()
+        print(f'[SUCCESS]\t Calibrated manipulator: {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:
@@ -179,6 +182,9 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
     try:
         # Bypass calibration
         manipulators[manipulator_id].set_calibrated()
+        print(
+            f'[SUCCESS]\t Bypassed calibration for manipulator:'
+            f' {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:
