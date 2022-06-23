@@ -38,8 +38,8 @@ class Manipulator:
         Move manipulator to position
         :param position: The position to move to
         :param speed: The speed to move at (in um/s)
-        :return: Callback parameters [Manipulator ID, position in [x, y, z,
-        w] (or an empty array on error), error message]
+        :return: Callback parameters (manipulator ID, position in (x, y, z,
+        w) (or an empty array on error), error message)
         """
         # Add movement flag to queue
         self._move_queue.appendleft(asyncio.Event())
@@ -80,6 +80,26 @@ class Manipulator:
                 f' {position}')
             print(f'{e}\n')
             return self._id, (), 'Error moving manipulator'
+
+    async def drive_to_depth(self, depth: float, speed: int) -> (int, float,
+                                                                 str):
+        """
+        Drive the manipulator to a certain depth
+        :param depth: The depth to drive to
+        :param speed: The speed to drive at
+        :return: Callback parameters (manipulator ID, depth (or 0 on error),
+        error message)
+        """
+        target_pos = self._device.get_pos()
+        target_pos[3] = depth
+        movement_result = await self.goto_pos(target_pos, speed)
+
+        if movement_result[2] == '':
+            # Return depth on success
+            return self._id, movement_result[1][3], ''
+        else:
+            # Return 0 and error message on failure
+            return self._id, 0, movement_result[2]
 
     def set_inside_brain(self, inside: bool) -> None:
         """

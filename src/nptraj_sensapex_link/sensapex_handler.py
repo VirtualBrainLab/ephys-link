@@ -11,17 +11,28 @@ ump = UMP.get_ump()
 manipulators = {}
 
 
+# Data formats
 class GotoPositionDataFormat(TypedDict):
+    """Data format for goto_pos"""
     manipulator_id: int
     pos: list[float]
     speed: int
 
 
 class InsideBrainDataFormat(TypedDict):
+    """Data format for inside_brain"""
     manipulator_id: int
     inside: bool
 
 
+class DriveToDepthDataFormat(TypedDict):
+    """Data format for drive_to_depth"""
+    manipulator_id: int
+    depth: float
+    speed: int
+
+
+# Event handlers
 def reset() -> None:
     """Reset handler"""
     manipulators.clear()
@@ -31,7 +42,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
     """
     Register a manipulator
     :param manipulator_id: The ID of the manipulator to register.
-    :return: Callback parameters [manipulator_id, error message (on error)]
+    :return: Callback parameters (Manipulator_id, error message (on error))
     """
     # Check if manipulator is already registered
     if manipulator_id in manipulators:
@@ -63,8 +74,8 @@ def get_pos(manipulator_id: int) -> (int, tuple[float], str):
     """
     Get the current position of a manipulator
     :param manipulator_id: The ID of the manipulator to get the position of.
-    :return: Callback parameters [Manipulator ID, position in [x, y, z,
-    w] (or an empty array on error), error message]
+    :return: Callback parameters (manipulator ID, position in (x, y, z,
+    w) (or an empty array on error), error message)
     """
     try:
         # Check calibration status
@@ -88,8 +99,8 @@ async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
     :param manipulator_id: The ID of the manipulator to move
     :param position: The position to move to
     :param speed: The speed to move at (in um/s)
-    :return: Callback parameters [Manipulator ID, position in [x, y, z,
-    w] (or an empty array on error), error message]
+    :return: Callback parameters (manipulator ID, position in (x, y, z,
+    w) (or an empty array on error), error message)
     """
     try:
         # Check calibration status
@@ -105,12 +116,36 @@ async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
         return manipulator_id, (), 'Manipulator not registered'
 
 
+async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
+        -> (int, float, str):
+    """
+    Drive manipulator to depth
+    :param manipulator_id: The ID of the manipulator to drive
+    :param depth: The depth to drive to
+    :param speed: The speed to drive at (in um/s)
+    :return: Callback parameters (manipulator ID, depth (or 0 on error),
+    error message)
+    """
+    try:
+        # Check calibration status
+        if not manipulators[manipulator_id].get_calibrated():
+            print(f'[ERROR]\t\t Calibration not complete\n')
+            return manipulator_id, 0, 'Manipulator not calibrated'
+
+        return await manipulators[manipulator_id].drive_to_depth(depth, speed)
+
+    except KeyError:
+        # Manipulator not found in registered manipulators
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return manipulator_id, 0, 'Manipulator not registered'
+
+
 async def inside_brain(manipulator_id: int, inside: bool) -> (int, str):
     """
     Set manipulator inside brain status (restricts motion)
     :param manipulator_id: The ID of the manipulator to set the status of
     :param inside: True if inside brain, False if outside
-    :return: Callback parameters (Manipulator ID, error message)
+    :return: Callback parameters (manipulator ID, error message)
     """
     try:
         # Check calibration status
@@ -141,7 +176,7 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
         Calibrate manipulator
         :param manipulator_id: ID of manipulator to calibrate
         :param sio: SocketIO object (to call sleep)
-        :return: Callback parameters [Manipulator ID, error message]
+        :return: Callback parameters (manipulator ID, error message)
         """
     try:
         # Move manipulator to max position
@@ -177,7 +212,7 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
     """
     Bypass calibration of manipulator
     :param manipulator_id: ID of manipulator to bypass calibration
-    :return: Callback parameters (Manipulator ID, error message)
+    :return: Callback parameters (manipulator ID, error message)
     """
     try:
         # Bypass calibration

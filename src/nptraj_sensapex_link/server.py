@@ -93,6 +93,27 @@ async def goto_pos(_, data: sh.GotoPositionDataFormat) -> (
 
 
 @sio.event
+async def drive_to_depth(_, data: sh.DriveToDepthDataFormat) \
+        -> (int, float, str):
+    """
+    Drive to depth
+    :param _: Socket session ID (unused)
+    :param data: Data containing manipulator ID, depth, and speed
+    :return: Callback parameters (Manipulator ID, depth (or -1 on error),
+    error message)
+    """
+    manipulator_id = data['manipulator_id']
+    depth = data['depth']
+    speed = data['speed']
+    print(
+        f'[EVENT]\t\t Drive manipulator {manipulator_id} '
+        f'to depth {depth}'
+    )
+
+    return await sh.drive_to_depth(manipulator_id, depth, speed)
+
+
+@sio.event
 async def inside_brain(_, data: sh.InsideBrainDataFormat) -> (int, str):
     manipulator_id = data['manipulator_id']
     inside = data['inside']
