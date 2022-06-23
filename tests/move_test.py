@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import socketio
 
 
+# noinspection DuplicatedCode
 class MoveTest(TestCase):
     """Tests movement event"""
 

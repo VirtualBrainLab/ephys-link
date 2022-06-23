@@ -1,3 +1,4 @@
-from .server import launch
+import os
+import sys
 
-name = 'nptraj_sensapex_link'
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
