@@ -76,7 +76,7 @@ def get_pos(manipulator_id: int) -> (int, tuple[float], str):
         return manipulator_id, (), 'Manipulator not registered'
 
 
-def goto_pos(manipulator_id: int, position: tuple[float], speed: int) \
+async def goto_pos(manipulator_id: int, position: tuple[float], speed: int) \
         -> (int, tuple[float], str):
     """
     Move manipulator to position
@@ -92,7 +92,7 @@ def goto_pos(manipulator_id: int, position: tuple[float], speed: int) \
             print(f'[ERROR]\t\t Calibration not complete\n')
             return manipulator_id, (), 'Manipulator not calibrated'
 
-        return manipulators[manipulator_id].goto_pos(position, speed)
+        return await manipulators[manipulator_id].goto_pos(position, speed)
 
     except KeyError:
         # Manipulator not found in registered manipulators

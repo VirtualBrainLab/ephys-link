@@ -1,5 +1,5 @@
 # nptraj-sensapex-link
-The Sensapex Link is a python server that allows any WebSocket compliant application (such as [Pinpoint (Neuropixels Trajectory Planner)](https://github.com/dbirman/NPTrajectoryPlanner/)) to have limited communication with [Sensapex uMp Micromanipulators](https://www.sensapex.com/products/ump-micromanipulators/)
+The Sensapex Link is a python WebSocket server that allows any WebSocket compliant application (such as [Pinpoint (Neuropixels Trajectory Planner)](https://github.com/dbirman/NPTrajectoryPlanner/)) to have limited communication with [Sensapex uMp Micromanipulators](https://www.sensapex.com/products/ump-micromanipulators/)
 
 # Installation
 ## For usage like a standalone app/server
@@ -20,3 +20,6 @@ The Sensapex Link is a python server that allows any WebSocket compliant applica
 4. The package is located in `src/`
 5. `python src/nptraj_sensapex_link/server.py` launches the server
 6. Unit tests are available to run under the `tests/` directory
+
+# Usage and more
+Complete documentation can be found on the [Virtual Brain Lab Documentation page](https://virtualbrainlab.org/build/html/02_traj_planner/04_sensapex_link.html) for this server
