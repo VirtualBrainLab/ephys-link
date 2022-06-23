@@ -3,7 +3,7 @@ The Sensapex Link is a python server which allows any WebSocket compliant applic
 
 # Installation
 ## For usage like a standalone app/server
-1. Ensure Python >3.5 and pip are installed
+1. Ensure Python 3.8+ and pip are installed
 2. `pip install nptraj-sensapex-link`
 3. Run `python -m nptraj-sensapex-link` to start the server
 
