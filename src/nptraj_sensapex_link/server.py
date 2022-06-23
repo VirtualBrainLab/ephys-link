@@ -1,5 +1,3 @@
-import asyncio
-
 from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
@@ -74,7 +72,8 @@ async def get_pos(_, manipulator_id: int) -> (int, tuple[float], str):
 
 
 @sio.event
-async def goto_pos(_, data: sh.GotoPositionData) -> (int, tuple[float], str):
+async def goto_pos(_, data: sh.GotoPositionDataFormat) -> (
+        int, tuple[float], str):
     """
     Move manipulator to position
     :param _: Socket session ID (unused)
@@ -91,6 +90,18 @@ async def goto_pos(_, data: sh.GotoPositionData) -> (int, tuple[float], str):
     )
 
     return await sh.goto_pos(manipulator_id, pos, speed)
+
+
+@sio.event
+async def inside_brain(_, data: sh.InsideBrainDataFormat) -> (int, str):
+    manipulator_id = data['manipulator_id']
+    inside = data['inside']
+    print(
+        f'[EVENT]\t\t Set manipulator {manipulator_id} inside brain to '
+        f'{"true" if inside else "false"}'
+    )
+
+    return await sh.inside_brain(manipulator_id, inside)
 
 
 @sio.event

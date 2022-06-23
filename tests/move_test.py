@@ -60,8 +60,7 @@ class MoveTest(TestCase):
         self.sio.emit('goto_pos', {'manipulator_id': 1,
                                    'pos': [10000, 10000, 10000, 10000],
                                    'speed': 4000}, callback=self.mock)
-        while self.mock.call_count != 2:
-            pass
+        self.wait_for_callback()
 
     def test_move_unregistered(self):
         """Test movement with unregistered manipulator"""
@@ -79,3 +78,4 @@ class MoveTest(TestCase):
         """Wait for callback to be called"""
         while not self.mock.called:
             pass
+        self.mock.called = False

@@ -26,8 +26,7 @@ class CalibrationTestCase(TestCase):
         self.sio.emit('register_manipulator', 1, callback=self.mock)
         self.wait_for_callback()
         self.sio.emit('get_pos', 1, callback=self.mock)
-        while self.mock.call_count != 2:
-            pass
+        self.wait_for_callback()
         self.mock.assert_called_with(1, [], 'Manipulator not calibrated')
 
     def test_move_uncalibrated(self):
@@ -37,8 +36,7 @@ class CalibrationTestCase(TestCase):
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
                                    'speed': 2000},
                       callback=self.mock)
-        while self.mock.call_count != 2:
-            pass
+        self.wait_for_callback()
         self.mock.assert_called_with(1, [], 'Manipulator not calibrated')
 
     def test_calibrate_registered(self):
@@ -62,3 +60,4 @@ class CalibrationTestCase(TestCase):
         """Wait for callback to be called"""
         while not self.mock.called:
             pass
+        self.mock.called = False

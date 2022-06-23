@@ -11,10 +11,15 @@ ump = UMP.get_ump()
 manipulators = {}
 
 
-class GotoPositionData(TypedDict):
+class GotoPositionDataFormat(TypedDict):
     manipulator_id: int
-    pos: tuple[float]
+    pos: list[float]
     speed: int
+
+
+class InsideBrainDataFormat(TypedDict):
+    manipulator_id: int
+    inside: bool
 
 
 def reset() -> None:
@@ -76,7 +81,7 @@ def get_pos(manipulator_id: int) -> (int, tuple[float], str):
         return manipulator_id, (), 'Manipulator not registered'
 
 
-async def goto_pos(manipulator_id: int, position: tuple[float], speed: int) \
+async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
         -> (int, tuple[float], str):
     """
     Move manipulator to position
@@ -100,6 +105,35 @@ async def goto_pos(manipulator_id: int, position: tuple[float], speed: int) \
         return manipulator_id, (), 'Manipulator not registered'
 
 
+async def inside_brain(manipulator_id: int, inside: bool) -> (int, str):
+    """
+    Set manipulator inside brain status (restricts motion)
+    :param manipulator_id: The ID of the manipulator to set the status of
+    :param inside: True if inside brain, False if outside
+    :return: Callback parameters (Manipulator ID, error message)
+    """
+    try:
+        # Check calibration status
+        if not manipulators[manipulator_id].get_calibrated():
+            print(f'[ERROR]\t\t Calibration not complete\n')
+            return manipulator_id, 'Manipulator not calibrated'
+
+        manipulators[manipulator_id].set_inside_brain(inside)
+        return manipulator_id, ''
+
+    except KeyError:
+        # Manipulator not found in registered manipulators
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return manipulator_id, 'Manipulator not registered'
+
+    except Exception as e:
+        # Other error
+        print(f'[ERROR]\t\t Set manipulator {manipulator_id} inside brain '
+              f'status')
+        print(f'{e}\n')
+        return manipulator_id, 'Error setting inside brain'
+
+
 async def calibrate(manipulator_id: int, sio) -> (int, str):
     """
         Calibrate manipulator
@@ -109,8 +143,8 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
         """
     try:
         # Move manipulator to max position
-        manipulators[manipulator_id].goto_pos([20000, 20000, 20000, 20000],
-                                              2000)
+        await manipulators[manipulator_id].goto_pos([20000, 20000, 20000,
+                                                     20000], 2000)
 
         # Call calibrate
         manipulators[manipulator_id].call_calibrate()

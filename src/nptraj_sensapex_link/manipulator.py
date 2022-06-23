@@ -13,6 +13,7 @@ class Manipulator:
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
+        self._inside_brain = False
         self._move_queue = deque()
 
     # Device functions
@@ -31,7 +32,7 @@ class Manipulator:
             print(f'{e}\n')
             return self._id, [], 'Error getting position'
 
-    async def goto_pos(self, position: tuple[float], speed: float) \
+    async def goto_pos(self, position: list[float], speed: float) \
             -> (int, tuple[float], str):
         """
         Move manipulator to position
@@ -48,10 +49,15 @@ class Manipulator:
             await self._move_queue[1].wait()
 
         try:
+            target_position = position
+
+            # Alter target position if inside brain
+            if self._inside_brain:
+                target_position = self._device.get_pos()
+                target_position[3] = position[3]
+
             # Move manipulator
-            movement = self._device.goto_pos(
-                position,
-                speed)
+            movement = self._device.goto_pos(target_position, speed)
 
             # Wait for movement to finish
             while not movement.finished:
@@ -74,6 +80,16 @@ class Manipulator:
                 f' {position}')
             print(f'{e}\n')
             return self._id, (), 'Error moving manipulator'
+
+    def set_inside_brain(self, inside: bool) -> None:
+        """
+        Set if the manipulator is inside the brain (and movement should
+        be restricted)
+        :param inside: True if the manipulator is inside the brain,
+        False otherwise
+        :return: None
+        """
+        self._inside_brain = inside
 
     # Calibration
     def call_calibrate(self) -> None:
