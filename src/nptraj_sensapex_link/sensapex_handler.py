@@ -98,7 +98,7 @@ async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
     Move manipulator to position
     :param manipulator_id: The ID of the manipulator to move
     :param position: The position to move to
-    :param speed: The speed to move at (in um/s)
+    :param speed: The speed to move at (in µm/s)
     :return: Callback parameters (manipulator ID, position in (x, y, z,
     w) (or an empty array on error), error message)
     """
@@ -122,7 +122,7 @@ async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
     Drive manipulator to depth
     :param manipulator_id: The ID of the manipulator to drive
     :param depth: The depth to drive to
-    :param speed: The speed to drive at (in um/s)
+    :param speed: The speed to drive at (in µm/s)
     :return: Callback parameters (manipulator ID, depth (or 0 on error),
     error message)
     """
@@ -140,12 +140,12 @@ async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
         return manipulator_id, 0, 'Manipulator not registered'
 
 
-async def inside_brain(manipulator_id: int, inside: bool) -> (int, str):
+async def inside_brain(manipulator_id: int, inside: bool) -> (int, bool, str):
     """
-    Set manipulator inside brain status (restricts motion)
-    :param manipulator_id: The ID of the manipulator to set the status of
+    Set manipulator inside brain state (restricts motion)
+    :param manipulator_id: The ID of the manipulator to set the state of
     :param inside: True if inside brain, False if outside
-    :return: Callback parameters (manipulator ID, error message)
+    :return: Callback parameters (manipulator ID, inside, error message)
     """
     try:
         # Check calibration status
@@ -156,19 +156,19 @@ async def inside_brain(manipulator_id: int, inside: bool) -> (int, str):
         manipulators[manipulator_id].set_inside_brain(inside)
         print(f'[SUCCESS]\t Set inside brain status for manipulator:'
               f' {manipulator_id}\n')
-        return manipulator_id, ''
+        return manipulator_id, inside, ''
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
-        return manipulator_id, 'Manipulator not registered'
+        return manipulator_id, False, 'Manipulator not registered'
 
     except Exception as e:
         # Other error
         print(f'[ERROR]\t\t Set manipulator {manipulator_id} inside brain '
               f'status')
         print(f'{e}\n')
-        return manipulator_id, 'Error setting inside brain'
+        return manipulator_id, False, 'Error setting inside brain'
 
 
 async def calibrate(manipulator_id: int, sio) -> (int, str):

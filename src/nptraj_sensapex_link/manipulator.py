@@ -37,7 +37,7 @@ class Manipulator:
         """
         Move manipulator to position
         :param position: The position to move to
-        :param speed: The speed to move at (in um/s)
+        :param speed: The speed to move at (in µm/s)
         :return: Callback parameters (manipulator ID, position in (x, y, z,
         w) (or an empty array on error), error message)
         """
@@ -99,7 +99,7 @@ class Manipulator:
             return self._id, movement_result[1][3], ''
         else:
             # Return 0 and error message on failure
-            return self._id, 0, movement_result[2]
+            return self._id, 0, 'Error driving manipulator'
 
     def set_inside_brain(self, inside: bool) -> None:
         """
