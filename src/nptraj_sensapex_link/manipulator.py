@@ -13,13 +13,14 @@ class Manipulator:
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
+        self._inside_brain = False
         self._move_queue = deque()
 
     # Device functions
     def get_pos(self) -> (int, tuple[float], str):
         """
         Get the current position of the manipulator
-        :return: Callback parameters (Manipulator ID, position in (x, y, z,
+        :return: Callback parameters (manipulator ID, position in (x, y, z,
         w) (or an empty array on error), error message)
         """
         try:
@@ -31,14 +32,14 @@ class Manipulator:
             print(f'{e}\n')
             return self._id, [], 'Error getting position'
 
-    async def goto_pos(self, position: tuple[float], speed: float) \
+    async def goto_pos(self, position: list[float], speed: float) \
             -> (int, tuple[float], str):
         """
         Move manipulator to position
         :param position: The position to move to
-        :param speed: The speed to move at (in um/s)
-        :return: Callback parameters [Manipulator ID, position in [x, y, z,
-        w] (or an empty array on error), error message]
+        :param speed: The speed to move at (in µm/s)
+        :return: Callback parameters (manipulator ID, position in (x, y, z,
+        w) (or an empty array on error), error message)
         """
         # Add movement flag to queue
         self._move_queue.appendleft(asyncio.Event())
@@ -48,10 +49,15 @@ class Manipulator:
             await self._move_queue[1].wait()
 
         try:
+            target_position = position
+
+            # Alter target position if inside brain
+            if self._inside_brain:
+                target_position = self._device.get_pos()
+                target_position[3] = position[3]
+
             # Move manipulator
-            movement = self._device.goto_pos(
-                position,
-                speed)
+            movement = self._device.goto_pos(target_position, speed)
 
             # Wait for movement to finish
             while not movement.finished:
@@ -74,6 +80,36 @@ class Manipulator:
                 f' {position}')
             print(f'{e}\n')
             return self._id, (), 'Error moving manipulator'
+
+    async def drive_to_depth(self, depth: float, speed: int) -> (int, float,
+                                                                 str):
+        """
+        Drive the manipulator to a certain depth
+        :param depth: The depth to drive to
+        :param speed: The speed to drive at
+        :return: Callback parameters (manipulator ID, depth (or 0 on error),
+        error message)
+        """
+        target_pos = self._device.get_pos()
+        target_pos[3] = depth
+        movement_result = await self.goto_pos(target_pos, speed)
+
+        if movement_result[2] == '':
+            # Return depth on success
+            return self._id, movement_result[1][3], ''
+        else:
+            # Return 0 and error message on failure
+            return self._id, 0, 'Error driving manipulator'
+
+    def set_inside_brain(self, inside: bool) -> None:
+        """
+        Set if the manipulator is inside the brain (and movement should
+        be restricted)
+        :param inside: True if the manipulator is inside the brain,
+        False otherwise
+        :return: None
+        """
+        self._inside_brain = inside
 
     # Calibration
     def call_calibrate(self) -> None:

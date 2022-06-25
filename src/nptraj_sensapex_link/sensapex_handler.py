@@ -11,12 +11,28 @@ ump = UMP.get_ump()
 manipulators = {}
 
 
-class GotoPositionData(TypedDict):
+# Data formats
+class GotoPositionDataFormat(TypedDict):
+    """Data format for goto_pos"""
     manipulator_id: int
-    pos: tuple[float]
+    pos: list[float]
     speed: int
 
 
+class InsideBrainDataFormat(TypedDict):
+    """Data format for inside_brain"""
+    manipulator_id: int
+    inside: bool
+
+
+class DriveToDepthDataFormat(TypedDict):
+    """Data format for drive_to_depth"""
+    manipulator_id: int
+    depth: float
+    speed: int
+
+
+# Event handlers
 def reset() -> None:
     """Reset handler"""
     manipulators.clear()
@@ -26,7 +42,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
     """
     Register a manipulator
     :param manipulator_id: The ID of the manipulator to register.
-    :return: Callback parameters [manipulator_id, error message (on error)]
+    :return: Callback parameters (manipulator_id, error message (on error))
     """
     # Check if manipulator is already registered
     if manipulator_id in manipulators:
@@ -58,8 +74,8 @@ def get_pos(manipulator_id: int) -> (int, tuple[float], str):
     """
     Get the current position of a manipulator
     :param manipulator_id: The ID of the manipulator to get the position of.
-    :return: Callback parameters [Manipulator ID, position in [x, y, z,
-    w] (or an empty array on error), error message]
+    :return: Callback parameters (manipulator ID, position in (x, y, z,
+    w) (or an empty array on error), error message)
     """
     try:
         # Check calibration status
@@ -76,15 +92,15 @@ def get_pos(manipulator_id: int) -> (int, tuple[float], str):
         return manipulator_id, (), 'Manipulator not registered'
 
 
-async def goto_pos(manipulator_id: int, position: tuple[float], speed: int) \
+async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
         -> (int, tuple[float], str):
     """
     Move manipulator to position
     :param manipulator_id: The ID of the manipulator to move
     :param position: The position to move to
-    :param speed: The speed to move at (in um/s)
-    :return: Callback parameters [Manipulator ID, position in [x, y, z,
-    w] (or an empty array on error), error message]
+    :param speed: The speed to move at (in µm/s)
+    :return: Callback parameters (manipulator ID, position in (x, y, z,
+    w) (or an empty array on error), error message)
     """
     try:
         # Check calibration status
@@ -100,22 +116,78 @@ async def goto_pos(manipulator_id: int, position: tuple[float], speed: int) \
         return manipulator_id, (), 'Manipulator not registered'
 
 
+async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
+        -> (int, float, str):
+    """
+    Drive manipulator to depth
+    :param manipulator_id: The ID of the manipulator to drive
+    :param depth: The depth to drive to
+    :param speed: The speed to drive at (in µm/s)
+    :return: Callback parameters (manipulator ID, depth (or 0 on error),
+    error message)
+    """
+    try:
+        # Check calibration status
+        if not manipulators[manipulator_id].get_calibrated():
+            print(f'[ERROR]\t\t Calibration not complete\n')
+            return manipulator_id, 0, 'Manipulator not calibrated'
+
+        return await manipulators[manipulator_id].drive_to_depth(depth, speed)
+
+    except KeyError:
+        # Manipulator not found in registered manipulators
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return manipulator_id, 0, 'Manipulator not registered'
+
+
+async def inside_brain(manipulator_id: int, inside: bool) -> (int, bool, str):
+    """
+    Set manipulator inside brain state (restricts motion)
+    :param manipulator_id: The ID of the manipulator to set the state of
+    :param inside: True if inside brain, False if outside
+    :return: Callback parameters (manipulator ID, inside, error message)
+    """
+    try:
+        # Check calibration status
+        if not manipulators[manipulator_id].get_calibrated():
+            print(f'[ERROR]\t\t Calibration not complete\n')
+            return manipulator_id, 'Manipulator not calibrated'
+
+        manipulators[manipulator_id].set_inside_brain(inside)
+        print(f'[SUCCESS]\t Set inside brain status for manipulator:'
+              f' {manipulator_id}\n')
+        return manipulator_id, inside, ''
+
+    except KeyError:
+        # Manipulator not found in registered manipulators
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return manipulator_id, False, 'Manipulator not registered'
+
+    except Exception as e:
+        # Other error
+        print(f'[ERROR]\t\t Set manipulator {manipulator_id} inside brain '
+              f'status')
+        print(f'{e}\n')
+        return manipulator_id, False, 'Error setting inside brain'
+
+
 async def calibrate(manipulator_id: int, sio) -> (int, str):
     """
         Calibrate manipulator
         :param manipulator_id: ID of manipulator to calibrate
         :param sio: SocketIO object (to call sleep)
-        :return: Callback parameters [Manipulator ID, error message]
+        :return: Callback parameters (manipulator ID, error message)
         """
     try:
         # Move manipulator to max position
-        manipulators[manipulator_id].goto_pos([20000, 20000, 20000, 20000],
-                                              2000)
+        await manipulators[manipulator_id].goto_pos([20000, 20000, 20000,
+                                                     20000], 2000)
 
         # Call calibrate
         manipulators[manipulator_id].call_calibrate()
         await sio.sleep(70)
         manipulators[manipulator_id].set_calibrated()
+        print(f'[SUCCESS]\t Calibrated manipulator: {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:
@@ -140,11 +212,14 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
     """
     Bypass calibration of manipulator
     :param manipulator_id: ID of manipulator to bypass calibration
-    :return: Callback parameters (Manipulator ID, error message)
+    :return: Callback parameters (manipulator ID, error message)
     """
     try:
         # Bypass calibration
         manipulators[manipulator_id].set_calibrated()
+        print(
+            f'[SUCCESS]\t Bypassed calibration for manipulator:'
+            f' {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:

@@ -1,5 +1,3 @@
-import asyncio
-
 from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
@@ -64,8 +62,8 @@ async def get_pos(_, manipulator_id: int) -> (int, tuple[float], str):
     Position of manipulator request
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of manipulator to pull position from
-    :return: Callback parameters (Manipulator ID, position in [x, y, z,
-    w] (or an empty array on error), error message)
+    :return: Callback parameters (manipulator ID, position in (x, y, z,
+    w) (or an empty array on error), error message)
     """
     print(f'[EVENT]\t\t Get position of manipulator'
           f' {manipulator_id}')
@@ -74,17 +72,32 @@ async def get_pos(_, manipulator_id: int) -> (int, tuple[float], str):
 
 
 @sio.event
-async def goto_pos(_, data: sh.GotoPositionData) -> (int, tuple[float], str):
+async def goto_pos(_, data: sh.GotoPositionDataFormat) -> (
+        int, tuple[float], str):
     """
     Move manipulator to position
     :param _: Socket session ID (unused)
     :param data: Data containing manipulator ID, position, and speed
-    :return: Callback parameters (Manipulator ID, position in (x, y, z,
+    :return: Callback parameters (manipulator ID, position in (x, y, z,
     w) (or an empty tuple on error), error message)
     """
-    manipulator_id = data['manipulator_id']
-    pos = data['pos']
-    speed = data['speed']
+    try:
+        manipulator_id = data['manipulator_id']
+        pos = data['pos']
+        speed = data['speed']
+
+    except KeyError:
+        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
+            else -1
+        print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
+        return manipulator_id, (), 'Invalid data format'
+
+    except Exception as e:
+        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
+            else -1
+        print(f'[ERROR]\t\t Error in goto_pos: {e}\n')
+        return manipulator_id, (), 'Error in goto_pos'
+
     print(
         f'[EVENT]\t\t Move manipulator {manipulator_id} '
         f'to position {pos}'
@@ -94,12 +107,79 @@ async def goto_pos(_, data: sh.GotoPositionData) -> (int, tuple[float], str):
 
 
 @sio.event
+async def drive_to_depth(_, data: sh.DriveToDepthDataFormat) \
+        -> (int, float, str):
+    """
+    Drive to depth
+    :param _: Socket session ID (unused)
+    :param data: Data containing manipulator ID, depth, and speed
+    :return: Callback parameters (manipulator ID, depth (or -1 on error),
+    error message)
+    """
+    try:
+        manipulator_id = data['manipulator_id']
+        depth = data['depth']
+        speed = data['speed']
+
+    except KeyError:
+        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
+            else -1
+        print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
+        return manipulator_id, -1, 'Invalid data format'
+
+    except Exception as e:
+        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
+            else -1
+        print(f'[ERROR]\t\t Error in drive_to_depth: {e}\n')
+        return manipulator_id, -1, 'Error in drive_to_depth'
+
+    print(
+        f'[EVENT]\t\t Drive manipulator {manipulator_id} '
+        f'to depth {depth}'
+    )
+
+    return await sh.drive_to_depth(manipulator_id, depth, speed)
+
+
+@sio.event
+async def inside_brain(_, data: sh.InsideBrainDataFormat) -> (int, bool, str):
+    """
+    Set the inside brain state
+    :param _: Socket session ID (unused)
+    :param data: Data containing manipulator ID and inside brain state
+    :return: Callback parameters (manipulator ID, inside, error message)
+    """
+    try:
+        manipulator_id = data['manipulator_id']
+        inside = data['inside']
+
+    except KeyError:
+        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
+            else -1
+        print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
+        return manipulator_id, False, 'Invalid data format'
+
+    except Exception as e:
+        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
+            else -1
+        print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
+        return manipulator_id, False, 'Error in inside_brain'
+
+    print(
+        f'[EVENT]\t\t Set manipulator {manipulator_id} inside brain to '
+        f'{"true" if inside else "false"}'
+    )
+
+    return await sh.inside_brain(manipulator_id, inside)
+
+
+@sio.event
 async def calibrate(_, manipulator_id: int) -> (int, str):
     """
     Calibrate manipulator
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of manipulator to calibrate
-    :return: Callback parameters (Manipulator ID, error message)
+    :return: Callback parameters (manipulator ID, error message)
     """
     print(f'[EVENT]\t\t Calibrate manipulator'
           f' {manipulator_id}')
@@ -113,7 +193,7 @@ async def bypass_calibration(_, manipulator_id: int) -> (int, str):
     Bypass calibration of manipulator
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of manipulator to bypass calibration
-    :return: Callback parameters (Manipulator ID, error message)
+    :return: Callback parameters (manipulator ID, error message)
     """
     print(f'[EVENT]\t\t Bypass calibration of manipulator'
           f' {manipulator_id}')
