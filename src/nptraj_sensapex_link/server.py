@@ -2,6 +2,7 @@ from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
 import sensapex_handler as sh
+from threading import Thread
 from typing import Any
 
 # Setup server
@@ -214,6 +215,7 @@ async def catch_all(_, data: Any) -> None:
 
 def launch() -> None:
     """Launch the server"""
+    Thread(target=sh.poll_serial).start()
     web.run_app(app)
 
 

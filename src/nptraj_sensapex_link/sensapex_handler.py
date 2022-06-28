@@ -1,14 +1,36 @@
 from manipulator import Manipulator
 from pathlib import Path
 from sensapex import UMP, UMError
+from serial import Serial
+from serial.tools.list_ports import comports
+import time
 from typing import TypedDict
+
+# Registered manipulators
+manipulators = {}
 
 # Setup Sensapex
 UMP.set_library_path(str(Path(__file__).parent.absolute()) + '/resources/')
 ump = UMP.get_ump()
 
-# Registered manipulators
-manipulators = {}
+# Setup Arduino serial port
+target_port = None
+for port, desc, _ in comports():
+    if 'USB Serial Device' in desc:
+        target_port = port
+        break
+ser = Serial(target_port, 9600, timeout=0.05)
+
+
+def poll_serial():
+    while True:
+        if ser.in_waiting > 0:
+            ser.readline()
+            # Cause a break
+            print('STOPPING EVERYTHING')
+            for manipulator in manipulators.values():
+                manipulator.stop()
+        time.sleep(0.05)
 
 
 # Data formats

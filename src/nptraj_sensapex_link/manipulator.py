@@ -64,6 +64,11 @@ class Manipulator:
         if len(self._move_queue) > 1:
             await self._move_queue[1].event.wait()
 
+        if not self._calibrated:
+            print(f'[ERROR]\t\t Manipulator {self._id} movement '
+                  f'canceled')
+            return self._id, (), 'Movement canceled'
+
         try:
             target_position = position
             target_speed = speed
@@ -148,3 +153,10 @@ class Manipulator:
     def set_calibrated(self) -> None:
         """Set the manipulator to calibrated"""
         self._calibrated = True
+
+    def stop(self):
+        print(f"Stopping Manipulator {self._id}")
+        while self._move_queue:
+            self._move_queue.pop().event.set()
+        self._calibrated = False
+        self._device.stop()
