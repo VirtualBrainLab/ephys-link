@@ -1,9 +1,12 @@
 import asyncio
 from collections import deque
+from copy import deepcopy
 from sensapex import SensapexDevice
 
 
 class Manipulator:
+    INSIDE_BRAIN_SPEED_LIMIT = 10
+
     def __init__(self, device: SensapexDevice) -> None:
         """
         Construct a new Manipulator object
@@ -15,6 +18,19 @@ class Manipulator:
         self._calibrated = False
         self._inside_brain = False
         self._move_queue = deque()
+
+    class Movement:
+        """Movement struct"""
+
+        def __init__(self, event: asyncio.Event, position: list[float]):
+            """
+            Construct a new Movement object
+            :param event: An asyncio event
+            :param position: A tuple of floats (x, y, z, w) representing the
+            position to move to in µm
+            """
+            self.event = event
+            self.position = position
 
     # Device functions
     def get_pos(self) -> (int, tuple[float], str):
@@ -41,12 +57,12 @@ class Manipulator:
         :return: Callback parameters (manipulator ID, position in (x, y, z,
         w) (or an empty array on error), error message)
         """
-        # Add movement flag to queue
-        self._move_queue.appendleft(asyncio.Event())
+        # Add movement to queue
+        self._move_queue.appendleft(self.Movement(asyncio.Event(), position))
 
         # Wait for preceding movement to finish
         if len(self._move_queue) > 1:
-            await self._move_queue[1].wait()
+            await self._move_queue[1].event.wait()
 
         try:
             target_position = position
@@ -55,6 +71,7 @@ class Manipulator:
             if self._inside_brain:
                 target_position = self._device.get_pos()
                 target_position[3] = position[3]
+                speed = max(speed, self.INSIDE_BRAIN_SPEED_LIMIT)
 
             # Move manipulator
             movement = self._device.goto_pos(target_position, speed)
@@ -67,7 +84,7 @@ class Manipulator:
             manipulator_final_position = tuple(self._device.get_pos())
 
             # Remove event from queue and mark as completed
-            self._move_queue.pop().set()
+            self._move_queue.pop().event.set()
 
             print(
                 f'[SUCCESS]\t Moved manipulator {self._id} to position'
@@ -90,7 +107,11 @@ class Manipulator:
         :return: Callback parameters (manipulator ID, depth (or 0 on error),
         error message)
         """
+        # Get position before this movement
         target_pos = self._device.get_pos()
+        if len(self._move_queue) > 0:
+            target_pos = deepcopy(self._move_queue[0].position)
+
         target_pos[3] = depth
         movement_result = await self.goto_pos(target_pos, speed)
 
