@@ -67,7 +67,7 @@ class Manipulator:
         if not self._calibrated:
             print(f'[ERROR]\t\t Manipulator {self._id} movement '
                   f'canceled')
-            return self._id, (), 'Movement canceled'
+            return self._id, (), 'Manipulator movement canceled'
 
         try:
             target_position = position
