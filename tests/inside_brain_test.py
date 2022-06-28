@@ -27,7 +27,7 @@ class InsideBrainTestCase(TestCase):
         self.wait_for_callback()
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': (10000, 10000,
-                                                                10000, 10000),
+                                                                10000, 50),
                                    'speed': 4000}, callback=self.mock)
         self.wait_for_callback()
 

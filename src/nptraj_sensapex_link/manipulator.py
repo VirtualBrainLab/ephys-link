@@ -66,15 +66,16 @@ class Manipulator:
 
         try:
             target_position = position
+            target_speed = speed
 
             # Alter target position if inside brain
             if self._inside_brain:
                 target_position = self._device.get_pos()
                 target_position[3] = position[3]
-                speed = max(speed, self.INSIDE_BRAIN_SPEED_LIMIT)
+                target_speed = min(speed, self.INSIDE_BRAIN_SPEED_LIMIT)
 
             # Move manipulator
-            movement = self._device.goto_pos(target_position, speed)
+            movement = self._device.goto_pos(target_position, target_speed)
 
             # Wait for movement to finish
             while not movement.finished:
