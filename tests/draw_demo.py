@@ -19,7 +19,7 @@ class DrawDemoTestCase(TestCase):
         self.sio.emit('register_manipulator', 2)
         self.sio.emit('bypass_calibration', 2)
 
-        drop_depth = 10500
+        drop_depth = 10550
         drive_speed = 5000
         draw_speed = 4000
 
