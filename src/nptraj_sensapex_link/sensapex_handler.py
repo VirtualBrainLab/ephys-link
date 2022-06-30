@@ -60,9 +60,18 @@ class DriveToDepthDataFormat(TypedDict):
     speed: int
 
 
+class CanWriteDataFormat(TypedDict):
+    """Data format for can_write"""
+    manipulator_id: int
+    can_write: bool
+
+
 # Event handlers
 def reset() -> bool:
-    """Reset handler"""
+    """
+    Reset handler
+    :return: True if successful, False otherwise
+    """
     manipulators.clear()
     return stop()
 
@@ -123,7 +132,7 @@ def get_pos(manipulator_id: int) -> (int, tuple[float], str):
     try:
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
-            print(f'[ERROR]\t\t Calibration not complete\n')
+            print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
             return manipulator_id, (), 'Manipulator not calibrated'
 
         # Get position
@@ -148,8 +157,13 @@ async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
     try:
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
-            print(f'[ERROR]\t\t Calibration not complete\n')
+            print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
             return manipulator_id, (), 'Manipulator not calibrated'
+
+        # Check write state
+        if not manipulators[manipulator_id].get_can_write():
+            print(f'[ERROR]\t\t Cannot write to manipulator: {manipulator_id}')
+            return manipulator_id, (), 'Cannot write to manipulator'
 
         return await manipulators[manipulator_id].goto_pos(position, speed)
 
@@ -172,8 +186,13 @@ async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
     try:
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
-            print(f'[ERROR]\t\t Calibration not complete\n')
+            print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
             return manipulator_id, 0, 'Manipulator not calibrated'
+
+        # Check write state
+        if not manipulators[manipulator_id].get_can_write():
+            print(f'[ERROR]\t\t Cannot write to manipulator: {manipulator_id}')
+            return manipulator_id, 0, 'Cannot write to manipulator'
 
         return await manipulators[manipulator_id].drive_to_depth(depth, speed)
 
@@ -183,7 +202,8 @@ async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
         return manipulator_id, 0, 'Manipulator not registered'
 
 
-async def inside_brain(manipulator_id: int, inside: bool) -> (int, bool, str):
+async def set_inside_brain(manipulator_id: int, inside: bool) -> \
+        (int, bool, str):
     """
     Set manipulator inside brain state (restricts motion)
     :param manipulator_id: The ID of the manipulator to set the state of
@@ -197,19 +217,19 @@ async def inside_brain(manipulator_id: int, inside: bool) -> (int, bool, str):
             return manipulator_id, 'Manipulator not calibrated'
 
         manipulators[manipulator_id].set_inside_brain(inside)
-        print(f'[SUCCESS]\t Set inside brain status for manipulator:'
+        print(f'[SUCCESS]\t Set inside brain state for manipulator:'
               f' {manipulator_id}\n')
         return manipulator_id, inside, ''
 
     except KeyError:
         # Manipulator not found in registered manipulators
-        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        print(f'[ERROR]\t\t Manipulator {manipulator_id} not registered\n')
         return manipulator_id, False, 'Manipulator not registered'
 
     except Exception as e:
         # Other error
         print(f'[ERROR]\t\t Set manipulator {manipulator_id} inside brain '
-              f'status')
+              f'state')
         print(f'{e}\n')
         return manipulator_id, False, 'Error setting inside brain'
 
@@ -230,12 +250,12 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
         manipulators[manipulator_id].call_calibrate()
         await sio.sleep(70)
         manipulators[manipulator_id].set_calibrated()
-        print(f'[SUCCESS]\t Calibrated manipulator: {manipulator_id}\n')
+        print(f'[SUCCESS]\t Calibrated manipulator {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:
         # Manipulator not found in registered manipulators
-        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        print(f'[ERROR]\t\t Manipulator {manipulator_id} not registered\n')
         return manipulator_id, 'Manipulator not registered'
 
     except UMError as e:
@@ -261,13 +281,13 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
         # Bypass calibration
         manipulators[manipulator_id].set_calibrated()
         print(
-            f'[SUCCESS]\t Bypassed calibration for manipulator:'
+            f'[SUCCESS]\t Bypassed calibration for manipulator'
             f' {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:
         # Manipulator not found in registered manipulators
-        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        print(f'[ERROR]\t\t Manipulator {manipulator_id} not registered\n')
         return manipulator_id, 'Manipulator not registered'
 
     except Exception as e:
@@ -276,3 +296,33 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
             f'[ERROR]\t\t Bypass calibration of manipulator {manipulator_id}')
         print(f'{e}\n')
         return manipulator_id, 'Error bypassing calibration'
+
+
+def set_can_write(manipulator_id: int, can_write: bool) -> (int, bool, str):
+    """
+    Set manipulator can_write state (enables/disabled moving manipulator)
+    :param manipulator_id: The ID of the manipulator to set the state of
+    :param can_write: True if allowed to move, False if outside
+    :return: Callback parameters (manipulator ID, can_write, error message)
+    """
+    try:
+        # Check calibration status
+        if not manipulators[manipulator_id].get_calibrated():
+            print(f'[ERROR]\t\t Calibration not complete\n')
+            return manipulator_id, 'Manipulator not calibrated'
+
+        manipulators[manipulator_id].set_can_write(can_write)
+        print(f'[SUCCESS]\t Set can_write state for manipulator'
+              f' {manipulator_id}\n')
+        return manipulator_id, can_write, ''
+
+    except KeyError:
+        # Manipulator not found in registered manipulators
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return manipulator_id, False, 'Manipulator not registered'
+
+    except Exception as e:
+        # Other error
+        print(f'[ERROR]\t\t Set manipulator {manipulator_id} can_write state')
+        print(f'{e}\n')
+        return manipulator_id, False, 'Error setting can_write'

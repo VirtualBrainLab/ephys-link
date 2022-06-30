@@ -22,6 +22,17 @@ class MoveTest(TestCase):
         self.sio.emit('register_manipulator', 2)
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('bypass_calibration', 2)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 1, 'can_write': True},
+                      callback=self.mock)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 2, 'can_write': True},
+                      callback=self.mock)
+
+        while self.mock.call_count != 2:
+            pass
+        self.mock.call_count = 0
+        self.mock.called = False
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
                                    'speed': self.DRIVE_SPEED},
@@ -48,6 +59,17 @@ class MoveTest(TestCase):
         self.sio.emit('register_manipulator', 2)
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('bypass_calibration', 2)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 1, 'can_write': True},
+                      callback=self.mock)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 2, 'can_write': True},
+                      callback=self.mock)
+
+        while self.mock.call_count != 2:
+            pass
+        self.mock.call_count = 0
+        self.mock.called = False
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
                                    'speed': self.DRIVE_SPEED},
@@ -55,8 +77,8 @@ class MoveTest(TestCase):
         self.wait_for_callback()
         args = self.mock.call_args.args
         self.assertEqual(args[0], 1)
-        self.assertEqual(len(args[1]), 4)
         self.assertEqual(args[2], '')
+        self.assertEqual(len(args[1]), 4)
 
         self.sio.emit('goto_pos', {'manipulator_id': 1,
                                    'pos': [10000, 10000, 10000, 10000],
@@ -71,6 +93,16 @@ class MoveTest(TestCase):
                       callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(1, [], 'Manipulator not registered')
+
+    def test_move_no_write(self):
+        """Test movement with no write"""
+        self.sio.emit('register_manipulator', 1)
+        self.sio.emit('bypass_calibration', 1)
+        self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
+                                   'speed': self.DRIVE_SPEED},
+                      callback=self.mock)
+        self.wait_for_callback()
+        self.mock.assert_called_with(1, [], 'Cannot write to manipulator')
 
     def tearDown(self) -> None:
         """Cleanup test case"""
