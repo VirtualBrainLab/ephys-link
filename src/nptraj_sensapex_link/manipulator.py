@@ -155,8 +155,8 @@ class Manipulator:
         self._calibrated = True
 
     def stop(self):
-        print(f"Stopping Manipulator {self._id}")
         while self._move_queue:
             self._move_queue.pop().event.set()
         self._calibrated = False
         self._device.stop()
+        print(f"[SUCCESS]\t Stopped manipulator {self._id}")

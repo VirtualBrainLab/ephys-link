@@ -15,22 +15,28 @@ ump = UMP.get_ump()
 
 # Setup Arduino serial port
 target_port = None
+poll_rate = 0.05
+continue_polling = True
+
+# Search for serial ports
 for port, desc, _ in comports():
     if 'USB Serial Device' in desc:
         target_port = port
         break
-ser = Serial(target_port, 9600, timeout=0.05)
 
 
 def poll_serial():
-    while True:
+    """Continuously poll serial port for data"""
+    ser = Serial(target_port, 9600, timeout=poll_rate)
+    while continue_polling:
         if ser.in_waiting > 0:
             ser.readline()
             # Cause a break
             print('STOPPING EVERYTHING')
             for manipulator in manipulators.values():
                 manipulator.stop()
-        time.sleep(0.05)
+        time.sleep(poll_rate)
+    ser.close()
 
 
 # Data formats
@@ -55,9 +61,24 @@ class DriveToDepthDataFormat(TypedDict):
 
 
 # Event handlers
-def reset() -> None:
+def reset() -> bool:
     """Reset handler"""
     manipulators.clear()
+    return stop()
+
+
+def stop() -> bool:
+    """
+    Stop handler
+    :return: True if successful, False otherwise
+    """
+    try:
+        for manipulator in manipulators.values():
+            manipulator.stop()
+        return True
+    except Exception as e:
+        print(f'[ERROR]\t\t Stopping manipulators: {e}\n')
+        return False
 
 
 def register_manipulator(manipulator_id: int) -> (int, str):
