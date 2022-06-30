@@ -22,6 +22,10 @@ class DriveToDepthTest(TestCase):
         self.sio.emit('register_manipulator', 2)
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('bypass_calibration', 2)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 1, 'can_write': True, 'hours': 1})
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 2, 'can_write': True, 'hours': 1})
 
         self.sio.emit('drive_to_depth',
                       {'manipulator_id': 1, 'depth': 0,
@@ -50,6 +54,10 @@ class DriveToDepthTest(TestCase):
         self.sio.emit('register_manipulator', 2)
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('bypass_calibration', 2)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 1, 'can_write': True, 'hours': 1})
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 2, 'can_write': True, 'hours': 1})
 
         self.sio.emit('drive_to_depth',
                       {'manipulator_id': 1, 'depth': 0,

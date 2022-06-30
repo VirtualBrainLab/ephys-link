@@ -1,7 +1,11 @@
 import asyncio
+import threading
 from collections import deque
 from copy import deepcopy
 from sensapex import SensapexDevice
+
+
+# from server import sio
 
 
 class Manipulator:
@@ -18,6 +22,8 @@ class Manipulator:
         self._id = device.dev_id
         self._calibrated = False
         self._inside_brain = False
+        self._can_write = False
+        self._reset_timer = None
         self._move_queue = deque()
 
     class Movement:
@@ -65,7 +71,7 @@ class Manipulator:
         if len(self._move_queue) > 1:
             await self._move_queue[1].event.wait()
 
-        if not self._calibrated:
+        if not self._can_write:
             print(f'[ERROR]\t\t Manipulator {self._id} movement '
                   f'canceled')
             return self._id, (), 'Manipulator movement canceled'
@@ -139,8 +145,38 @@ class Manipulator:
         """
         self._inside_brain = inside
 
+    def get_can_write(self) -> bool:
+        """
+        Return if the manipulator can move
+        :return: True if the manipulator can move, False otherwise
+        """
+        return self._can_write
+
+    def set_can_write(self, can_write: bool, hours: float, sio) -> None:
+        """
+        Set if the manipulator can move
+        :param can_write: True if the manipulator can move, False otherwise
+        :param hours: The number of hours to allow the manipulator to move (
+        0 = forever)
+        :param sio: SocketIO object from server to emit reset event
+        :return: None
+        """
+        self._can_write = can_write
+
+        if can_write and hours > 0:
+            if self._reset_timer:
+                self._reset_timer.cancel()
+            self._reset_timer = threading.Timer(hours * 3600,
+                                                self.reset_can_write, [sio])
+            self._reset_timer.start()
+
+    def reset_can_write(self, sio):
+        """Reset the can_write flag"""
+        self._can_write = False
+        asyncio.run(sio.emit('write_disabled', self._id))
+
     # Calibration
-    def call_calibrate(self) -> None:
+    def call_calibrate(self):
         """Calibrate the manipulator"""
         self._device.calibrate_zero_position()
 
@@ -151,13 +187,14 @@ class Manipulator:
         """
         return self._calibrated
 
-    def set_calibrated(self) -> None:
+    def set_calibrated(self):
         """Set the manipulator to calibrated"""
         self._calibrated = True
 
     def stop(self):
+        """Stop the manipulator"""
         while self._move_queue:
             self._move_queue.pop().event.set()
-        self._calibrated = False
+        self._can_write = False
         self._device.stop()
         print(f"[SUCCESS]\t Stopped manipulator {self._id}")

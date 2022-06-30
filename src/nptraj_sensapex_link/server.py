@@ -146,7 +146,8 @@ async def drive_to_depth(_, data: sh.DriveToDepthDataFormat) \
 
 
 @sio.event
-async def inside_brain(_, data: sh.InsideBrainDataFormat) -> (int, bool, str):
+async def set_inside_brain(_, data: sh.InsideBrainDataFormat) -> \
+        (int, bool, str):
     """
     Set the inside brain state
     :param _: Socket session ID (unused)
@@ -167,14 +168,14 @@ async def inside_brain(_, data: sh.InsideBrainDataFormat) -> (int, bool, str):
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
-        return manipulator_id, False, 'Error in inside_brain'
+        return manipulator_id, False, 'Error in set_inside_brain'
 
     print(
         f'[EVENT]\t\t Set manipulator {manipulator_id} inside brain to '
         f'{"true" if inside else "false"}'
     )
 
-    return await sh.inside_brain(manipulator_id, inside)
+    return sh.set_inside_brain(manipulator_id, inside)
 
 
 @sio.event
@@ -203,6 +204,39 @@ async def bypass_calibration(_, manipulator_id: int) -> (int, str):
           f' {manipulator_id}')
 
     return sh.bypass_calibration(manipulator_id)
+
+
+@sio.event
+async def set_can_write(_, data: sh.CanWriteDataFormat) -> (int, bool, str):
+    """
+    Set manipulator can_write state
+    :param _: Socket session ID (unused)
+    :param data: Data containing manipulator ID and can_write brain state
+    :return: Callback parameters (manipulator ID, can_write, error message)
+    """
+    try:
+        manipulator_id = data['manipulator_id']
+        can_write = data['can_write']
+        hours = data['hours']
+
+    except KeyError:
+        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
+            else -1
+        print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
+        return manipulator_id, False, 'Invalid data format'
+
+    except Exception as e:
+        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
+            else -1
+        print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
+        return manipulator_id, False, 'Error in set_can_write'
+
+    print(
+        f'[EVENT]\t\t Set manipulator {manipulator_id} can_write state to '
+        f'{"true" if can_write else "false"}'
+    )
+
+    return sh.set_can_write(manipulator_id, can_write, hours, sio)
 
 
 @sio.event
