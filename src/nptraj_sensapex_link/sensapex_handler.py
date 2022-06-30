@@ -1,10 +1,10 @@
-from manipulator import Manipulator
+import time
 from pathlib import Path
+from typing import TypedDict
 from sensapex import UMP, UMError
 from serial import Serial
 from serial.tools.list_ports import comports
-import time
-from typing import TypedDict
+from manipulator import Manipulator
 
 # Registered manipulators
 manipulators = {}
@@ -64,6 +64,7 @@ class CanWriteDataFormat(TypedDict):
     """Data format for can_write"""
     manipulator_id: int
     can_write: bool
+    hours: float
 
 
 # Event handlers
@@ -298,11 +299,14 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
         return manipulator_id, 'Error bypassing calibration'
 
 
-def set_can_write(manipulator_id: int, can_write: bool) -> (int, bool, str):
+def set_can_write(manipulator_id: int, can_write: bool, hours: float,
+                  sio) -> (int, bool, str):
     """
     Set manipulator can_write state (enables/disabled moving manipulator)
+    :param sio:
     :param manipulator_id: The ID of the manipulator to set the state of
     :param can_write: True if allowed to move, False if outside
+    :param hours: The number of hours to allow writing (0 = forever)
     :return: Callback parameters (manipulator ID, can_write, error message)
     """
     try:
@@ -311,7 +315,7 @@ def set_can_write(manipulator_id: int, can_write: bool) -> (int, bool, str):
             print(f'[ERROR]\t\t Calibration not complete\n')
             return manipulator_id, 'Manipulator not calibrated'
 
-        manipulators[manipulator_id].set_can_write(can_write)
+        manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         print(f'[SUCCESS]\t Set can_write state for manipulator'
               f' {manipulator_id}\n')
         return manipulator_id, can_write, ''

@@ -1,7 +1,11 @@
 import asyncio
+import threading
 from collections import deque
 from copy import deepcopy
 from sensapex import SensapexDevice
+
+
+# from server import sio
 
 
 class Manipulator:
@@ -19,6 +23,7 @@ class Manipulator:
         self._calibrated = False
         self._inside_brain = False
         self._can_write = False
+        self._reset_timer = None
         self._move_queue = deque()
 
     class Movement:
@@ -147,13 +152,27 @@ class Manipulator:
         """
         return self._can_write
 
-    def set_can_write(self, can_write: bool) -> None:
+    def set_can_write(self, can_write: bool, hours: float, sio) -> None:
         """
         Set if the manipulator can move
         :param can_write: True if the manipulator can move, False otherwise
+        :param hours: The number of hours to allow the manipulator to move (
+        0 = forever)
         :return: None
         """
         self._can_write = can_write
+
+        if can_write and hours > 0:
+            if self._reset_timer:
+                self._reset_timer.cancel()
+            self._reset_timer = threading.Timer(hours * 3600,
+                                                self.set_can_write, [sio])
+            self._reset_timer.start()
+
+    def reset_can_write(self, sio):
+        """Reset the can_write flag"""
+        self._can_write = False
+        sio.emit('write_disabled', self._id)
 
     # Calibration
     def call_calibrate(self):

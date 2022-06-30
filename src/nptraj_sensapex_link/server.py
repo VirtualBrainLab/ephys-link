@@ -217,6 +217,7 @@ async def set_can_write(_, data: sh.CanWriteDataFormat) -> (int, bool, str):
     try:
         manipulator_id = data['manipulator_id']
         can_write = data['can_write']
+        hours = data['hours']
 
     except KeyError:
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
@@ -235,7 +236,7 @@ async def set_can_write(_, data: sh.CanWriteDataFormat) -> (int, bool, str):
         f'{"true" if can_write else "false"}'
     )
 
-    return sh.set_can_write(manipulator_id, can_write)
+    return sh.set_can_write(manipulator_id, can_write, hours, sio)
 
 
 @sio.event

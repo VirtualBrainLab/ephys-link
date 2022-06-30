@@ -23,16 +23,9 @@ class MoveTest(TestCase):
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('bypass_calibration', 2)
         self.sio.emit('set_can_write',
-                      {'manipulator_id': 1, 'can_write': True},
-                      callback=self.mock)
+                      {'manipulator_id': 1, 'can_write': True, 'hours': 1})
         self.sio.emit('set_can_write',
-                      {'manipulator_id': 2, 'can_write': True},
-                      callback=self.mock)
-
-        while self.mock.call_count != 2:
-            pass
-        self.mock.call_count = 0
-        self.mock.called = False
+                      {'manipulator_id': 2, 'can_write': True, 'hours': 1})
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
                                    'speed': self.DRIVE_SPEED},
@@ -60,16 +53,9 @@ class MoveTest(TestCase):
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('bypass_calibration', 2)
         self.sio.emit('set_can_write',
-                      {'manipulator_id': 1, 'can_write': True},
-                      callback=self.mock)
+                      {'manipulator_id': 1, 'can_write': True, 'hours': 1})
         self.sio.emit('set_can_write',
-                      {'manipulator_id': 2, 'can_write': True},
-                      callback=self.mock)
-
-        while self.mock.call_count != 2:
-            pass
-        self.mock.call_count = 0
-        self.mock.called = False
+                      {'manipulator_id': 2, 'can_write': True, 'hours': 1})
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
                                    'speed': self.DRIVE_SPEED},
