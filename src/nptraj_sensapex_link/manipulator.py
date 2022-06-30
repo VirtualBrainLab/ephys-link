@@ -158,6 +158,7 @@ class Manipulator:
         :param can_write: True if the manipulator can move, False otherwise
         :param hours: The number of hours to allow the manipulator to move (
         0 = forever)
+        :param sio: SocketIO object from server to emit reset event
         :return: None
         """
         self._can_write = can_write
@@ -166,13 +167,13 @@ class Manipulator:
             if self._reset_timer:
                 self._reset_timer.cancel()
             self._reset_timer = threading.Timer(hours * 3600,
-                                                self.set_can_write, [sio])
+                                                self.reset_can_write, [sio])
             self._reset_timer.start()
 
     def reset_can_write(self, sio):
         """Reset the can_write flag"""
         self._can_write = False
-        sio.emit('write_disabled', self._id)
+        asyncio.run(sio.emit('write_disabled', self._id))
 
     # Calibration
     def call_calibrate(self):

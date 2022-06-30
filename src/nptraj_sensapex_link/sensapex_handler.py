@@ -307,6 +307,7 @@ def set_can_write(manipulator_id: int, can_write: bool, hours: float,
     :param manipulator_id: The ID of the manipulator to set the state of
     :param can_write: True if allowed to move, False if outside
     :param hours: The number of hours to allow writing (0 = forever)
+    :param sio: SocketIO object from server to emit reset event
     :return: Callback parameters (manipulator ID, can_write, error message)
     """
     try:
