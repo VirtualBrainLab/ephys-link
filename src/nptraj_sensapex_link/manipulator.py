@@ -5,6 +5,7 @@ from sensapex import SensapexDevice
 
 
 class Manipulator:
+    """Representation of a single manipulator"""
     INSIDE_BRAIN_SPEED_LIMIT = 10
 
     def __init__(self, device: SensapexDevice) -> None:

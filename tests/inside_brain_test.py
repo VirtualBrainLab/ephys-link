@@ -5,7 +5,8 @@ import socketio
 
 
 class InsideBrainTestCase(TestCase):
-    """Tests get_pos event"""
+    """Test movement inside brain event"""
+    DRIVE_SPEED = 10000
 
     def setUp(self):
         """Setup test case"""
@@ -19,7 +20,8 @@ class InsideBrainTestCase(TestCase):
         self.sio.emit('register_manipulator', 1)
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': (0, 0, 0, 0),
-                                   'speed': 4000}, callback=self.mock)
+                                   'speed': self.DRIVE_SPEED},
+                      callback=self.mock)
         self.wait_for_callback()
 
         self.sio.emit('inside_brain', {'manipulator_id': 1, 'inside': True},
@@ -28,7 +30,8 @@ class InsideBrainTestCase(TestCase):
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': (10000, 10000,
                                                                 10000, 50),
-                                   'speed': 4000}, callback=self.mock)
+                                   'speed': self.DRIVE_SPEED},
+                      callback=self.mock)
         self.wait_for_callback()
 
         self.sio.emit('get_pos', 1, callback=self.mock)
@@ -39,7 +42,8 @@ class InsideBrainTestCase(TestCase):
         self.wait_for_callback()
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': (10000, 10000,
                                                                 10000, 10000),
-                                   'speed': 4000}, callback=self.mock)
+                                   'speed': self.DRIVE_SPEED},
+                      callback=self.mock)
         self.wait_for_callback()
 
         self.assertLess(abs(args[1][0]), 1)

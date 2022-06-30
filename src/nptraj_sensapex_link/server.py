@@ -2,7 +2,6 @@ import signal
 import sys
 
 from aiohttp import web
-import atexit
 # noinspection PyPackageRequirements
 import socketio
 import sensapex_handler as sh

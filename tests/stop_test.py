@@ -1,4 +1,3 @@
-import time
 from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
@@ -8,6 +7,7 @@ import socketio
 # noinspection DuplicatedCode
 class StopTest(TestCase):
     """Tests stop event"""
+    DRIVE_SPEED = 10000
 
     def setUp(self) -> None:
         """Setup test case"""
@@ -24,20 +24,20 @@ class StopTest(TestCase):
         self.sio.emit('bypass_calibration', 2)
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                                   'speed': 4000},
+                                   'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.sio.emit('goto_pos', {'manipulator_id': 2, 'pos': [0, 0, 0, 0],
-                                   'speed': 4000},
+                                   'speed': self.DRIVE_SPEED},
                       callback=self.mock)
 
         self.sio.emit('goto_pos',
                       {'manipulator_id': 1,
                        'pos': [10000, 10000, 10000, 10000],
-                       'speed': 4000})
+                       'speed': self.DRIVE_SPEED})
         self.sio.emit('goto_pos',
                       {'manipulator_id': 2,
                        'pos': [10000, 10000, 10000, 10000],
-                       'speed': 4000})
+                       'speed': self.DRIVE_SPEED})
 
         while self.mock.call_count != 2:
             pass
@@ -52,7 +52,7 @@ class StopTest(TestCase):
 
         # Test no calibration
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                                   'speed': 4000},
+                                   'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
         args = self.mock.call_args.args
@@ -64,11 +64,11 @@ class StopTest(TestCase):
         self.sio.emit('goto_pos',
                       {'manipulator_id': 1,
                        'pos': [10000, 10000, 10000, 10000],
-                       'speed': 4000}, callback=self.mock)
+                       'speed': self.DRIVE_SPEED}, callback=self.mock)
         self.sio.emit('goto_pos',
                       {'manipulator_id': 2,
                        'pos': [10000, 10000, 10000, 10000],
-                       'speed': 4000}, callback=self.mock)
+                       'speed': self.DRIVE_SPEED}, callback=self.mock)
 
         while self.mock.call_count != 2:
             pass
