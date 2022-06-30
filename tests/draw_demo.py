@@ -5,7 +5,7 @@ import socketio
 
 
 class DrawDemoTestCase(TestCase):
-    """Tests get_pos event"""
+    """Draw demo"""
 
     def setUp(self):
         """Setup test case"""

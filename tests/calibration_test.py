@@ -5,7 +5,7 @@ import socketio
 
 
 class CalibrationTestCase(TestCase):
-    """Tests get_pos event"""
+    """Tests calibration event"""
 
     def setUp(self):
         """Setup test case"""

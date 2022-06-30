@@ -5,8 +5,8 @@ import socketio
 
 
 # noinspection DuplicatedCode
-class MoveTest(TestCase):
-    """Tests movement event"""
+class StopTest(TestCase):
+    """Tests stop event"""
     DRIVE_SPEED = 10000
 
     def setUp(self) -> None:
@@ -16,8 +16,8 @@ class MoveTest(TestCase):
 
         self.sio.connect('http://localhost:8080')
 
-    def test_move_no_asserts(self):
-        """Test movement without asserts"""
+    def test_stop_event(self):
+        """Test stopping movement with event"""
         self.sio.emit('register_manipulator', 1)
         self.sio.emit('register_manipulator', 2)
         self.sio.emit('bypass_calibration', 1)
@@ -33,44 +33,50 @@ class MoveTest(TestCase):
         self.sio.emit('goto_pos',
                       {'manipulator_id': 1,
                        'pos': [10000, 10000, 10000, 10000],
+                       'speed': self.DRIVE_SPEED})
+        self.sio.emit('goto_pos',
+                      {'manipulator_id': 2,
+                       'pos': [10000, 10000, 10000, 10000],
+                       'speed': self.DRIVE_SPEED})
+
+        while self.mock.call_count != 2:
+            pass
+
+        self.sio.sleep(1)
+
+        # Test stop
+        self.mock.called = False
+        self.sio.emit('stop', callback=self.mock)
+        self.wait_for_callback()
+        stop_arg = self.mock.call_args.args[0]
+
+        # Test no calibration
+        self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
+                                   'speed': self.DRIVE_SPEED},
+                      callback=self.mock)
+        self.wait_for_callback()
+        args = self.mock.call_args.args
+
+        # Bring back to home
+        self.mock.call_count = 0
+        self.sio.emit('bypass_calibration', 1)
+        self.sio.emit('bypass_calibration', 2)
+        self.sio.emit('goto_pos',
+                      {'manipulator_id': 1,
+                       'pos': [10000, 10000, 10000, 10000],
                        'speed': self.DRIVE_SPEED}, callback=self.mock)
         self.sio.emit('goto_pos',
                       {'manipulator_id': 2,
                        'pos': [10000, 10000, 10000, 10000],
                        'speed': self.DRIVE_SPEED}, callback=self.mock)
 
-        while self.mock.call_count != 4:
+        while self.mock.call_count != 2:
             pass
 
-    def test_move_with_asserts(self):
-        """Test movement with asserts"""
-        self.sio.emit('register_manipulator', 1)
-        self.sio.emit('register_manipulator', 2)
-        self.sio.emit('bypass_calibration', 1)
-        self.sio.emit('bypass_calibration', 2)
-
-        self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                                   'speed': self.DRIVE_SPEED},
-                      callback=self.mock)
-        self.wait_for_callback()
-        args = self.mock.call_args.args
-        self.assertEqual(args[0], 1)
-        self.assertEqual(len(args[1]), 4)
-        self.assertEqual(args[2], '')
-
-        self.sio.emit('goto_pos', {'manipulator_id': 1,
-                                   'pos': [10000, 10000, 10000, 10000],
-                                   'speed': self.DRIVE_SPEED},
-                      callback=self.mock)
-        self.wait_for_callback()
-
-    def test_move_unregistered(self):
-        """Test movement with unregistered manipulator"""
-        self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
-                                   'speed': self.DRIVE_SPEED},
-                      callback=self.mock)
-        self.wait_for_callback()
-        self.mock.assert_called_with(1, [], 'Manipulator not registered')
+        # Asserts
+        self.assertTrue(stop_arg)
+        self.assertEqual(len(args), 3)
+        self.assertEqual(args[2], 'Manipulator not calibrated')
 
     def tearDown(self) -> None:
         """Cleanup test case"""

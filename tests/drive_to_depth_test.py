@@ -6,7 +6,8 @@ import socketio
 
 # noinspection DuplicatedCode
 class DriveToDepthTest(TestCase):
-    """Tests movement event"""
+    """Tests drive to depth event"""
+    DRIVE_SPEED = 5000
 
     def setUp(self) -> None:
         """Setup test case"""
@@ -23,17 +24,21 @@ class DriveToDepthTest(TestCase):
         self.sio.emit('bypass_calibration', 2)
 
         self.sio.emit('drive_to_depth',
-                      {'manipulator_id': 1, 'depth': 0, 'speed': 4000},
+                      {'manipulator_id': 1, 'depth': 0,
+                       'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.sio.emit('drive_to_depth',
-                      {'manipulator_id': 2, 'depth': 0, 'speed': 4000},
+                      {'manipulator_id': 2, 'depth': 0,
+                       'speed': self.DRIVE_SPEED},
                       callback=self.mock)
 
         self.sio.emit('drive_to_depth',
-                      {'manipulator_id': 1, 'depth': 10000, 'speed': 4000},
+                      {'manipulator_id': 1, 'depth': 10000,
+                       'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.sio.emit('drive_to_depth',
-                      {'manipulator_id': 2, 'depth': 10000, 'speed': 4000},
+                      {'manipulator_id': 2, 'depth': 10000,
+                       'speed': self.DRIVE_SPEED},
                       callback=self.mock)
 
         while self.mock.call_count != 4:
@@ -47,7 +52,8 @@ class DriveToDepthTest(TestCase):
         self.sio.emit('bypass_calibration', 2)
 
         self.sio.emit('drive_to_depth',
-                      {'manipulator_id': 1, 'depth': 0, 'speed': 4000},
+                      {'manipulator_id': 1, 'depth': 0,
+                       'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
         args = self.mock.call_args.args
@@ -56,14 +62,16 @@ class DriveToDepthTest(TestCase):
         self.assertEqual(args[2], '')
 
         self.sio.emit('drive_to_depth',
-                      {'manipulator_id': 1, 'depth': 10000, 'speed': 4000},
+                      {'manipulator_id': 1, 'depth': 10000,
+                       'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
 
     def test_move_unregistered(self):
         """Test movement with unregistered manipulator"""
         self.sio.emit('drive_to_depth',
-                      {'manipulator_id': 1, 'depth': 0, 'speed': 4000},
+                      {'manipulator_id': 1, 'depth': 0,
+                       'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(1, 0, 'Manipulator not registered')

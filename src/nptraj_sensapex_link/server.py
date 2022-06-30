@@ -1,7 +1,11 @@
+import signal
+import sys
+
 from aiohttp import web
 # noinspection PyPackageRequirements
 import socketio
 import sensapex_handler as sh
+from threading import Thread
 from typing import Any
 
 # Setup server
@@ -201,6 +205,18 @@ async def bypass_calibration(_, manipulator_id: int) -> (int, str):
     return sh.bypass_calibration(manipulator_id)
 
 
+@sio.event
+async def stop(_) -> bool:
+    """
+    Stop all manipulators
+    :param _: Socket session ID (unused)
+    :return: True if successful, False otherwise
+    """
+    print('[EVENT]\t\t Stop all manipulators')
+
+    return sh.stop()
+
+
 @sio.on('*')
 async def catch_all(_, data: Any) -> None:
     """
@@ -214,7 +230,17 @@ async def catch_all(_, data: Any) -> None:
 
 def launch() -> None:
     """Launch the server"""
+    signal.signal(signal.SIGINT, close)
+    Thread(target=sh.poll_serial).start()
     web.run_app(app)
+
+
+def close(_, __) -> None:
+    """Close the server"""
+    print('[INFO]\t\t Closing server')
+    sh.continue_polling = False
+    sh.stop()
+    sys.exit(0)
 
 
 if __name__ == '__main__':
