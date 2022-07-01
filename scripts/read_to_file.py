@@ -50,7 +50,6 @@ def save():
             man_2_writer.writerow(list(man_2_data))
             man_2_data.clear()
 
-    print("Saving last bits")
     if len(man_1_data):
         man_1_writer.writerows(list(man_1_data))
     if len(man_2_data):
@@ -58,7 +57,8 @@ def save():
 
     man_1.close()
     man_2.close()
-    print("Done")
+    print("Finished saving")
+    sys.exit(0)
 
 
 def cleanup(_, __):
