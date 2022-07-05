@@ -47,7 +47,7 @@ class Manipulator:
         w) (or an empty array on error), error message)
         """
         try:
-            position = tuple(self._device.get_pos())
+            position = tuple(self._device.get_pos(0.01))
             print(f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
             return self._id, position, ''
         except Exception as e:

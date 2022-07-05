@@ -10,20 +10,18 @@ import time
 
 # Setup sockets
 sio = socketio.Client()
-sio.connect('http://localhost:8080')
+sio.connect('http://10.18.251.95:8080')
 
 sio.emit('register_manipulator', 1)
 sio.emit('bypass_calibration', 1)
 sio.emit('register_manipulator', 2)
 sio.emit('bypass_calibration', 2)
 
-prev_time = time.time()
-
 running = True
 
 # Setup CSV files
-man_1 = open('man_1.csv', 'a', newline='')
-man_2 = open('man_2.csv', 'a', newline='')
+man_1 = open('data/man_1.csv', 'a', newline='')
+man_2 = open('data/man_2.csv', 'a', newline='')
 
 man_1_data = deque()
 man_2_data = deque()
@@ -31,14 +29,16 @@ man_2_data = deque()
 man_1_writer = csv.writer(man_1)
 man_2_writer = csv.writer(man_2)
 
+header = ['time', 'x', 'y', 'z', 'depth']
+man_1_writer.writerow(header)
+man_2_writer.writerow(header)
+
 
 def record(manipulator_id: int, pos: list[float], error: str):
-    global prev_time
     if error == '':
         dest = man_1_data if manipulator_id == 1 else man_2_data
-        cur_time = time.time()
-        dest.appendleft([cur_time, cur_time - prev_time] + pos)
-        prev_time = cur_time
+        dest.appendleft([time.time()] + pos)
+        sio.emit('get_pos', manipulator_id, callback=record)
 
 
 def save():
@@ -74,7 +74,5 @@ signal.signal(signal.SIGINT, cleanup)
 threading.Thread(target=save).start()
 
 print("Begin recording")
-while running:
-    sio.emit('get_pos', 1, callback=record)
-    sio.emit('get_pos', 2, callback=record)
-    # sio.sleep(0.016666)
+sio.emit('get_pos', 1, callback=record)
+sio.emit('get_pos', 2, callback=record)
