@@ -255,7 +255,23 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
 
         # Call calibrate
         manipulators[manipulator_id].call_calibrate()
-        await sio.sleep(70)
+
+        # Wait for calibration to complete
+        still_working = True
+        while still_working:
+            cur_pos = manipulators[manipulator_id].get_pos()[1]
+
+            # Check difference between current and target position
+            for prev, cur in zip([10000, 10000, 10000, 10000], cur_pos):
+                if abs(prev - cur) > 1:
+                    still_working = True
+                    break
+                still_working = False
+
+            # Sleep for a bit
+            await sio.sleep(0.5)
+
+        # Calibration complete
         manipulators[manipulator_id].set_calibrated()
         print(f'[SUCCESS]\t Calibrated manipulator {manipulator_id}\n')
         return manipulator_id, ''
