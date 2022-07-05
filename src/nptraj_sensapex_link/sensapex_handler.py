@@ -33,8 +33,8 @@ def poll_serial():
             ser.readline()
             # Cause a break
             print('STOPPING EVERYTHING')
-            for manipulator in manipulators.values():
-                manipulator.stop()
+            stop()
+            ser.reset_input_buffer()
         time.sleep(poll_rate)
     ser.close()
 
@@ -73,8 +73,9 @@ def reset() -> bool:
     Reset handler
     :return: True if successful, False otherwise
     """
+    stop_result = stop()
     manipulators.clear()
-    return stop()
+    return stop_result
 
 
 def stop() -> bool:
