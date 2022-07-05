@@ -33,6 +33,8 @@ class CalibrationTestCase(TestCase):
         """Test move event with uncalibrated manipulator"""
         self.sio.emit('register_manipulator', 1, callback=self.mock)
         self.wait_for_callback()
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 1, 'can_write': True, 'hours': 1})
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
                                    'speed': 2000},
                       callback=self.mock)
@@ -43,8 +45,12 @@ class CalibrationTestCase(TestCase):
         """Test calibrate event with registered manipulator"""
         self.sio.emit('register_manipulator', 1)
         self.sio.emit('register_manipulator', 2)
-        self.sio.emit('calibrate', 2, callback=self.mock)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 1, 'can_write': True, 'hours': 1})
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 2, 'can_write': True, 'hours': 1})
         self.sio.emit('calibrate', 1, callback=self.mock)
+        self.sio.emit('calibrate', 2, callback=self.mock)
 
         while self.mock.call_count != 2:
             pass
