@@ -1,10 +1,9 @@
-import signal
-import sys
-
 from aiohttp import web
+import signal
+import sensapex_handler as sh
 # noinspection PyPackageRequirements
 import socketio
-import sensapex_handler as sh
+import sys
 from threading import Thread
 from typing import Any
 
@@ -269,7 +268,7 @@ def launch() -> None:
     web.run_app(app)
 
 
-def close(_, __) -> None:
+def close(_, __):
     """Close the server"""
     print('[INFO]\t\t Closing server')
     sh.continue_polling = False
