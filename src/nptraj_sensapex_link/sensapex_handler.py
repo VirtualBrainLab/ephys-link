@@ -33,8 +33,8 @@ def poll_serial():
             ser.readline()
             # Cause a break
             print('STOPPING EVERYTHING')
-            for manipulator in manipulators.values():
-                manipulator.stop()
+            stop()
+            ser.reset_input_buffer()
         time.sleep(poll_rate)
     ser.close()
 
@@ -73,8 +73,9 @@ def reset() -> bool:
     Reset handler
     :return: True if successful, False otherwise
     """
+    stop_result = stop()
     manipulators.clear()
-    return stop()
+    return stop_result
 
 
 def stop() -> bool:
@@ -243,6 +244,11 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
         :return: Callback parameters (manipulator ID, error message)
         """
     try:
+        # Check write state
+        if not manipulators[manipulator_id].get_can_write():
+            print(f'[ERROR]\t\t Cannot write to manipulator: {manipulator_id}')
+            return manipulator_id, 'Cannot write to manipulator'
+
         # Move manipulator to max position
         await manipulators[manipulator_id].goto_pos([20000, 20000, 20000,
                                                      20000], 2000)
@@ -311,11 +317,6 @@ def set_can_write(manipulator_id: int, can_write: bool, hours: float,
     :return: Callback parameters (manipulator ID, can_write, error message)
     """
     try:
-        # Check calibration status
-        if not manipulators[manipulator_id].get_calibrated():
-            print(f'[ERROR]\t\t Calibration not complete\n')
-            return manipulator_id, 'Manipulator not calibrated'
-
         manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         print(f'[SUCCESS]\t Set can_write state for manipulator'
               f' {manipulator_id}\n')
