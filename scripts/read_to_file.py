@@ -14,13 +14,6 @@ sio.emit('bypass_calibration', 1)
 sio.emit('register_manipulator', 2)
 sio.emit('bypass_calibration', 2)
 
-running = True
-sleep_time = 1 / 120
-movement_threshold = 0.1
-
-prev_pos_1 = [-1, -1, -1, -1]
-prev_pos_2 = [-1, -1, -1, -1]
-
 # Setup CSV files
 man_1 = open('data/man_1.csv', 'a', newline='')
 man_2 = open('data/man_2.csv', 'a', newline='')
@@ -31,6 +24,16 @@ man_2_writer = csv.writer(man_2)
 header = ['time', 'x', 'y', 'z', 'depth']
 man_1_writer.writerow(header)
 man_2_writer.writerow(header)
+
+# Setup operations
+running = True
+sleep_time = 1 / 120
+movement_threshold = 0.1
+
+prev_pos_1 = [-1, -1, -1, -1]
+prev_pos_2 = [-1, -1, -1, -1]
+
+start_time = time.time()
 
 
 def record(manipulator_id: int, pos: list[float], error: str):
@@ -52,7 +55,7 @@ def record(manipulator_id: int, pos: list[float], error: str):
 
         # Update if needed
         if should_write:
-            writer.writerow([time.time()] + pos)
+            writer.writerow([time.time() - start_time] + pos)
             dest.flush()
             if manipulator_id == 1:
                 prev_pos_1 = pos
