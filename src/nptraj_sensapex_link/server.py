@@ -1,5 +1,6 @@
 from aiohttp import web
 import argparse
+from common import set_debug, dprint
 import signal
 import sensapex_handler as sh
 # noinspection PyPackageRequirements
@@ -13,7 +14,6 @@ sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
 is_connected = False
-debugging = False
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Sensapex link: a websocket '
@@ -26,13 +26,7 @@ parser.add_argument('-s', '--serial', type=str, default=None, dest='serial',
 parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                     help='Enable debug mode')
 args = parser.parse_args()
-
-
-def set_debugging():
-    """Set debugging flag"""
-    global debugging
-    debugging = args.debug
-    sh.debugging = debugging
+set_debug(args.debug)
 
 
 # Handle connection events
@@ -75,7 +69,7 @@ async def register_manipulator(_, manipulator_id: int) -> (int, str):
     :param manipulator_id: ID of the manipulator to register
     :return: Callback parameters (manipulator_id, error message (on error))
     """
-    print(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
+    dprint(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
 
     return sh.register_manipulator(manipulator_id)
 
@@ -89,8 +83,8 @@ async def get_pos(_, manipulator_id: int) -> (int, tuple[float], str):
     :return: Callback parameters (manipulator ID, position in (x, y, z,
     w) (or an empty array on error), error message)
     """
-    print(f'[EVENT]\t\t Get position of manipulator'
-          f' {manipulator_id}')
+    dprint(f'[EVENT]\t\t Get position of manipulator'
+           f' {manipulator_id}')
 
     return sh.get_pos(manipulator_id)
 
@@ -122,7 +116,7 @@ async def goto_pos(_, data: sh.GotoPositionDataFormat) -> (
         print(f'[ERROR]\t\t Error in goto_pos: {e}\n')
         return manipulator_id, (), 'Error in goto_pos'
 
-    print(
+    dprint(
         f'[EVENT]\t\t Move manipulator {manipulator_id} '
         f'to position {pos}'
     )
@@ -157,7 +151,7 @@ async def drive_to_depth(_, data: sh.DriveToDepthDataFormat) \
         print(f'[ERROR]\t\t Error in drive_to_depth: {e}\n')
         return manipulator_id, -1, 'Error in drive_to_depth'
 
-    print(
+    dprint(
         f'[EVENT]\t\t Drive manipulator {manipulator_id} '
         f'to depth {depth}'
     )
@@ -190,7 +184,7 @@ async def set_inside_brain(_, data: sh.InsideBrainDataFormat) -> \
         print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
         return manipulator_id, False, 'Error in set_inside_brain'
 
-    print(
+    dprint(
         f'[EVENT]\t\t Set manipulator {manipulator_id} inside brain to '
         f'{"true" if inside else "false"}'
     )
@@ -206,8 +200,8 @@ async def calibrate(_, manipulator_id: int) -> (int, str):
     :param manipulator_id: ID of manipulator to calibrate
     :return: Callback parameters (manipulator ID, error message)
     """
-    print(f'[EVENT]\t\t Calibrate manipulator'
-          f' {manipulator_id}')
+    dprint(f'[EVENT]\t\t Calibrate manipulator'
+           f' {manipulator_id}')
 
     return await sh.calibrate(manipulator_id, sio)
 
@@ -220,8 +214,8 @@ async def bypass_calibration(_, manipulator_id: int) -> (int, str):
     :param manipulator_id: ID of manipulator to bypass calibration
     :return: Callback parameters (manipulator ID, error message)
     """
-    print(f'[EVENT]\t\t Bypass calibration of manipulator'
-          f' {manipulator_id}')
+    dprint(f'[EVENT]\t\t Bypass calibration of manipulator'
+           f' {manipulator_id}')
 
     return sh.bypass_calibration(manipulator_id)
 
@@ -251,7 +245,7 @@ async def set_can_write(_, data: sh.CanWriteDataFormat) -> (int, bool, str):
         print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
         return manipulator_id, False, 'Error in set_can_write'
 
-    print(
+    dprint(
         f'[EVENT]\t\t Set manipulator {manipulator_id} can_write state to '
         f'{"true" if can_write else "false"}'
     )
@@ -266,7 +260,7 @@ async def stop(_) -> bool:
     :param _: Socket session ID (unused)
     :return: True if successful, False otherwise
     """
-    print('[EVENT]\t\t Stop all manipulators')
+    dprint('[EVENT]\t\t Stop all manipulators')
 
     return sh.stop()
 
@@ -285,8 +279,6 @@ async def catch_all(_, data: Any) -> None:
 # Handle server start
 def launch() -> None:
     """Launch the server"""
-    if args.debug:
-        set_debugging()
     signal.signal(signal.SIGINT, close)
     Thread(target=sh.poll_serial, args=(args.serial,)).start()
     web.run_app(app, port=args.port)
