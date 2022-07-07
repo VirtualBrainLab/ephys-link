@@ -62,10 +62,10 @@ def record(manipulator_id: int, pos: list[float], error: str):
             else:
                 prev_pos_2 = pos
 
-        # Pull next position
-        if running:
-            time.sleep(sleep_time)
-            sio.emit('get_pos', manipulator_id, callback=record)
+    # Pull next position
+    if running:
+        time.sleep(sleep_time)
+        sio.emit('get_pos', manipulator_id, callback=record)
 
 
 @atexit.register
