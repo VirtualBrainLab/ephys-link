@@ -18,13 +18,17 @@ is_connected = False
 # Parse arguments
 parser = argparse.ArgumentParser(description='Sensapex link: a websocket '
                                              'interface for uMp '
-                                             'Micromanipulators')
+                                             'Micromanipulators',
+                                 prog='python -m nptraj-sensapex-link')
+parser.add_argument('-d', '--debug', dest='debug', action='store_true',
+                    help='Enable debug mode')
 parser.add_argument('-p', '--port', type=int, default=8080, dest='port',
                     help='Port to listen on')
 parser.add_argument('-s', '--serial', type=str, default=None, dest='serial',
                     help='Serial port to use')
-parser.add_argument('-d', '--debug', dest='debug', action='store_true',
-                    help='Enable debug mode')
+parser.add_argument('--version', action='version', version='Sensapex Link '
+                                                           'v0.0.6',
+                    help='Print version and exit')
 args = parser.parse_args()
 set_debug(args.debug)
 
