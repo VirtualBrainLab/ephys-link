@@ -5,14 +5,11 @@ from copy import deepcopy
 from sensapex import SensapexDevice
 
 
-# from server import sio
-
-
 class Manipulator:
     """Representation of a single manipulator"""
     INSIDE_BRAIN_SPEED_LIMIT = 10
 
-    def __init__(self, device: SensapexDevice) -> None:
+    def __init__(self, device: SensapexDevice, debugging: bool) -> None:
         """
         Construct a new Manipulator object
         :param device: A Sensapex device
@@ -25,6 +22,7 @@ class Manipulator:
         self._can_write = False
         self._reset_timer = None
         self._move_queue = deque()
+        self._debugging = debugging
 
     class Movement:
         """Movement struct"""

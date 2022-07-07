@@ -13,20 +13,31 @@ manipulators = {}
 UMP.set_library_path(str(Path(__file__).parent.absolute()) + '/resources/')
 ump = UMP.get_ump()
 
+# Debugging flag
+debugging = False
+
 # Setup Arduino serial port
-target_port = None
 poll_rate = 0.05
 continue_polling = True
 
-# Search for serial ports
-for port, desc, _ in comports():
-    if 'USB Serial Device' in desc:
-        target_port = port
-        break
 
+def poll_serial(serial_port: str) -> None:
+    """
+    Continuously poll serial port for data
+    :param serial_port: The serial port to poll
+    :return: None
+    """
+    target_port = serial_port
+    if serial_port is None:
+        # Search for serial ports
+        for port, desc, _ in comports():
+            if 'USB Serial Device' in desc:
+                target_port = port
+                break
+    elif serial_port == 'no-e-stop':
+        # Stop polling if no-e-stop is specified
+        return None
 
-def poll_serial():
-    """Continuously poll serial port for data"""
     ser = Serial(target_port, 9600, timeout=poll_rate)
     while continue_polling:
         if ser.in_waiting > 0:
@@ -107,7 +118,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
     try:
         # Register manipulator
         manipulators[manipulator_id] = Manipulator(
-            ump.get_device(manipulator_id))
+            ump.get_device(manipulator_id), debugging)
 
         print(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
         return manipulator_id, ''

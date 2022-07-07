@@ -1,4 +1,5 @@
 from aiohttp import web
+import argparse
 import signal
 import sensapex_handler as sh
 # noinspection PyPackageRequirements
@@ -12,6 +13,26 @@ sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
 is_connected = False
+debugging = False
+
+# Parse arguments
+parser = argparse.ArgumentParser(description='Sensapex link: a websocket '
+                                             'interface for uMp '
+                                             'Micromanipulators')
+parser.add_argument('-p', '--port', type=int, default=8080, dest='port',
+                    help='Port to listen on')
+parser.add_argument('-s', '--serial', type=str, default=None, dest='serial',
+                    help='Serial port to use')
+parser.add_argument('-d', '--debug', dest='debug', action='store_true',
+                    help='Enable debug mode')
+args = parser.parse_args()
+
+
+def set_debugging():
+    """Set debugging flag"""
+    global debugging
+    debugging = args.debug
+    sh.debugging = debugging
 
 
 # Handle connection events
@@ -261,11 +282,14 @@ async def catch_all(_, data: Any) -> None:
     print(f'[UNKNOWN EVENT]:\t {data}')
 
 
+# Handle server start
 def launch() -> None:
     """Launch the server"""
+    if args.debug:
+        set_debugging()
     signal.signal(signal.SIGINT, close)
-    Thread(target=sh.poll_serial).start()
-    web.run_app(app)
+    Thread(target=sh.poll_serial, args=(args.serial,)).start()
+    web.run_app(app, port=args.port)
 
 
 def close(_, __):
