@@ -1,3 +1,4 @@
+from common import dprint
 import time
 from pathlib import Path
 from typing import TypedDict
@@ -14,25 +15,33 @@ UMP.set_library_path(str(Path(__file__).parent.absolute()) + '/resources/')
 ump = UMP.get_ump()
 
 # Setup Arduino serial port
-target_port = None
 poll_rate = 0.05
 continue_polling = True
 
-# Search for serial ports
-for port, desc, _ in comports():
-    if 'USB Serial Device' in desc:
-        target_port = port
-        break
 
+def poll_serial(serial_port: str) -> None:
+    """
+    Continuously poll serial port for data
+    :param serial_port: The serial port to poll
+    :return: None
+    """
+    target_port = serial_port
+    if serial_port is None:
+        # Search for serial ports
+        for port, desc, _ in comports():
+            if 'USB Serial Device' in desc:
+                target_port = port
+                break
+    elif serial_port == 'no-e-stop':
+        # Stop polling if no-e-stop is specified
+        return None
 
-def poll_serial():
-    """Continuously poll serial port for data"""
     ser = Serial(target_port, 9600, timeout=poll_rate)
     while continue_polling:
         if ser.in_waiting > 0:
             ser.readline()
             # Cause a break
-            print('STOPPING EVERYTHING')
+            dprint('STOPPING EVERYTHING')
             stop()
             ser.reset_input_buffer()
         time.sleep(poll_rate)
@@ -109,7 +118,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
         manipulators[manipulator_id] = Manipulator(
             ump.get_device(manipulator_id))
 
-        print(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
+        dprint(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
         return manipulator_id, ''
 
     except ValueError:
@@ -219,8 +228,8 @@ async def set_inside_brain(manipulator_id: int, inside: bool) -> \
             return manipulator_id, 'Manipulator not calibrated'
 
         manipulators[manipulator_id].set_inside_brain(inside)
-        print(f'[SUCCESS]\t Set inside brain state for manipulator:'
-              f' {manipulator_id}\n')
+        dprint(f'[SUCCESS]\t Set inside brain state for manipulator:'
+               f' {manipulator_id}\n')
         return manipulator_id, inside, ''
 
     except KeyError:
@@ -273,7 +282,7 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
 
         # Calibration complete
         manipulators[manipulator_id].set_calibrated()
-        print(f'[SUCCESS]\t Calibrated manipulator {manipulator_id}\n')
+        dprint(f'[SUCCESS]\t Calibrated manipulator {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:
@@ -303,7 +312,7 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
     try:
         # Bypass calibration
         manipulators[manipulator_id].set_calibrated()
-        print(
+        dprint(
             f'[SUCCESS]\t Bypassed calibration for manipulator'
             f' {manipulator_id}\n')
         return manipulator_id, ''
@@ -334,8 +343,8 @@ def set_can_write(manipulator_id: int, can_write: bool, hours: float,
     """
     try:
         manipulators[manipulator_id].set_can_write(can_write, hours, sio)
-        print(f'[SUCCESS]\t Set can_write state for manipulator'
-              f' {manipulator_id}\n')
+        dprint(f'[SUCCESS]\t Set can_write state for manipulator'
+               f' {manipulator_id}\n')
         return manipulator_id, can_write, ''
 
     except KeyError:

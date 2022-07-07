@@ -1,11 +1,9 @@
 import asyncio
+from common import dprint
 import threading
 from collections import deque
 from copy import deepcopy
 from sensapex import SensapexDevice
-
-
-# from server import sio
 
 
 class Manipulator:
@@ -48,7 +46,7 @@ class Manipulator:
         """
         try:
             position = tuple(self._device.get_pos(1))
-            print(f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
+            dprint(f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
             return self._id, position, ''
         except Exception as e:
             print(f'[ERROR]\t\t Getting position of manipulator {self._id}')
@@ -99,7 +97,7 @@ class Manipulator:
             # Remove event from queue and mark as completed
             self._move_queue.pop().event.set()
 
-            print(
+            dprint(
                 f'[SUCCESS]\t Moved manipulator {self._id} to position'
                 f' {manipulator_final_position}\n'
             )
@@ -197,4 +195,4 @@ class Manipulator:
             self._move_queue.pop().event.set()
         self._can_write = False
         self._device.stop()
-        print(f"[SUCCESS]\t Stopped manipulator {self._id}")
+        dprint(f"[SUCCESS]\t Stopped manipulator {self._id}")
