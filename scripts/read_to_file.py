@@ -61,6 +61,9 @@ def record(manipulator_id: int, pos: list[float], error: str):
                 prev_pos_1 = pos
             else:
                 prev_pos_2 = pos
+    elif error == 'Manipulator not registered':
+        sio.emit('register_manipulator', manipulator_id)
+        sio.emit('bypass_calibration', manipulator_id)
 
     # Pull next position
     if running:
