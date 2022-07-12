@@ -25,6 +25,6 @@ class PositionData(dict):
     """Position data format"""
 
     def __init__(self, manipulator_id: int, position: tuple, error: str):
-        super().__init__(self, manipulator_id=manipulator_id,
-                         position=position,
-                         error=error)
+        super(PositionData, self).__init__(self, manipulator_id=manipulator_id,
+                                           position=position,
+                                           error=error)
