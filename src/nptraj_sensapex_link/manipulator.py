@@ -1,5 +1,5 @@
 import asyncio
-from common import dprint
+from common import dprint, PositionData
 import threading
 from collections import deque
 from copy import deepcopy
@@ -38,7 +38,7 @@ class Manipulator:
             self.position = position
 
     # Device functions
-    def get_pos(self) -> (int, tuple[float], str):
+    def get_pos(self) -> PositionData:
         """
         Get the current position of the manipulator
         :return: Callback parameters (manipulator ID, position in (x, y, z,
@@ -47,11 +47,11 @@ class Manipulator:
         try:
             position = tuple(self._device.get_pos(1))
             dprint(f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
-            return self._id, position, ''
+            return PositionData(self._id, position, '')
         except Exception as e:
             print(f'[ERROR]\t\t Getting position of manipulator {self._id}')
             print(f'{e}\n')
-            return self._id, [], 'Error getting position'
+            return PositionData(self._id, (), 'Error getting position')
 
     async def goto_pos(self, position: list[float], speed: float) \
             -> (int, tuple[float], str):

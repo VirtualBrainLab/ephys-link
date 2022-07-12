@@ -1,6 +1,6 @@
 from aiohttp import web
 import argparse
-from common import set_debug, dprint
+from common import set_debug, dprint, PositionData
 import signal
 import sensapex_handler as sh
 # noinspection PyPackageRequirements
@@ -79,7 +79,7 @@ async def register_manipulator(_, manipulator_id: int) -> (int, str):
 
 
 @sio.event
-async def get_pos(_, manipulator_id: int) -> (int, tuple[float], str):
+async def get_pos(_, manipulator_id: int) -> PositionData:
     """
     Position of manipulator request
     :param _: Socket session ID (unused)

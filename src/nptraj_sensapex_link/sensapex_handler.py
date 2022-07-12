@@ -1,4 +1,4 @@
-from common import dprint
+from common import dprint, PositionData
 import time
 from pathlib import Path
 from typing import TypedDict
@@ -133,7 +133,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
         return manipulator_id, 'Error registering manipulator'
 
 
-def get_pos(manipulator_id: int) -> (int, tuple[float], str):
+def get_pos(manipulator_id: int) -> PositionData:
     """
     Get the current position of a manipulator
     :param manipulator_id: The ID of the manipulator to get the position of.
@@ -144,7 +144,8 @@ def get_pos(manipulator_id: int) -> (int, tuple[float], str):
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
-            return manipulator_id, (), 'Manipulator not calibrated'
+            return PositionData(manipulator_id, (),
+                                'Manipulator not calibrated')
 
         # Get position
         return manipulators[manipulator_id].get_pos()
@@ -152,7 +153,7 @@ def get_pos(manipulator_id: int) -> (int, tuple[float], str):
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
-        return manipulator_id, (), 'Manipulator not registered'
+        return PositionData(manipulator_id, (), 'Manipulator not registered')
 
 
 async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
