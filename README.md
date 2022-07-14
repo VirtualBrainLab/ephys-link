@@ -38,7 +38,7 @@ An x86 machine or Docker is required to install or run the server.
 2. Clone the [repo](https://github.com/dbirman/nptraj-sensapex-link)
 3. `cd nptraj-sensapex-link`
 4. `docker-compose up` to build the container
-5. `docker attach <container-id>` to attach to the container
+5. `docker exec -it <container_id> /bin/bash` to enter to the container
 6. The package is located in `src/`
 7. `python src/nptraj_sensapex_link/server.py` launches the server
 8. Unit tests are available to run under the `tests/` directory
