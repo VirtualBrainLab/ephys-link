@@ -53,11 +53,31 @@ class CanWriteInputDataFormat(TypedDict):
 
 
 # Output data formats
-class PositionalOutputData(dict):
-    """Position data format"""
+class IdOutputData(dict):
+    """Output format for (id, error)"""
 
-    def __init__(self, manipulator_id: int, position: tuple, error: str):
+    def __init__(self, manipulator_id: int, error: str) -> None:
+        """
+        Create ID output data dictionary
+        :param manipulator_id: Manipulator ID
+        :param error: Error message
+        """
+        super(IdOutputData, self).__init__(manipulator_id=manipulator_id,
+                                           error=error)
+
+
+class PositionalOutputData(dict):
+    """Output format for (id, position, error) format"""
+
+    def __init__(self, manipulator_id: int, position: tuple, error: str) -> \
+            None:
+        """
+        Create positional output data dictionary
+        :param manipulator_id: Manipulator ID
+        :param position: Position (as a tuple, can be empty tuple)
+        :param error: Error message
+        """
         super(PositionalOutputData, self). \
-            __init__(self, manipulator_id=manipulator_id,
+            __init__(manipulator_id=manipulator_id,
                      position=position,
                      error=error)

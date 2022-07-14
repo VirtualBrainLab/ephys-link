@@ -66,7 +66,7 @@ async def disconnect(sid):
 
 # Events
 @sio.event
-async def register_manipulator(_, manipulator_id: int) -> (int, str):
+async def register_manipulator(_, manipulator_id: int) -> com.IdOutputData:
     """
     Register a manipulator with the server
     :param _: Socket session ID (unused)
@@ -199,7 +199,7 @@ async def set_inside_brain(_, data: com.InsideBrainInputDataFormat) -> \
 
 
 @sio.event
-async def calibrate(_, manipulator_id: int) -> (int, str):
+async def calibrate(_, manipulator_id: int) -> com.IdOutputData:
     """
     Calibrate manipulator
     :param _: Socket session ID (unused)
@@ -213,7 +213,7 @@ async def calibrate(_, manipulator_id: int) -> (int, str):
 
 
 @sio.event
-async def bypass_calibration(_, manipulator_id: int) -> (int, str):
+async def bypass_calibration(_, manipulator_id: int) -> com.IdOutputData:
     """
     Bypass calibration of manipulator
     :param _: Socket session ID (unused)

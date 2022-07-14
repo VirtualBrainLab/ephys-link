@@ -72,7 +72,7 @@ def stop() -> bool:
         return False
 
 
-def register_manipulator(manipulator_id: int) -> (int, str):
+def register_manipulator(manipulator_id: int) -> com.IdOutputData:
     """
     Register a manipulator
     :param manipulator_id: The ID of the manipulator to register.
@@ -82,7 +82,8 @@ def register_manipulator(manipulator_id: int) -> (int, str):
     if manipulator_id in manipulators:
         print(f'[ERROR]\t\t Manipulator already registered:'
               f' {manipulator_id}\n')
-        return manipulator_id, 'Manipulator already registered'
+        return com.IdOutputData(manipulator_id, 'Manipulator already '
+                                                'registered')
 
     try:
         # Register manipulator
@@ -90,18 +91,19 @@ def register_manipulator(manipulator_id: int) -> (int, str):
             ump.get_device(manipulator_id))
 
         com.dprint(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
-        return manipulator_id, ''
+        return com.IdOutputData(manipulator_id, '')
 
     except ValueError:
         # Manipulator not found in UMP
         print(f'[ERROR]\t\t Manipulator not found: {manipulator_id}\n')
-        return manipulator_id, 'Manipulator not found'
+        return com.IdOutputData(manipulator_id, 'Manipulator not found')
 
     except Exception as e:
         # Other error
         print(f'[ERROR]\t\t Registering manipulator: {manipulator_id}')
         print(f'{e}\n')
-        return manipulator_id, 'Error registering manipulator'
+        return com.IdOutputData(manipulator_id, 'Error registering '
+                                                'manipulator')
 
 
 def get_pos(manipulator_id: int) -> com.PositionalOutputData:
@@ -221,7 +223,7 @@ async def set_inside_brain(manipulator_id: int, inside: bool) -> \
         return manipulator_id, False, 'Error setting inside brain'
 
 
-async def calibrate(manipulator_id: int, sio) -> (int, str):
+async def calibrate(manipulator_id: int, sio) -> com.IdOutputData:
     """
         Calibrate manipulator
         :param manipulator_id: ID of manipulator to calibrate
@@ -232,7 +234,8 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
         # Check write state
         if not manipulators[manipulator_id].get_can_write():
             print(f'[ERROR]\t\t Cannot write to manipulator: {manipulator_id}')
-            return manipulator_id, 'Cannot write to manipulator'
+            return com.IdOutputData(manipulator_id, 'Cannot write to '
+                                                    'manipulator')
 
         # Move manipulator to max position
         await manipulators[manipulator_id].goto_pos([20000, 20000, 20000,
@@ -259,27 +262,28 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
         # Calibration complete
         manipulators[manipulator_id].set_calibrated()
         com.dprint(f'[SUCCESS]\t Calibrated manipulator {manipulator_id}\n')
-        return manipulator_id, ''
+        return com.IdOutputData(manipulator_id, '')
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator {manipulator_id} not registered\n')
-        return manipulator_id, 'Manipulator not registered'
+        return com.IdOutputData(manipulator_id, 'Manipulator not registered')
 
     except UMError as e:
         # SDK call error
         print(f'[ERROR]\t\t Calling calibrate manipulator {manipulator_id}')
         print(f'{e}\n')
-        return manipulator_id, 'Error calling calibrate'
+        return com.IdOutputData(manipulator_id, 'Error calling calibrate')
 
     except Exception as e:
         # Other error
         print(f'[ERROR]\t\t Calibrate manipulator {manipulator_id}')
         print(f'{e}\n')
-        return manipulator_id, 'Error calibrating manipulator'
+        return com.IdOutputData(manipulator_id, 'Error calibrating '
+                                                'manipulator')
 
 
-def bypass_calibration(manipulator_id: int) -> (int, str):
+def bypass_calibration(manipulator_id: int) -> com.IdOutputData:
     """
     Bypass calibration of manipulator
     :param manipulator_id: ID of manipulator to bypass calibration
@@ -291,19 +295,19 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
         com.dprint(
             f'[SUCCESS]\t Bypassed calibration for manipulator'
             f' {manipulator_id}\n')
-        return manipulator_id, ''
+        return com.IdOutputData(manipulator_id, '')
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator {manipulator_id} not registered\n')
-        return manipulator_id, 'Manipulator not registered'
+        return com.IdOutputData(manipulator_id, 'Manipulator not registered')
 
     except Exception as e:
         # Other error
         print(
             f'[ERROR]\t\t Bypass calibration of manipulator {manipulator_id}')
         print(f'{e}\n')
-        return manipulator_id, 'Error bypassing calibration'
+        return com.IdOutputData(manipulator_id, 'Error bypassing calibration')
 
 
 def set_can_write(manipulator_id: int, can_write: bool, hours: float,
