@@ -114,8 +114,8 @@ class Manipulator:
             return com.PositionalOutputData(self._id, (), 'Error moving '
                                                           'manipulator')
 
-    async def drive_to_depth(self, depth: float, speed: int) -> (int, float,
-                                                                 str):
+    async def drive_to_depth(self, depth: float, speed: int) -> \
+            com.DriveToDepthOutputData:
         """
         Drive the manipulator to a certain depth
         :param depth: The depth to drive to
@@ -133,10 +133,12 @@ class Manipulator:
 
         if movement_result[2] == '':
             # Return depth on success
-            return self._id, movement_result[1][3], ''
+            return com.DriveToDepthOutputData(self._id,
+                                              movement_result[1][3], '')
         else:
             # Return 0 and error message on failure
-            return self._id, 0, 'Error driving manipulator'
+            return com.DriveToDepthOutputData(self._id, 0, 'Error driving '
+                                                           'manipulator')
 
     def set_inside_brain(self, inside: bool) -> None:
         """

@@ -163,7 +163,7 @@ async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
 
 
 async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
-        -> (int, float, str):
+        -> com.DriveToDepthOutputData:
     """
     Drive manipulator to depth
     :param manipulator_id: The ID of the manipulator to drive
@@ -176,19 +176,22 @@ async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
-            return manipulator_id, 0, 'Manipulator not calibrated'
+            return com.DriveToDepthOutputData(manipulator_id, 0,
+                                              'Manipulator not calibrated')
 
         # Check write state
         if not manipulators[manipulator_id].get_can_write():
             print(f'[ERROR]\t\t Cannot write to manipulator: {manipulator_id}')
-            return manipulator_id, 0, 'Cannot write to manipulator'
+            return com.DriveToDepthOutputData(manipulator_id, 0,
+                                              'Cannot write to manipulator')
 
         return await manipulators[manipulator_id].drive_to_depth(depth, speed)
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
-        return manipulator_id, 0, 'Manipulator not registered'
+        return com.DriveToDepthOutputData(manipulator_id, 0, 'Manipulator '
+                                                             'not registered')
 
 
 async def set_inside_brain(manipulator_id: int, inside: bool) -> \

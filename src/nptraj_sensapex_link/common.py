@@ -52,7 +52,7 @@ class CanWriteInputDataFormat(TypedDict):
     hours: float
 
 
-# Output data formats
+# Output data dictionaries
 class IdOutputData(dict):
     """Output format for (id, error)"""
 
@@ -67,7 +67,7 @@ class IdOutputData(dict):
 
 
 class PositionalOutputData(dict):
-    """Output format for (id, position, error) format"""
+    """Output format for (id, position, error)"""
 
     def __init__(self, manipulator_id: int, position: tuple, error: str) -> \
             None:
@@ -80,4 +80,20 @@ class PositionalOutputData(dict):
         super(PositionalOutputData, self). \
             __init__(manipulator_id=manipulator_id,
                      position=position,
+                     error=error)
+
+
+class DriveToDepthOutputData(dict):
+    """Output format for depth driving (id, depth, error)"""
+
+    def __init__(self, manipulator_id: int, depth: float, error: str) -> None:
+        """
+        Create drive to depth output data dictionary
+        :param manipulator_id: Manipulator ID
+        :param depth: Depth
+        :param error: Error message
+        """
+        super(DriveToDepthOutputData, self). \
+            __init__(manipulator_id=manipulator_id,
+                     depth=depth,
                      error=error)

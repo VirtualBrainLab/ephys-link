@@ -132,7 +132,7 @@ async def goto_pos(_, data: com.GotoPositionInputDataFormat) -> \
 
 @sio.event
 async def drive_to_depth(_, data: com.DriveToDepthInputDataFormat) \
-        -> (int, float, str):
+        -> com.DriveToDepthOutputData:
     """
     Drive to depth
     :param _: Socket session ID (unused)
@@ -149,13 +149,15 @@ async def drive_to_depth(_, data: com.DriveToDepthInputDataFormat) \
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return manipulator_id, -1, 'Invalid data format'
+        return com.DriveToDepthOutputData(manipulator_id, -1, 'Invalid data '
+                                                              'format')
 
     except Exception as e:
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Error in drive_to_depth: {e}\n')
-        return manipulator_id, -1, 'Error in drive_to_depth'
+        return com.DriveToDepthOutputData(manipulator_id, -1, 'Error in '
+                                                              'drive_to_depth')
 
     com.dprint(
         f'[EVENT]\t\t Drive manipulator {manipulator_id} '
