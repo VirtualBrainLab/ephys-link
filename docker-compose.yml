@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  nptraj-sensapex-link:
+    build: .
+    working_dir: /root/nptraj-sensapex-link
+    stdin_open: true
+    tty: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - type: bind
+        source: .
+        target: /root/nptraj-sensapex-link
