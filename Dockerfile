@@ -1,6 +1,6 @@
 FROM python:latest
 
-WORKDIR /nptraj-sensapex-link
+WORKDIR /root/nptraj-sensapex-link
 
 COPY requirements.txt .
 
