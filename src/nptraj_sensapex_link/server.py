@@ -169,7 +169,7 @@ async def drive_to_depth(_, data: com.DriveToDepthInputDataFormat) \
 
 @sio.event
 async def set_inside_brain(_, data: com.InsideBrainInputDataFormat) -> \
-        (int, bool, str):
+        com.StateOutputData:
     """
     Set the inside brain state
     :param _: Socket session ID (unused)
@@ -184,13 +184,14 @@ async def set_inside_brain(_, data: com.InsideBrainInputDataFormat) -> \
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return manipulator_id, False, 'Invalid data format'
-
+        return com.StateOutputData(manipulator_id, False,
+                                   'Invalid data format')
     except Exception as e:
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
-        return manipulator_id, False, 'Error in set_inside_brain'
+        return com.StateOutputData(manipulator_id, False, 'Error in '
+                                                          'set_inside_brain')
 
     com.dprint(
         f'[EVENT]\t\t Set manipulator {manipulator_id} inside brain to '
@@ -229,8 +230,8 @@ async def bypass_calibration(_, manipulator_id: int) -> com.IdOutputData:
 
 
 @sio.event
-async def set_can_write(_, data: com.CanWriteInputDataFormat) -> (
-        int, bool, str):
+async def set_can_write(_, data: com.CanWriteInputDataFormat) -> \
+        com.StateOutputData:
     """
     Set manipulator can_write state
     :param _: Socket session ID (unused)
@@ -246,13 +247,15 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> (
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return manipulator_id, False, 'Invalid data format'
+        return com.StateOutputData(manipulator_id, False, 'Invalid data '
+                                                          'format')
 
     except Exception as e:
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
-        return manipulator_id, False, 'Error in set_can_write'
+        return com.StateOutputData(manipulator_id, False, 'Error in '
+                                                          'set_can_write')
 
     com.dprint(
         f'[EVENT]\t\t Set manipulator {manipulator_id} can_write state to '

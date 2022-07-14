@@ -97,3 +97,19 @@ class DriveToDepthOutputData(dict):
             __init__(manipulator_id=manipulator_id,
                      depth=depth,
                      error=error)
+
+
+class StateOutputData(dict):
+    """Output format for (id, state, error)"""
+
+    def __init__(self, manipulator_id: int, state: bool, error: str) -> None:
+        """
+        Create state output data dictionary
+        :param manipulator_id: Manipulator ID
+        :param state: State of the event
+        :param error: Error message
+        """
+        super(StateOutputData, self). \
+            __init__(manipulator_id=manipulator_id,
+                     state=state,
+                     error=error)

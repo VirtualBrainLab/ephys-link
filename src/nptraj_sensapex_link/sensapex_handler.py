@@ -194,8 +194,8 @@ async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
                                                              'not registered')
 
 
-async def set_inside_brain(manipulator_id: int, inside: bool) -> \
-        (int, bool, str):
+def set_inside_brain(manipulator_id: int, inside: bool) -> \
+        com.StateOutputData:
     """
     Set manipulator inside brain state (restricts motion)
     :param manipulator_id: The ID of the manipulator to set the state of
@@ -206,24 +206,26 @@ async def set_inside_brain(manipulator_id: int, inside: bool) -> \
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete\n')
-            return manipulator_id, 'Manipulator not calibrated'
+            return com.StateOutputData(manipulator_id, False,
+                                       'Manipulator not calibrated')
 
         manipulators[manipulator_id].set_inside_brain(inside)
         com.dprint(f'[SUCCESS]\t Set inside brain state for manipulator:'
                    f' {manipulator_id}\n')
-        return manipulator_id, inside, ''
-
+        return com.StateOutputData(manipulator_id, inside, '')
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator {manipulator_id} not registered\n')
-        return manipulator_id, False, 'Manipulator not registered'
+        return com.StateOutputData(manipulator_id, False, 'Manipulator not '
+                                                          'registered')
 
     except Exception as e:
         # Other error
         print(f'[ERROR]\t\t Set manipulator {manipulator_id} inside brain '
               f'state')
         print(f'{e}\n')
-        return manipulator_id, False, 'Error setting inside brain'
+        return com.StateOutputData(manipulator_id, False, 'Error setting '
+                                                          'inside brain')
 
 
 async def calibrate(manipulator_id: int, sio) -> com.IdOutputData:
@@ -314,7 +316,7 @@ def bypass_calibration(manipulator_id: int) -> com.IdOutputData:
 
 
 def set_can_write(manipulator_id: int, can_write: bool, hours: float,
-                  sio) -> (int, bool, str):
+                  sio) -> com.StateOutputData:
     """
     Set manipulator can_write state (enables/disabled moving manipulator)
     :param sio:
@@ -328,15 +330,16 @@ def set_can_write(manipulator_id: int, can_write: bool, hours: float,
         manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         com.dprint(f'[SUCCESS]\t Set can_write state for manipulator'
                    f' {manipulator_id}\n')
-        return manipulator_id, can_write, ''
-
+        return com.StateOutputData(manipulator_id, can_write, '')
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
-        return manipulator_id, False, 'Manipulator not registered'
+        return com.StateOutputData(manipulator_id, False, 'Manipulator not '
+                                                          'registered')
 
     except Exception as e:
         # Other error
         print(f'[ERROR]\t\t Set manipulator {manipulator_id} can_write state')
         print(f'{e}\n')
-        return manipulator_id, False, 'Error setting can_write'
+        return com.StateOutputData(manipulator_id, False, 'Error setting '
+                                                          'can_write')
