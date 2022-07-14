@@ -1,7 +1,6 @@
-from common import dprint, PositionData
+from common import dprint, PositionalOutputData
 import time
 from pathlib import Path
-from typing import TypedDict
 from sensapex import UMP, UMError
 from serial import Serial
 from serial.tools.list_ports import comports
@@ -46,34 +45,6 @@ def poll_serial(serial_port: str) -> None:
             ser.reset_input_buffer()
         time.sleep(poll_rate)
     ser.close()
-
-
-# Data formats
-class GotoPositionDataFormat(TypedDict):
-    """Data format for goto_pos"""
-    manipulator_id: int
-    pos: list[float]
-    speed: int
-
-
-class InsideBrainDataFormat(TypedDict):
-    """Data format for inside_brain"""
-    manipulator_id: int
-    inside: bool
-
-
-class DriveToDepthDataFormat(TypedDict):
-    """Data format for drive_to_depth"""
-    manipulator_id: int
-    depth: float
-    speed: int
-
-
-class CanWriteDataFormat(TypedDict):
-    """Data format for can_write"""
-    manipulator_id: int
-    can_write: bool
-    hours: float
 
 
 # Event handlers
@@ -133,7 +104,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
         return manipulator_id, 'Error registering manipulator'
 
 
-def get_pos(manipulator_id: int) -> PositionData:
+def get_pos(manipulator_id: int) -> PositionalOutputData:
     """
     Get the current position of a manipulator
     :param manipulator_id: The ID of the manipulator to get the position of.
@@ -144,7 +115,7 @@ def get_pos(manipulator_id: int) -> PositionData:
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
-            return PositionData(manipulator_id, (),
+            return PositionalOutputData(manipulator_id, (),
                                 'Manipulator not calibrated')
 
         # Get position
@@ -153,7 +124,7 @@ def get_pos(manipulator_id: int) -> PositionData:
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
-        return PositionData(manipulator_id, (), 'Manipulator not registered')
+        return PositionalOutputData(manipulator_id, (), 'Manipulator not registered')
 
 
 async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
