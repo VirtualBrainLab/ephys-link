@@ -1,4 +1,4 @@
-import common as cm
+import common as com
 import time
 from pathlib import Path
 from sensapex import UMP, UMError
@@ -40,7 +40,7 @@ def poll_serial(serial_port: str) -> None:
         if ser.in_waiting > 0:
             ser.readline()
             # Cause a break
-            cm.dprint('STOPPING EVERYTHING')
+            com.dprint('STOPPING EVERYTHING')
             stop()
             ser.reset_input_buffer()
         time.sleep(poll_rate)
@@ -89,7 +89,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
         manipulators[manipulator_id] = Manipulator(
             ump.get_device(manipulator_id))
 
-        cm.dprint(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
+        com.dprint(f'[SUCCESS]\t Registered manipulator: {manipulator_id}\n')
         return manipulator_id, ''
 
     except ValueError:
@@ -104,7 +104,7 @@ def register_manipulator(manipulator_id: int) -> (int, str):
         return manipulator_id, 'Error registering manipulator'
 
 
-def get_pos(manipulator_id: int) -> cm.PositionalOutputData:
+def get_pos(manipulator_id: int) -> com.PositionalOutputData:
     """
     Get the current position of a manipulator
     :param manipulator_id: The ID of the manipulator to get the position of.
@@ -115,8 +115,8 @@ def get_pos(manipulator_id: int) -> cm.PositionalOutputData:
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
-            return cm.PositionalOutputData(manipulator_id, (),
-                                           'Manipulator not calibrated')
+            return com.PositionalOutputData(manipulator_id, (),
+                                            'Manipulator not calibrated')
 
         # Get position
         return manipulators[manipulator_id].get_pos()
@@ -124,12 +124,12 @@ def get_pos(manipulator_id: int) -> cm.PositionalOutputData:
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
-        return cm.PositionalOutputData(manipulator_id, (),
-                                       'Manipulator not registered')
+        return com.PositionalOutputData(manipulator_id, (),
+                                        'Manipulator not registered')
 
 
 async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
-        -> (int, tuple[float], str):
+        -> com.PositionalOutputData:
     """
     Move manipulator to position
     :param manipulator_id: The ID of the manipulator to move
@@ -142,19 +142,22 @@ async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
-            return manipulator_id, (), 'Manipulator not calibrated'
+            return com.PositionalOutputData(manipulator_id, (),
+                                            'Manipulator not calibrated')
 
         # Check write state
         if not manipulators[manipulator_id].get_can_write():
             print(f'[ERROR]\t\t Cannot write to manipulator: {manipulator_id}')
-            return manipulator_id, (), 'Cannot write to manipulator'
+            return com.PositionalOutputData(manipulator_id, (),
+                                            'Cannot write to manipulator')
 
         return await manipulators[manipulator_id].goto_pos(position, speed)
 
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
-        return manipulator_id, (), 'Manipulator not registered'
+        return com.PositionalOutputData(manipulator_id, (),
+                                        'Manipulator not registered')
 
 
 async def drive_to_depth(manipulator_id: int, depth: float, speed: int) \
@@ -201,8 +204,8 @@ async def set_inside_brain(manipulator_id: int, inside: bool) -> \
             return manipulator_id, 'Manipulator not calibrated'
 
         manipulators[manipulator_id].set_inside_brain(inside)
-        cm.dprint(f'[SUCCESS]\t Set inside brain state for manipulator:'
-                  f' {manipulator_id}\n')
+        com.dprint(f'[SUCCESS]\t Set inside brain state for manipulator:'
+                   f' {manipulator_id}\n')
         return manipulator_id, inside, ''
 
     except KeyError:
@@ -255,7 +258,7 @@ async def calibrate(manipulator_id: int, sio) -> (int, str):
 
         # Calibration complete
         manipulators[manipulator_id].set_calibrated()
-        cm.dprint(f'[SUCCESS]\t Calibrated manipulator {manipulator_id}\n')
+        com.dprint(f'[SUCCESS]\t Calibrated manipulator {manipulator_id}\n')
         return manipulator_id, ''
 
     except KeyError:
@@ -285,7 +288,7 @@ def bypass_calibration(manipulator_id: int) -> (int, str):
     try:
         # Bypass calibration
         manipulators[manipulator_id].set_calibrated()
-        cm.dprint(
+        com.dprint(
             f'[SUCCESS]\t Bypassed calibration for manipulator'
             f' {manipulator_id}\n')
         return manipulator_id, ''
@@ -316,8 +319,8 @@ def set_can_write(manipulator_id: int, can_write: bool, hours: float,
     """
     try:
         manipulators[manipulator_id].set_can_write(can_write, hours, sio)
-        cm.dprint(f'[SUCCESS]\t Set can_write state for manipulator'
-                  f' {manipulator_id}\n')
+        com.dprint(f'[SUCCESS]\t Set can_write state for manipulator'
+                   f' {manipulator_id}\n')
         return manipulator_id, can_write, ''
 
     except KeyError:

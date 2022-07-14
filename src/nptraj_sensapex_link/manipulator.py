@@ -1,5 +1,5 @@
 import asyncio
-from common import dprint, PositionalOutputData
+import common as com
 import threading
 from collections import deque
 from copy import deepcopy
@@ -38,7 +38,7 @@ class Manipulator:
             self.position = position
 
     # Device functions
-    def get_pos(self) -> PositionalOutputData:
+    def get_pos(self) -> com.PositionalOutputData:
         """
         Get the current position of the manipulator
         :return: Callback parameters (manipulator ID, position in (x, y, z,
@@ -46,15 +46,17 @@ class Manipulator:
         """
         try:
             position = tuple(self._device.get_pos(1))
-            dprint(f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
-            return PositionalOutputData(self._id, position, '')
+            com.dprint(
+                f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
+            return com.PositionalOutputData(self._id, position, '')
         except Exception as e:
             print(f'[ERROR]\t\t Getting position of manipulator {self._id}')
             print(f'{e}\n')
-            return PositionalOutputData(self._id, (), 'Error getting position')
+            return com.PositionalOutputData(self._id, (),
+                                            'Error getting position')
 
     async def goto_pos(self, position: list[float], speed: float) \
-            -> (int, tuple[float], str):
+            -> com.PositionalOutputData:
         """
         Move manipulator to position
         :param position: The position to move to
@@ -72,7 +74,8 @@ class Manipulator:
         if not self._can_write:
             print(f'[ERROR]\t\t Manipulator {self._id} movement '
                   f'canceled')
-            return self._id, (), 'Manipulator movement canceled'
+            return com.PositionalOutputData(self._id, (), 'Manipulator '
+                                                          'movement canceled')
 
         try:
             target_position = position
@@ -97,17 +100,19 @@ class Manipulator:
             # Remove event from queue and mark as completed
             self._move_queue.pop().event.set()
 
-            dprint(
+            com.dprint(
                 f'[SUCCESS]\t Moved manipulator {self._id} to position'
                 f' {manipulator_final_position}\n'
             )
-            return self._id, manipulator_final_position, ''
+            return com.PositionalOutputData(self._id,
+                                            manipulator_final_position, '')
         except Exception as e:
             print(
                 f'[ERROR]\t\t Moving manipulator {self._id} to position'
                 f' {position}')
             print(f'{e}\n')
-            return self._id, (), 'Error moving manipulator'
+            return com.PositionalOutputData(self._id, (), 'Error moving '
+                                                          'manipulator')
 
     async def drive_to_depth(self, depth: float, speed: int) -> (int, float,
                                                                  str):
@@ -195,4 +200,4 @@ class Manipulator:
             self._move_queue.pop().event.set()
         self._can_write = False
         self._device.stop()
-        dprint(f"[SUCCESS]\t Stopped manipulator {self._id}")
+        com.dprint(f"[SUCCESS]\t Stopped manipulator {self._id}")

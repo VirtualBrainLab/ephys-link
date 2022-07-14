@@ -1,6 +1,6 @@
 from aiohttp import web
 import argparse
-import common as cm
+import common as com
 import signal
 import sensapex_handler as sh
 # noinspection PyPackageRequirements
@@ -30,7 +30,7 @@ parser.add_argument('--version', action='version', version='Sensapex Link '
                                                            'v0.0.6',
                     help='Print version and exit')
 args = parser.parse_args()
-cm.set_debug(args.debug)
+com.set_debug(args.debug)
 
 
 # Handle connection events
@@ -73,13 +73,13 @@ async def register_manipulator(_, manipulator_id: int) -> (int, str):
     :param manipulator_id: ID of the manipulator to register
     :return: Callback parameters (manipulator_id, error message (on error))
     """
-    cm.dprint(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
+    com.dprint(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
 
     return sh.register_manipulator(manipulator_id)
 
 
 @sio.event
-async def get_pos(_, manipulator_id: int) -> cm.PositionalOutputData:
+async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
     """
     Position of manipulator request
     :param _: Socket session ID (unused)
@@ -87,15 +87,15 @@ async def get_pos(_, manipulator_id: int) -> cm.PositionalOutputData:
     :return: Callback parameters (manipulator ID, position in (x, y, z,
     w) (or an empty array on error), error message)
     """
-    cm.dprint(f'[EVENT]\t\t Get position of manipulator'
-              f' {manipulator_id}')
+    com.dprint(f'[EVENT]\t\t Get position of manipulator'
+               f' {manipulator_id}')
 
     return sh.get_pos(manipulator_id)
 
 
 @sio.event
-async def goto_pos(_, data: cm.GotoPositionInputDataFormat) -> \
-        cm.PositionalOutputData:
+async def goto_pos(_, data: com.GotoPositionInputDataFormat) -> \
+        com.PositionalOutputData:
     """
     Move manipulator to position
     :param _: Socket session ID (unused)
@@ -112,17 +112,17 @@ async def goto_pos(_, data: cm.GotoPositionInputDataFormat) -> \
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return cm.PositionalOutputData(manipulator_id, (), 'Invalid data '
-                                                           'format')
+        return com.PositionalOutputData(manipulator_id, (), 'Invalid data '
+                                                            'format')
 
     except Exception as e:
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Error in goto_pos: {e}\n')
-        return cm.PositionalOutputData(manipulator_id, (), 'Error in '
-                                                           'goto_pos')
+        return com.PositionalOutputData(manipulator_id, (), 'Error in '
+                                                            'goto_pos')
 
-    cm.dprint(
+    com.dprint(
         f'[EVENT]\t\t Move manipulator {manipulator_id} '
         f'to position {pos}'
     )
@@ -131,7 +131,7 @@ async def goto_pos(_, data: cm.GotoPositionInputDataFormat) -> \
 
 
 @sio.event
-async def drive_to_depth(_, data: cm.DriveToDepthInputDataFormat) \
+async def drive_to_depth(_, data: com.DriveToDepthInputDataFormat) \
         -> (int, float, str):
     """
     Drive to depth
@@ -157,7 +157,7 @@ async def drive_to_depth(_, data: cm.DriveToDepthInputDataFormat) \
         print(f'[ERROR]\t\t Error in drive_to_depth: {e}\n')
         return manipulator_id, -1, 'Error in drive_to_depth'
 
-    cm.dprint(
+    com.dprint(
         f'[EVENT]\t\t Drive manipulator {manipulator_id} '
         f'to depth {depth}'
     )
@@ -166,7 +166,7 @@ async def drive_to_depth(_, data: cm.DriveToDepthInputDataFormat) \
 
 
 @sio.event
-async def set_inside_brain(_, data: cm.InsideBrainInputDataFormat) -> \
+async def set_inside_brain(_, data: com.InsideBrainInputDataFormat) -> \
         (int, bool, str):
     """
     Set the inside brain state
@@ -190,7 +190,7 @@ async def set_inside_brain(_, data: cm.InsideBrainInputDataFormat) -> \
         print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
         return manipulator_id, False, 'Error in set_inside_brain'
 
-    cm.dprint(
+    com.dprint(
         f'[EVENT]\t\t Set manipulator {manipulator_id} inside brain to '
         f'{"true" if inside else "false"}'
     )
@@ -206,8 +206,8 @@ async def calibrate(_, manipulator_id: int) -> (int, str):
     :param manipulator_id: ID of manipulator to calibrate
     :return: Callback parameters (manipulator ID, error message)
     """
-    cm.dprint(f'[EVENT]\t\t Calibrate manipulator'
-              f' {manipulator_id}')
+    com.dprint(f'[EVENT]\t\t Calibrate manipulator'
+               f' {manipulator_id}')
 
     return await sh.calibrate(manipulator_id, sio)
 
@@ -220,14 +220,14 @@ async def bypass_calibration(_, manipulator_id: int) -> (int, str):
     :param manipulator_id: ID of manipulator to bypass calibration
     :return: Callback parameters (manipulator ID, error message)
     """
-    cm.dprint(f'[EVENT]\t\t Bypass calibration of manipulator'
-              f' {manipulator_id}')
+    com.dprint(f'[EVENT]\t\t Bypass calibration of manipulator'
+               f' {manipulator_id}')
 
     return sh.bypass_calibration(manipulator_id)
 
 
 @sio.event
-async def set_can_write(_, data: cm.CanWriteInputDataFormat) -> (
+async def set_can_write(_, data: com.CanWriteInputDataFormat) -> (
         int, bool, str):
     """
     Set manipulator can_write state
@@ -252,7 +252,7 @@ async def set_can_write(_, data: cm.CanWriteInputDataFormat) -> (
         print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
         return manipulator_id, False, 'Error in set_can_write'
 
-    cm.dprint(
+    com.dprint(
         f'[EVENT]\t\t Set manipulator {manipulator_id} can_write state to '
         f'{"true" if can_write else "false"}'
     )
@@ -267,7 +267,7 @@ async def stop(_) -> bool:
     :param _: Socket session ID (unused)
     :return: True if successful, False otherwise
     """
-    cm.dprint('[EVENT]\t\t Stop all manipulators')
+    com.dprint('[EVENT]\t\t Stop all manipulators')
 
     return sh.stop()
 
