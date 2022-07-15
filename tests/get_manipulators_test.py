@@ -19,8 +19,8 @@ class GetManipulatorsTestCase(TestCase):
         self.sio.emit('get_manipulators', callback=self.mock)
         self.wait_for_callback()
 
-        args = self.mock.call_args.args
-        self.assertEqual(args[1], '')
+        args = self.mock.call_args.args[0]
+        self.assertEqual(args['error'], '')
 
     def tearDown(self) -> None:
         """Cleanup test case"""
