@@ -1,4 +1,7 @@
-graft src
+graft nptraj_sensapex_link
+graft scripts
 graft tests
 
 include libum.dll
+include libum.lib
+include libum.so

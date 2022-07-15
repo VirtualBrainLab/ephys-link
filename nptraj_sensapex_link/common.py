@@ -56,7 +56,7 @@ class CanWriteInputDataFormat(TypedDict):
 class GetManipulatorsOutputData(dict):
     """Output format for (manipulators)"""
 
-    def __init__(self, manipulators: tuple, error: str) -> None:
+    def __init__(self, manipulators: list, error: str) -> None:
         """
         :param manipulators: Tuple of manipulator IDs
         """

@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
+import nptraj_sensapex_link.common as com
 
 
 class CalibrationTestCase(TestCase):
@@ -19,7 +20,9 @@ class CalibrationTestCase(TestCase):
         self.sio.emit('calibrate', 1, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with(1, 'Manipulator not registered')
+        self.mock.assert_called_with(com.StateOutputData(1, False,
+                                                         'Manipulator not '
+                                                         'registered'))
 
     def test_get_pos_uncalibrated(self):
         """Test get_pos event with uncalibrated manipulator"""
