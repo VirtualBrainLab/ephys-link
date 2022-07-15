@@ -72,6 +72,23 @@ def stop() -> bool:
         return False
 
 
+def get_manipulators() -> com.GetManipulatorsOutputData:
+    """
+    Get all registered manipulators
+    :return: Callback parameters (manipulators, error)
+    """
+    try:
+        devices = ump.list_devices()
+        error = ''
+    except Exception as e:
+        print(f'[ERROR]\t\t Getting manipulators: {e}\n')
+        devices = ()
+        error = 'Error getting manipulators'
+    finally:
+        # noinspection PyUnboundLocalVariable
+        return com.GetManipulatorsOutputData(devices, error)
+
+
 def register_manipulator(manipulator_id: int) -> com.IdOutputData:
     """
     Register a manipulator

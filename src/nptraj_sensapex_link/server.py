@@ -66,6 +66,18 @@ async def disconnect(sid):
 
 # Events
 @sio.event
+async def get_manipulators(_) -> com.GetManipulatorsOutputData:
+    """
+    Get the list of discoverable manipulators
+    :param _: Socket session ID (unused)
+    :return: Callback parameters (manipulators, error message)
+    """
+    com.dprint(f'[EVENT]\t\t Get discoverable manipulators')
+
+    return sh.get_manipulators()
+
+
+@sio.event
 async def register_manipulator(_, manipulator_id: int) -> com.IdOutputData:
     """
     Register a manipulator with the server
