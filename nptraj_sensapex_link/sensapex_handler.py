@@ -77,15 +77,15 @@ def get_manipulators() -> com.GetManipulatorsOutputData:
     Get all registered manipulators
     :return: Callback parameters (manipulators, error)
     """
+    devices = []
+    error = 'Error getting manipulators'
+
     try:
         devices = ump.list_devices()
         error = ''
     except Exception as e:
         print(f'[ERROR]\t\t Getting manipulators: {e}\n')
-        devices = ()
-        error = 'Error getting manipulators'
     finally:
-        # noinspection PyUnboundLocalVariable
         return com.GetManipulatorsOutputData(devices, error)
 
 

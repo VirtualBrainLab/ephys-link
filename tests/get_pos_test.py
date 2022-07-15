@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
+from nptraj_sensapex_link.common import PositionalOutputData
 
 
 class GetPosTestCase(TestCase):
@@ -20,7 +21,8 @@ class GetPosTestCase(TestCase):
         self.sio.emit('bypass_calibration', 1)
         self.wait_for_callback()
 
-        self.mock.assert_called_with(1, [], 'Manipulator not registered')
+        self.mock.assert_called_with(
+            PositionalOutputData(1, [], 'Manipulator not registered'))
 
     def test_get_pos_registered(self):
         """Test get_pos event with registered manipulator"""
@@ -29,10 +31,10 @@ class GetPosTestCase(TestCase):
         self.sio.emit('get_pos', 1, callback=self.mock)
         self.wait_for_callback()
 
-        args = self.mock.call_args.args
-        self.assertEqual(args[0], 1)
-        self.assertEqual(len(args[1]), 4)
-        self.assertEqual(args[2], '')
+        args = self.mock.call_args.args[0]
+        self.assertEqual(args['manipulator_id'], 1)
+        self.assertEqual(len(args['position']), 4)
+        self.assertEqual(args['error'], '')
 
     def tearDown(self) -> None:
         """Cleanup test case"""

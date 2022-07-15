@@ -35,7 +35,7 @@ class InsideBrainTestCase(TestCase):
         self.wait_for_callback()
 
         self.sio.emit('get_pos', 1, callback=self.mock)
-        args = self.mock.call_args.args
+        args = self.mock.call_args.args[0]
 
         self.sio.emit('inside_brain', {'manipulator_id': 1, 'inside': False},
                       callback=self.mock)
@@ -46,9 +46,9 @@ class InsideBrainTestCase(TestCase):
                       callback=self.mock)
         self.wait_for_callback()
 
-        self.assertLess(abs(args[1][0]), 1)
-        self.assertLess(abs(args[1][1]), 1)
-        self.assertLess(abs(args[1][2]), 1)
+        self.assertLess(abs(args['position'][0]), 1)
+        self.assertLess(abs(args['position'][1]), 1)
+        self.assertLess(abs(args['position'][2]), 1)
 
     def tearDown(self) -> None:
         """Cleanup test case"""

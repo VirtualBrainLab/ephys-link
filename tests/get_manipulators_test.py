@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
-import nptraj_sensapex_link.common as com
+from nptraj_sensapex_link.common import GetManipulatorsOutputData
 
 
 class GetManipulatorsTestCase(TestCase):
@@ -20,7 +20,7 @@ class GetManipulatorsTestCase(TestCase):
         self.sio.emit('get_manipulators', callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with(com.GetManipulatorsOutputData([], ''))
+        self.mock.assert_called_with(GetManipulatorsOutputData([], ''))
 
     def tearDown(self) -> None:
         """Cleanup test case"""

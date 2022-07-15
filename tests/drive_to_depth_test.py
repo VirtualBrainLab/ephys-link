@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
+from nptraj_sensapex_link.common import DriveToDepthOutputData
 
 
 # noinspection DuplicatedCode
@@ -64,10 +65,7 @@ class DriveToDepthTest(TestCase):
                        'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
-        args = self.mock.call_args.args
-        self.assertEqual(args[0], 1)
-        self.assertLess(abs(args[1]), 1)
-        self.assertEqual(args[2], '')
+        self.mock.assert_called_with(DriveToDepthOutputData(1, 1, ''))
 
         self.sio.emit('drive_to_depth',
                       {'manipulator_id': 1, 'depth': 10000,
@@ -82,7 +80,8 @@ class DriveToDepthTest(TestCase):
                        'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
-        self.mock.assert_called_with(1, 0, 'Manipulator not registered')
+        self.mock.assert_called_with(
+            DriveToDepthOutputData(1, 0, 'Manipulator not registered'))
 
     def tearDown(self) -> None:
         """Cleanup test case"""

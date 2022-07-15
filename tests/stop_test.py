@@ -22,6 +22,10 @@ class StopTest(TestCase):
         self.sio.emit('register_manipulator', 2)
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('bypass_calibration', 2)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 1, 'can_write': True, 'hours': 1})
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 2, 'can_write': True, 'hours': 1})
 
         self.sio.emit('goto_pos', {'manipulator_id': 1, 'pos': [0, 0, 0, 0],
                                    'speed': self.DRIVE_SPEED},
@@ -55,12 +59,16 @@ class StopTest(TestCase):
                                    'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
-        args = self.mock.call_args.args
+        args = self.mock.call_args.args[0]
 
         # Bring back to home
         self.mock.call_count = 0
         self.sio.emit('bypass_calibration', 1)
         self.sio.emit('bypass_calibration', 2)
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 1, 'can_write': True, 'hours': 1})
+        self.sio.emit('set_can_write',
+                      {'manipulator_id': 2, 'can_write': True, 'hours': 1})
         self.sio.emit('goto_pos',
                       {'manipulator_id': 1,
                        'pos': [10000, 10000, 10000, 10000],
@@ -75,8 +83,8 @@ class StopTest(TestCase):
 
         # Asserts
         self.assertTrue(stop_arg)
-        self.assertEqual(len(args), 3)
-        self.assertEqual(args[2], 'Manipulator not calibrated')
+        self.assertEqual(len(args.keys), 3)
+        self.assertEqual(args['error'], 'Cannot write to manipulator')
 
     def tearDown(self) -> None:
         """Cleanup test case"""
