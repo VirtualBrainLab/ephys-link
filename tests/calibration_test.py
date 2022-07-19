@@ -50,14 +50,10 @@ class CalibrationTestCase(TestCase):
         self.sio.emit('register_manipulator', 1)
         self.sio.emit('register_manipulator', 2)
 
-        self.sio.sleep(0.1)
-
         self.sio.emit('set_can_write',
                       {'manipulator_id': 1, 'can_write': True, 'hours': 1})
         self.sio.emit('set_can_write',
                       {'manipulator_id': 2, 'can_write': True, 'hours': 1})
-
-        self.sio.sleep(0.1)
 
         self.sio.emit('calibrate', 1, callback=self.mock)
         self.sio.emit('calibrate', 2, callback=self.mock)

@@ -131,10 +131,11 @@ class Manipulator:
         target_pos[3] = depth
         movement_result = await self.goto_pos(target_pos, speed)
 
-        if movement_result[2] == '':
+        if movement_result['error'] == '':
             # Return depth on success
             return com.DriveToDepthOutputData(self._id,
-                                              movement_result[1][3], '')
+                                              movement_result['position'][3],
+                                              '')
         else:
             # Return 0 and error message on failure
             return com.DriveToDepthOutputData(self._id, 0, 'Error driving '
