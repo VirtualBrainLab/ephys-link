@@ -83,7 +83,7 @@ class StopTest(TestCase):
 
         # Asserts
         self.assertTrue(stop_arg)
-        self.assertEqual(len(args.keys), 3)
+        self.assertEqual(len(args), 3)
         self.assertEqual(args['error'], 'Cannot write to manipulator')
 
     def tearDown(self) -> None:
