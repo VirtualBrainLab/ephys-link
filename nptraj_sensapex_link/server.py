@@ -124,14 +124,14 @@ async def goto_pos(_, data: com.GotoPositionInputDataFormat) -> \
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return com.PositionalOutputData(manipulator_id, (), 'Invalid data '
+        return com.PositionalOutputData(manipulator_id, [], 'Invalid data '
                                                             'format')
 
     except Exception as e:
         manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
             else -1
         print(f'[ERROR]\t\t Error in goto_pos: {e}\n')
-        return com.PositionalOutputData(manipulator_id, (), 'Error in '
+        return com.PositionalOutputData(manipulator_id, [], 'Error in '
                                                             'goto_pos')
 
     com.dprint(
@@ -290,10 +290,11 @@ async def stop(_) -> bool:
 
 
 @sio.on('*')
-async def catch_all(_, data: Any) -> None:
+async def catch_all(_, __, data: Any) -> None:
     """
     Catch all event
     :param _: Socket session ID (unused)
+    :param __: Client ID (unused)
     :param data: Data received from client
     :return: None
     """

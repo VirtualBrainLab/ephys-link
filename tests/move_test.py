@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
+from nptraj_sensapex_link.common import PositionalOutputData
 
 
 # noinspection DuplicatedCode
@@ -61,10 +62,10 @@ class MoveTest(TestCase):
                                    'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
-        args = self.mock.call_args.args
-        self.assertEqual(args[0], 1)
-        self.assertEqual(args[2], '')
-        self.assertEqual(len(args[1]), 4)
+        args = self.mock.call_args.args[0]
+        self.assertEqual(args['manipulator_id'], 1)
+        self.assertEqual(args['error'], '')
+        self.assertEqual(len(args['position']), 4)
 
         self.sio.emit('goto_pos', {'manipulator_id': 1,
                                    'pos': [10000, 10000, 10000, 10000],
@@ -78,7 +79,8 @@ class MoveTest(TestCase):
                                    'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
-        self.mock.assert_called_with(1, [], 'Manipulator not registered')
+        self.mock.assert_called_with(
+            PositionalOutputData(1, [], 'Manipulator not registered'))
 
     def test_move_no_write(self):
         """Test movement with no write"""
@@ -88,7 +90,8 @@ class MoveTest(TestCase):
                                    'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
-        self.mock.assert_called_with(1, [], 'Cannot write to manipulator')
+        self.mock.assert_called_with(
+            PositionalOutputData(1, [], 'Cannot write to manipulator'))
 
     def tearDown(self) -> None:
         """Cleanup test case"""

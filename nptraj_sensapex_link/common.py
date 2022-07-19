@@ -56,7 +56,7 @@ class CanWriteInputDataFormat(TypedDict):
 class GetManipulatorsOutputData(dict):
     """Output format for (manipulators)"""
 
-    def __init__(self, manipulators: tuple, error: str) -> None:
+    def __init__(self, manipulators: list, error: str) -> None:
         """
         :param manipulators: Tuple of manipulator IDs
         """
@@ -80,7 +80,7 @@ class IdOutputData(dict):
 class PositionalOutputData(dict):
     """Output format for (id, position, error)"""
 
-    def __init__(self, manipulator_id: int, position: tuple, error: str) -> \
+    def __init__(self, manipulator_id: int, position: list, error: str) -> \
             None:
         """
         Create positional output data dictionary

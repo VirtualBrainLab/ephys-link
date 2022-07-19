@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
+from nptraj_sensapex_link.common import IdOutputData
 
 
 class RegisterManipulatorTestCase(TestCase):
@@ -19,7 +20,7 @@ class RegisterManipulatorTestCase(TestCase):
         self.sio.emit('register_manipulator', 1, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with(1, '')
+        self.mock.assert_called_with(IdOutputData(1, ''))
 
     def test_re_register_manipulator(self):
         """Test re-registering a manipulator"""
@@ -27,14 +28,15 @@ class RegisterManipulatorTestCase(TestCase):
         self.sio.emit('register_manipulator', 1, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with(1, 'Manipulator already registered')
+        self.mock.assert_called_with(
+            IdOutputData(1, 'Manipulator already registered'))
 
     def test_register_unknown_manipulator(self):
         """Test registering an unknown manipulator"""
         self.sio.emit('register_manipulator', 3, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with(3, 'Manipulator not found')
+        self.mock.assert_called_with(IdOutputData(3, 'Manipulator not found'))
 
     def tearDown(self) -> None:
         """Cleanup test case"""

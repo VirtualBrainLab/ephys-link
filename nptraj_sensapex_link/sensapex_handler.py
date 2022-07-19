@@ -77,15 +77,15 @@ def get_manipulators() -> com.GetManipulatorsOutputData:
     Get all registered manipulators
     :return: Callback parameters (manipulators, error)
     """
+    devices = []
+    error = 'Error getting manipulators'
+
     try:
         devices = ump.list_devices()
         error = ''
     except Exception as e:
         print(f'[ERROR]\t\t Getting manipulators: {e}\n')
-        devices = ()
-        error = 'Error getting manipulators'
     finally:
-        # noinspection PyUnboundLocalVariable
         return com.GetManipulatorsOutputData(devices, error)
 
 
@@ -134,7 +134,7 @@ def get_pos(manipulator_id: int) -> com.PositionalOutputData:
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
-            return com.PositionalOutputData(manipulator_id, (),
+            return com.PositionalOutputData(manipulator_id, [],
                                             'Manipulator not calibrated')
 
         # Get position
@@ -143,7 +143,7 @@ def get_pos(manipulator_id: int) -> com.PositionalOutputData:
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}')
-        return com.PositionalOutputData(manipulator_id, (),
+        return com.PositionalOutputData(manipulator_id, [],
                                         'Manipulator not registered')
 
 
@@ -161,13 +161,13 @@ async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
             print(f'[ERROR]\t\t Calibration not complete: {manipulator_id}\n')
-            return com.PositionalOutputData(manipulator_id, (),
+            return com.PositionalOutputData(manipulator_id, [],
                                             'Manipulator not calibrated')
 
         # Check write state
         if not manipulators[manipulator_id].get_can_write():
             print(f'[ERROR]\t\t Cannot write to manipulator: {manipulator_id}')
-            return com.PositionalOutputData(manipulator_id, (),
+            return com.PositionalOutputData(manipulator_id, [],
                                             'Cannot write to manipulator')
 
         return await manipulators[manipulator_id].goto_pos(position, speed)
@@ -175,7 +175,7 @@ async def goto_pos(manipulator_id: int, position: list[float], speed: int) \
     except KeyError:
         # Manipulator not found in registered manipulators
         print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
-        return com.PositionalOutputData(manipulator_id, (),
+        return com.PositionalOutputData(manipulator_id, [],
                                         'Manipulator not registered')
 
 
@@ -269,7 +269,7 @@ async def calibrate(manipulator_id: int, sio) -> com.IdOutputData:
         # Wait for calibration to complete
         still_working = True
         while still_working:
-            cur_pos = manipulators[manipulator_id].get_pos()[1]
+            cur_pos = manipulators[manipulator_id].get_pos()['position']
 
             # Check difference between current and target position
             for prev, cur in zip([10000, 10000, 10000, 10000], cur_pos):

@@ -52,8 +52,8 @@ class CanWriteTest(TestCase):
 
         while self.mock.call_count != 4:
             pass
-        self.assertEqual(self.mock.call_args.args[2], 'Manipulator movement '
-                                                      'canceled')
+        self.assertEqual(self.mock.call_args.args[0]['error'],
+                         'Manipulator movement canceled')
 
     def wait_for_callback(self):
         """Wait for callback to be called"""

@@ -12,3 +12,4 @@ services:
       - type: bind
         source: .
         target: /root/nptraj-sensapex-link
+    command: python nptraj_sensapex_link/server.py -s no-e-stop -p 8080

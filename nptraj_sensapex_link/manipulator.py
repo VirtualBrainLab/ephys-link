@@ -45,14 +45,14 @@ class Manipulator:
         w) (or an empty array on error), error message)
         """
         try:
-            position = tuple(self._device.get_pos(1))
+            position = self._device.get_pos(1)
             com.dprint(
                 f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
             return com.PositionalOutputData(self._id, position, '')
         except Exception as e:
             print(f'[ERROR]\t\t Getting position of manipulator {self._id}')
             print(f'{e}\n')
-            return com.PositionalOutputData(self._id, (),
+            return com.PositionalOutputData(self._id, [],
                                             'Error getting position')
 
     async def goto_pos(self, position: list[float], speed: float) \
@@ -74,7 +74,7 @@ class Manipulator:
         if not self._can_write:
             print(f'[ERROR]\t\t Manipulator {self._id} movement '
                   f'canceled')
-            return com.PositionalOutputData(self._id, (), 'Manipulator '
+            return com.PositionalOutputData(self._id, [], 'Manipulator '
                                                           'movement canceled')
 
         try:
@@ -95,7 +95,7 @@ class Manipulator:
                 await asyncio.sleep(0.1)
 
             # Get position
-            manipulator_final_position = tuple(self._device.get_pos())
+            manipulator_final_position = self._device.get_pos()
 
             # Remove event from queue and mark as completed
             self._move_queue.pop().event.set()
@@ -111,7 +111,7 @@ class Manipulator:
                 f'[ERROR]\t\t Moving manipulator {self._id} to position'
                 f' {position}')
             print(f'{e}\n')
-            return com.PositionalOutputData(self._id, (), 'Error moving '
+            return com.PositionalOutputData(self._id, [], 'Error moving '
                                                           'manipulator')
 
     async def drive_to_depth(self, depth: float, speed: int) -> \
@@ -131,10 +131,11 @@ class Manipulator:
         target_pos[3] = depth
         movement_result = await self.goto_pos(target_pos, speed)
 
-        if movement_result[2] == '':
+        if movement_result['error'] == '':
             # Return depth on success
             return com.DriveToDepthOutputData(self._id,
-                                              movement_result[1][3], '')
+                                              movement_result['position'][3],
+                                              '')
         else:
             # Return 0 and error message on failure
             return com.DriveToDepthOutputData(self._id, 0, 'Error driving '
