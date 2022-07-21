@@ -22,7 +22,7 @@ class GetPosTestCase(TestCase):
         self.wait_for_callback()
 
         self.mock.assert_called_with(
-            PositionalOutputData(1, [], 'Manipulator not registered'))
+            PositionalOutputData([], 'Manipulator not registered'))
 
     def test_get_pos_registered(self):
         """Test get_pos event with registered manipulator"""

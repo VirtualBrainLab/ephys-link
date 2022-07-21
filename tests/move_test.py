@@ -80,7 +80,7 @@ class MoveTest(TestCase):
                       callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(
-            PositionalOutputData(1, [], 'Manipulator not registered'))
+            PositionalOutputData([], 'Manipulator not registered'))
 
     def test_move_no_write(self):
         """Test movement with no write"""
@@ -91,7 +91,7 @@ class MoveTest(TestCase):
                       callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(
-            PositionalOutputData(1, [], 'Cannot write to manipulator'))
+            PositionalOutputData([], 'Cannot write to manipulator'))
 
     def tearDown(self) -> None:
         """Cleanup test case"""

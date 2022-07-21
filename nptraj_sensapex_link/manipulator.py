@@ -48,12 +48,11 @@ class Manipulator:
             position = self._device.get_pos(1)
             com.dprint(
                 f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
-            return com.PositionalOutputData(self._id, position, '')
+            return com.PositionalOutputData(position, '')
         except Exception as e:
             print(f'[ERROR]\t\t Getting position of manipulator {self._id}')
             print(f'{e}\n')
-            return com.PositionalOutputData(self._id, [],
-                                            'Error getting position')
+            return com.PositionalOutputData([], 'Error getting position')
 
     async def goto_pos(self, position: list[float], speed: float) \
             -> com.PositionalOutputData:
@@ -74,8 +73,8 @@ class Manipulator:
         if not self._can_write:
             print(f'[ERROR]\t\t Manipulator {self._id} movement '
                   f'canceled')
-            return com.PositionalOutputData(self._id, [], 'Manipulator '
-                                                          'movement canceled')
+            return com.PositionalOutputData([], 'Manipulator '
+                                                'movement canceled')
 
         try:
             target_position = position
@@ -104,15 +103,14 @@ class Manipulator:
                 f'[SUCCESS]\t Moved manipulator {self._id} to position'
                 f' {manipulator_final_position}\n'
             )
-            return com.PositionalOutputData(self._id,
-                                            manipulator_final_position, '')
+            return com.PositionalOutputData(manipulator_final_position, '')
         except Exception as e:
             print(
                 f'[ERROR]\t\t Moving manipulator {self._id} to position'
                 f' {position}')
             print(f'{e}\n')
-            return com.PositionalOutputData(self._id, [], 'Error moving '
-                                                          'manipulator')
+            return com.PositionalOutputData([], 'Error moving '
+                                                'manipulator')
 
     async def drive_to_depth(self, depth: float, speed: int) -> \
             com.DriveToDepthOutputData:
@@ -133,13 +131,12 @@ class Manipulator:
 
         if movement_result['error'] == '':
             # Return depth on success
-            return com.DriveToDepthOutputData(self._id,
-                                              movement_result['position'][3],
+            return com.DriveToDepthOutputData(movement_result['position'][3],
                                               '')
         else:
             # Return 0 and error message on failure
-            return com.DriveToDepthOutputData(self._id, 0, 'Error driving '
-                                                           'manipulator')
+            return com.DriveToDepthOutputData(0, 'Error driving '
+                                                 'manipulator')
 
     def set_inside_brain(self, inside: bool) -> None:
         """

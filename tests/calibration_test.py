@@ -30,7 +30,7 @@ class CalibrationTestCase(TestCase):
         self.sio.emit('get_pos', 1, callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(
-            PositionalOutputData(1, [], 'Manipulator not calibrated'))
+            PositionalOutputData([], 'Manipulator not calibrated'))
 
     def test_move_uncalibrated(self):
         """Test move event with uncalibrated manipulator"""
@@ -43,7 +43,7 @@ class CalibrationTestCase(TestCase):
                       callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(
-            PositionalOutputData(1, [], 'Manipulator not calibrated'))
+            PositionalOutputData([], 'Manipulator not calibrated'))
 
     def test_calibrate_registered(self):
         """Test calibrate event with registered manipulator"""

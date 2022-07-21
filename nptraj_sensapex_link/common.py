@@ -64,63 +64,44 @@ class GetManipulatorsOutputData(dict):
             __init__(manipulators=manipulators, error=error)
 
 
-class IdOutputData(dict):
-    """Output format for (id, error)"""
-
-    def __init__(self, manipulator_id: int, error: str) -> None:
-        """
-        Create ID output data dictionary
-        :param manipulator_id: Manipulator ID
-        :param error: Error message
-        """
-        super(IdOutputData, self).__init__(manipulator_id=manipulator_id,
-                                           error=error)
-
-
 class PositionalOutputData(dict):
     """Output format for (id, position, error)"""
 
-    def __init__(self, manipulator_id: int, position: list, error: str) -> \
+    def __init__(self, position: list, error: str) -> \
             None:
         """
         Create positional output data dictionary
-        :param manipulator_id: Manipulator ID
         :param position: Position (as a tuple, can be empty tuple)
         :param error: Error message
         """
         super(PositionalOutputData, self). \
-            __init__(manipulator_id=manipulator_id,
-                     position=position,
+            __init__(position=position,
                      error=error)
 
 
 class DriveToDepthOutputData(dict):
     """Output format for depth driving (id, depth, error)"""
 
-    def __init__(self, manipulator_id: int, depth: float, error: str) -> None:
+    def __init__(self, depth: float, error: str) -> None:
         """
         Create drive to depth output data dictionary
-        :param manipulator_id: Manipulator ID
         :param depth: Depth
         :param error: Error message
         """
         super(DriveToDepthOutputData, self). \
-            __init__(manipulator_id=manipulator_id,
-                     depth=depth,
+            __init__(depth=depth,
                      error=error)
 
 
 class StateOutputData(dict):
     """Output format for (id, state, error)"""
 
-    def __init__(self, manipulator_id: int, state: bool, error: str) -> None:
+    def __init__(self, state: bool, error: str) -> None:
         """
         Create state output data dictionary
-        :param manipulator_id: Manipulator ID
         :param state: State of the event
         :param error: Error message
         """
         super(StateOutputData, self). \
-            __init__(manipulator_id=manipulator_id,
-                     state=state,
+            __init__(state=state,
                      error=error)
