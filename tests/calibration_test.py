@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
-from nptraj_sensapex_link.common import IdOutputData, PositionalOutputData
+from nptraj_sensapex_link.common import PositionalOutputData
 
 
 class CalibrationTestCase(TestCase):
@@ -20,8 +20,7 @@ class CalibrationTestCase(TestCase):
         self.sio.emit('calibrate', 1, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with(
-            IdOutputData(1, 'Manipulator not registered'))
+        self.mock.assert_called_with('Manipulator not registered')
 
     def test_get_pos_uncalibrated(self):
         """Test get_pos event with uncalibrated manipulator"""
@@ -30,7 +29,7 @@ class CalibrationTestCase(TestCase):
         self.sio.emit('get_pos', 1, callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(
-            PositionalOutputData(1, [], 'Manipulator not calibrated'))
+            PositionalOutputData([], 'Manipulator not calibrated'))
 
     def test_move_uncalibrated(self):
         """Test move event with uncalibrated manipulator"""
@@ -43,7 +42,7 @@ class CalibrationTestCase(TestCase):
                       callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(
-            PositionalOutputData(1, [], 'Manipulator not calibrated'))
+            PositionalOutputData([], 'Manipulator not calibrated'))
 
     def test_calibrate_registered(self):
         """Test calibrate event with registered manipulator"""
@@ -61,8 +60,7 @@ class CalibrationTestCase(TestCase):
         while self.mock.call_count != 2:
             pass
 
-        args = self.mock.call_args.args[0]
-        self.assertEqual('', args['error'])
+        self.assertEqual('', self.mock.call_args.args[0])
 
     def tearDown(self) -> None:
         """Cleanup test case"""

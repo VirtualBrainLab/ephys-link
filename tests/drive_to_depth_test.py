@@ -61,7 +61,7 @@ class DriveToDepthTest(TestCase):
                        'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
-        self.assertEqual('', self.mock.call_args.args[0]['error'])
+        self.assertEqual(self.mock.call_args.args[0]['error'], '')
 
         self.sio.emit('drive_to_depth',
                       {'manipulator_id': 1, 'depth': 10000,
@@ -77,7 +77,7 @@ class DriveToDepthTest(TestCase):
                       callback=self.mock)
         self.wait_for_callback()
         self.mock.assert_called_with(
-            DriveToDepthOutputData(1, 0, 'Manipulator not registered'))
+            DriveToDepthOutputData(0, 'Manipulator not registered'))
 
     def tearDown(self) -> None:
         """Cleanup test case"""

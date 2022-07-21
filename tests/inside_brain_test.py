@@ -6,7 +6,7 @@ import socketio
 
 class InsideBrainTestCase(TestCase):
     """Test movement inside brain event"""
-    DRIVE_SPEED = 7000
+    DRIVE_SPEED = 8000
 
     def setUp(self):
         """Setup test case"""
