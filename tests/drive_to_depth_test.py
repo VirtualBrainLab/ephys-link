@@ -61,7 +61,7 @@ class DriveToDepthTest(TestCase):
                        'speed': self.DRIVE_SPEED},
                       callback=self.mock)
         self.wait_for_callback()
-        self.assertEqual('', self.mock.call_args.args[0]['error'])
+        self.assertEqual(self.mock.call_args.args[0]['error'], '')
 
         self.sio.emit('drive_to_depth',
                       {'manipulator_id': 1, 'depth': 10000,

@@ -8,7 +8,7 @@ from nptraj_sensapex_link.common import PositionalOutputData
 # noinspection DuplicatedCode
 class MoveTest(TestCase):
     """Tests movement event"""
-    DRIVE_SPEED = 10000
+    DRIVE_SPEED = 8000
 
     def setUp(self) -> None:
         """Setup test case"""
@@ -63,7 +63,6 @@ class MoveTest(TestCase):
                       callback=self.mock)
         self.wait_for_callback()
         args = self.mock.call_args.args[0]
-        self.assertEqual(args['manipulator_id'], 1)
         self.assertEqual(args['error'], '')
         self.assertEqual(len(args['position']), 4)
 

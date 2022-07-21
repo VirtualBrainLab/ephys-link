@@ -32,7 +32,6 @@ class GetPosTestCase(TestCase):
         self.wait_for_callback()
 
         args = self.mock.call_args.args[0]
-        self.assertEqual(args['manipulator_id'], 1)
         self.assertEqual(len(args['position']), 4)
         self.assertEqual(args['error'], '')
 

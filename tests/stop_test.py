@@ -7,7 +7,7 @@ import socketio
 # noinspection DuplicatedCode
 class StopTest(TestCase):
     """Tests stop event"""
-    DRIVE_SPEED = 10000
+    DRIVE_SPEED = 8000
 
     def setUp(self) -> None:
         """Setup test case"""
@@ -83,7 +83,7 @@ class StopTest(TestCase):
 
         # Asserts
         self.assertTrue(stop_arg)
-        self.assertEqual(len(args), 3)
+        self.assertEqual(len(args), 2)
         self.assertEqual(args['error'], 'Cannot write to manipulator')
 
     def tearDown(self) -> None:

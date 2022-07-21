@@ -15,7 +15,7 @@ def write_disabled(data):
 # noinspection DuplicatedCode
 class CanWriteTest(TestCase):
     """Tests can_write event"""
-    DRIVE_SPEED = 10000
+    DRIVE_SPEED = 8000
 
     def setUp(self) -> None:
         """Setup test case"""
