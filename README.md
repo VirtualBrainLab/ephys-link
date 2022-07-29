@@ -23,3 +23,5 @@ for this server
 # Citing
 
 If this project is used as part of a research project you should cite the [Pinpoint repository](https://github.com/VirtualBrainLab/NPTrajectoryPlanner). Please email Dan (dbirman@uw.edu) if you have questions.
+
+Please reach out to Kenneth (kjy5@uw.edu) for questions about the Sensapex Link server. Bugs may be reported through the issues tab.
