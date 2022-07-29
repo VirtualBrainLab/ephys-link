@@ -49,3 +49,7 @@ An x86 machine or Docker is required to install or run the server.
 Complete documentation can be found on
 the [Virtual Brain Lab Documentation page](https://virtualbrainlab.org/build/html/02_traj_planner/04_sensapex_link.html)
 for this server
+
+# Citing
+
+If this project is used as part of a research project you should cite the [Pinpoint repository](https://github.com/VirtualBrainLab/NPTrajectoryPlanner). Please email Dan (dbirman@uw.edu) if you have questions.
