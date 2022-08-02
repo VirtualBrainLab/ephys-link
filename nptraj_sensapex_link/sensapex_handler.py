@@ -121,6 +121,30 @@ def register_manipulator(manipulator_id: int) -> str:
         return 'Error registering manipulator'
 
 
+def unregister_manipulator(manipulator_id: int) -> str:
+    """
+    Unregister a manipulator
+    :param manipulator_id: The ID of the manipulator to unregister.
+    :return: Callback parameters (manipulator ID, error message (on error))
+    """
+    # Check if manipulator is not registered
+    if manipulator_id not in manipulators:
+        print(f'[ERROR]\t\t Manipulator not registered: {manipulator_id}\n')
+        return 'Manipulator not registered'
+
+    try:
+        # Unregister manipulator
+        del manipulators[manipulator_id]
+
+        com.dprint(f'[SUCCESS]\t Unregistered manipulator: {manipulator_id}\n')
+        return ''
+    except Exception as e:
+        # Other error
+        print(f'[ERROR]\t\t Unregistering manipulator: {manipulator_id}')
+        print(f'{e}\n')
+        return 'Error unregistering manipulator'
+
+
 def get_pos(manipulator_id: int) -> com.PositionalOutputData:
     """
     Get the current position of a manipulator

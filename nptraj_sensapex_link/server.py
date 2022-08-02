@@ -83,11 +83,24 @@ async def register_manipulator(_, manipulator_id: int) -> str:
     Register a manipulator with the server
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of the manipulator to register
-    :return: Callback parameters (manipulator_id, error message (on error))
+    :return: Callback parameter (Error message (on error))
     """
     com.dprint(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
 
     return sh.register_manipulator(manipulator_id)
+
+
+@sio.event
+async def unregister_manipulator(_, manipulator_id: int) -> str:
+    """
+    Unregister a manipulator from the server
+    :param _: Socket session ID (unused)
+    :param manipulator_id: ID of the manipulator to unregister
+    :return: Callback parameter (Error message (on error))
+    """
+    com.dprint(f'[EVENT]\t\t Unregister manipulator: {manipulator_id}')
+
+    return sh.unregister_manipulator(manipulator_id)
 
 
 @sio.event
@@ -96,8 +109,7 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
     Position of manipulator request
     :param _: Socket session ID (unused)
     :param manipulator_id: ID of manipulator to pull position from
-    :return: Callback parameters (manipulator ID, position in (x, y, z,
-    w) (or an empty array on error), error message)
+    :return: Callback parameter (Error message (on error))
     """
     com.dprint(f'[EVENT]\t\t Get position of manipulator'
                f' {manipulator_id}')
