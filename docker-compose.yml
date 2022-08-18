@@ -1,9 +1,11 @@
 version: "3.9"
 
 services:
-  nptraj-sensapex-link:
+  ephys-manip-link:
+    container_name: ephys-manip-link
     build: .
-    working_dir: /root/nptraj-sensapex-link
+    image: kjy5/ephys-manip-link:latest
+    working_dir: /root/ephys-manip-link
     stdin_open: true
     tty: true
     ports:
@@ -11,5 +13,5 @@ services:
     volumes:
       - type: bind
         source: .
-        target: /root/nptraj-sensapex-link
-    command: python nptraj_sensapex_link/server.py -s no-e-stop -p 8080
+        target: /root/ephys-manip-link
+    command: python ephys_manip_link/server.py -s no-e-stop -p 8080
