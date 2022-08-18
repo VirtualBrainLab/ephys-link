@@ -1,6 +1,6 @@
 FROM python:latest
 
-WORKDIR /root/nptraj-sensapex-link
+WORKDIR /root/ephys-manip-link
 
 COPY requirements.txt .
 

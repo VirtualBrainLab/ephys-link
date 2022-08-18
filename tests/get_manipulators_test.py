@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
-from nptraj_sensapex_link.common import GetManipulatorsOutputData
+from ephys_manip_link.common import GetManipulatorsOutputData
 
 
 class GetManipulatorsTestCase(TestCase):
