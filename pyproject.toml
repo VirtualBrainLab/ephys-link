@@ -3,10 +3,10 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nptraj-sensapex-link"
-version = "0.0.5"
+name = "ephys-manip-link"
+version = "0.0.1"
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
-description = "A python server to connect WebSocket compliant clients to a Sensapex device"
+description = "A Python WebSocket server that allows any WebSocket compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
@@ -16,9 +16,10 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
+    "pyserial",
     "python-socketio",
     "sensapex",
 ]
 
 [project.urls]
-"GitHub" = "https://github.com/dbirman/nptraj-sensapex-link"
+"GitHub" = "https://github.com/VirtualBrainLab/ephys-manip-link"
