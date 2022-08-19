@@ -27,6 +27,7 @@ def dprint(message: str) -> None:
 # Input data formats
 class GotoPositionInputDataFormat(TypedDict):
     """Data format for goto_pos"""
+
     manipulator_id: int
     pos: list[float]
     speed: int
@@ -34,12 +35,14 @@ class GotoPositionInputDataFormat(TypedDict):
 
 class InsideBrainInputDataFormat(TypedDict):
     """Data format for inside_brain"""
+
     manipulator_id: int
     inside: bool
 
 
 class DriveToDepthInputDataFormat(TypedDict):
     """Data format for drive_to_depth"""
+
     manipulator_id: int
     depth: float
     speed: int
@@ -47,6 +50,7 @@ class DriveToDepthInputDataFormat(TypedDict):
 
 class CanWriteInputDataFormat(TypedDict):
     """Data format for can_write"""
+
     manipulator_id: int
     can_write: bool
     hours: float
@@ -60,23 +64,21 @@ class GetManipulatorsOutputData(dict):
         """
         :param manipulators: Tuple of manipulator IDs
         """
-        super(GetManipulatorsOutputData, self). \
-            __init__(manipulators=manipulators, error=error)
+        super(GetManipulatorsOutputData, self).__init__(
+            manipulators=manipulators, error=error
+        )
 
 
 class PositionalOutputData(dict):
     """Output format for (id, position, error)"""
 
-    def __init__(self, position: list, error: str) -> \
-            None:
+    def __init__(self, position: list, error: str) -> None:
         """
         Create positional output data dictionary
         :param position: Position (as a tuple, can be empty tuple)
         :param error: Error message
         """
-        super(PositionalOutputData, self). \
-            __init__(position=position,
-                     error=error)
+        super(PositionalOutputData, self).__init__(position=position, error=error)
 
 
 class DriveToDepthOutputData(dict):
@@ -88,9 +90,7 @@ class DriveToDepthOutputData(dict):
         :param depth: Depth
         :param error: Error message
         """
-        super(DriveToDepthOutputData, self). \
-            __init__(depth=depth,
-                     error=error)
+        super(DriveToDepthOutputData, self).__init__(depth=depth, error=error)
 
 
 class StateOutputData(dict):
@@ -102,6 +102,4 @@ class StateOutputData(dict):
         :param state: State of the event
         :param error: Error message
         """
-        super(StateOutputData, self). \
-            __init__(state=state,
-                     error=error)
+        super(StateOutputData, self).__init__(state=state, error=error)
