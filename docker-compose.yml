@@ -14,4 +14,4 @@ services:
       - type: bind
         source: .
         target: /root/ephys-manip-link
-    command: python ephys_manip_link/server.py -s no-e-stop -p 8080
+#    command: python ephys_manip_link/server.py -s no-e-stop -p 8080
