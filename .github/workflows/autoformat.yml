@@ -1,0 +1,38 @@
+name: Autoformat
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  autoformat:
+    name: Autoformat
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: 📦 Install dependencies
+        run: pip install -r .github/auto-formatters.txt
+
+      - name: 🔃 Sort Imports
+        run: isort .
+
+      - name: 📝 Format Code
+        run: black .
+
+      - name: ✅ Commit code format changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Autoformat code"
