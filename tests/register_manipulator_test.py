@@ -1,5 +1,6 @@
 from unittest import TestCase
 from unittest.mock import Mock
+
 # noinspection PyPackageRequirements
 import socketio
 
@@ -12,29 +13,29 @@ class RegisterManipulatorTestCase(TestCase):
         self.sio = socketio.Client()
         self.mock = Mock()
 
-        self.sio.connect('http://localhost:8080')
+        self.sio.connect("http://localhost:8080")
 
     def test_register_manipulator(self):
         """Tests registering a manipulator"""
-        self.sio.emit('register_manipulator', 1, callback=self.mock)
+        self.sio.emit("register_manipulator", 1, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with('')
+        self.mock.assert_called_with("")
 
     def test_re_register_manipulator(self):
         """Test re-registering a manipulator"""
-        self.sio.emit('register_manipulator', 1)
-        self.sio.emit('register_manipulator', 1, callback=self.mock)
+        self.sio.emit("register_manipulator", 1)
+        self.sio.emit("register_manipulator", 1, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with('Manipulator already registered')
+        self.mock.assert_called_with("Manipulator already registered")
 
     def test_register_unknown_manipulator(self):
         """Test registering an unknown manipulator"""
-        self.sio.emit('register_manipulator', 3, callback=self.mock)
+        self.sio.emit("register_manipulator", 3, callback=self.mock)
         self.wait_for_callback()
 
-        self.mock.assert_called_with('Manipulator not found')
+        self.mock.assert_called_with("Manipulator not found")
 
     def tearDown(self) -> None:
         """Cleanup test case"""

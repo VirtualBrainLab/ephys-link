@@ -1,13 +1,15 @@
 import asyncio
-import common as com
 import threading
 from collections import deque
 from copy import deepcopy
+
+import common as com
 from sensapex import SensapexDevice
 
 
 class Manipulator:
     """Representation of a single manipulator"""
+
     INSIDE_BRAIN_SPEED_LIMIT = 10
 
     def __init__(self, device: SensapexDevice) -> None:
@@ -46,16 +48,16 @@ class Manipulator:
         """
         try:
             position = self._device.get_pos(1)
-            com.dprint(
-                f'[SUCCESS]\t Sent position of manipulator {self._id}\n')
-            return com.PositionalOutputData(position, '')
+            com.dprint(f"[SUCCESS]\t Sent position of manipulator {self._id}\n")
+            return com.PositionalOutputData(position, "")
         except Exception as e:
-            print(f'[ERROR]\t\t Getting position of manipulator {self._id}')
-            print(f'{e}\n')
-            return com.PositionalOutputData([], 'Error getting position')
+            print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
+            print(f"{e}\n")
+            return com.PositionalOutputData([], "Error getting position")
 
-    async def goto_pos(self, position: list[float], speed: float) \
-            -> com.PositionalOutputData:
+    async def goto_pos(
+        self, position: list[float], speed: float
+    ) -> com.PositionalOutputData:
         """
         Move manipulator to position
         :param position: The position to move to
@@ -71,10 +73,8 @@ class Manipulator:
             await self._move_queue[1].event.wait()
 
         if not self._can_write:
-            print(f'[ERROR]\t\t Manipulator {self._id} movement '
-                  f'canceled')
-            return com.PositionalOutputData([], 'Manipulator '
-                                                'movement canceled')
+            print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
+            return com.PositionalOutputData([], "Manipulator " "movement canceled")
 
         try:
             target_position = position
@@ -100,20 +100,20 @@ class Manipulator:
             self._move_queue.pop().event.set()
 
             com.dprint(
-                f'[SUCCESS]\t Moved manipulator {self._id} to position'
-                f' {manipulator_final_position}\n'
+                f"[SUCCESS]\t Moved manipulator {self._id} to position"
+                f" {manipulator_final_position}\n"
             )
-            return com.PositionalOutputData(manipulator_final_position, '')
+            return com.PositionalOutputData(manipulator_final_position, "")
         except Exception as e:
             print(
-                f'[ERROR]\t\t Moving manipulator {self._id} to position'
-                f' {position}')
-            print(f'{e}\n')
-            return com.PositionalOutputData([], 'Error moving '
-                                                'manipulator')
+                f"[ERROR]\t\t Moving manipulator {self._id} to position" f" {position}"
+            )
+            print(f"{e}\n")
+            return com.PositionalOutputData([], "Error moving " "manipulator")
 
-    async def drive_to_depth(self, depth: float, speed: int) -> \
-            com.DriveToDepthOutputData:
+    async def drive_to_depth(
+        self, depth: float, speed: int
+    ) -> com.DriveToDepthOutputData:
         """
         Drive the manipulator to a certain depth
         :param depth: The depth to drive to
@@ -129,14 +129,12 @@ class Manipulator:
         target_pos[3] = depth
         movement_result = await self.goto_pos(target_pos, speed)
 
-        if movement_result['error'] == '':
+        if movement_result["error"] == "":
             # Return depth on success
-            return com.DriveToDepthOutputData(movement_result['position'][3],
-                                              '')
+            return com.DriveToDepthOutputData(movement_result["position"][3], "")
         else:
             # Return 0 and error message on failure
-            return com.DriveToDepthOutputData(0, 'Error driving '
-                                                 'manipulator')
+            return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
 
     def set_inside_brain(self, inside: bool) -> None:
         """
@@ -169,14 +167,15 @@ class Manipulator:
         if can_write and hours > 0:
             if self._reset_timer:
                 self._reset_timer.cancel()
-            self._reset_timer = threading.Timer(hours * 3600,
-                                                self.reset_can_write, [sio])
+            self._reset_timer = threading.Timer(
+                hours * 3600, self.reset_can_write, [sio]
+            )
             self._reset_timer.start()
 
     def reset_can_write(self, sio):
         """Reset the can_write flag"""
         self._can_write = False
-        asyncio.run(sio.emit('write_disabled', self._id))
+        asyncio.run(sio.emit("write_disabled", self._id))
 
     # Calibration
     def call_calibrate(self):

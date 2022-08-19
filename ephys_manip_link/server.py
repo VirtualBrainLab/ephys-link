@@ -1,13 +1,15 @@
-from aiohttp import web
 import argparse
-import common as com
 import signal
-import sensapex_handler as sh
-# noinspection PyPackageRequirements
-import socketio
 import sys
 from threading import Thread
 from typing import Any
+
+import common as com
+import sensapex_handler as sh
+
+# noinspection PyPackageRequirements
+import socketio
+from aiohttp import web
 
 # Setup server
 sio = socketio.AsyncServer()
@@ -17,18 +19,25 @@ is_connected = False
 
 # Parse arguments
 parser = argparse.ArgumentParser(
-    description='Electrophysiology Manipulator Link: a websocket interface for'
-                ' manipulators in electrophysiology experiments',
-    prog='python -m ephys-manip-link')
-parser.add_argument('-d', '--debug', dest='debug', action='store_true',
-                    help='Enable debug mode')
-parser.add_argument('-p', '--port', type=int, default=8080, dest='port',
-                    help='Port to listen on')
-parser.add_argument('-s', '--serial', type=str, default=None, dest='serial',
-                    help='Serial port to use')
-parser.add_argument('--version', action='version',
-                    version='Electrophysiology Manipulator Link v0.0.1',
-                    help='Print version and exit')
+    description="Electrophysiology Manipulator Link: a websocket interface for"
+    " manipulators in electrophysiology experiments",
+    prog="python -m ephys-manip-link",
+)
+parser.add_argument(
+    "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
+)
+parser.add_argument(
+    "-p", "--port", type=int, default=8080, dest="port", help="Port to listen on"
+)
+parser.add_argument(
+    "-s", "--serial", type=str, default=None, dest="serial", help="Serial port to use"
+)
+parser.add_argument(
+    "--version",
+    action="version",
+    version="Electrophysiology Manipulator Link v0.0.1",
+    help="Print version and exit",
+)
 args = parser.parse_args()
 com.set_debug(args.debug)
 
@@ -42,7 +51,7 @@ async def connect(sid, _, __):
     :param _: WSGI formatted dictionary with request info (unused)
     :param __: Authentication details (unused)
     """
-    print(f'[CONNECTION]:\t\t {sid}\n')
+    print(f"[CONNECTION]:\t\t {sid}\n")
 
     global is_connected
     if not is_connected:
@@ -57,7 +66,7 @@ async def disconnect(sid):
     Acknowledge disconnection from the server
     :param sid: Socket session ID
     """
-    print(f'[DISCONNECTION]:\t {sid}\n')
+    print(f"[DISCONNECTION]:\t {sid}\n")
 
     sh.reset()
     global is_connected
@@ -72,7 +81,7 @@ async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     :param _: Socket session ID (unused)
     :return: Callback parameters (manipulators, error message)
     """
-    com.dprint(f'[EVENT]\t\t Get discoverable manipulators')
+    com.dprint(f"[EVENT]\t\t Get discoverable manipulators")
 
     return sh.get_manipulators()
 
@@ -85,7 +94,7 @@ async def register_manipulator(_, manipulator_id: int) -> str:
     :param manipulator_id: ID of the manipulator to register
     :return: Callback parameter (Error message (on error))
     """
-    com.dprint(f'[EVENT]\t\t Register manipulator: {manipulator_id}')
+    com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
 
     return sh.register_manipulator(manipulator_id)
 
@@ -98,7 +107,7 @@ async def unregister_manipulator(_, manipulator_id: int) -> str:
     :param manipulator_id: ID of the manipulator to unregister
     :return: Callback parameter (Error message (on error))
     """
-    com.dprint(f'[EVENT]\t\t Unregister manipulator: {manipulator_id}')
+    com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
 
     return sh.unregister_manipulator(manipulator_id)
 
@@ -111,15 +120,15 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
     :param manipulator_id: ID of manipulator to pull position from
     :return: Callback parameter (Error message (on error))
     """
-    com.dprint(f'[EVENT]\t\t Get position of manipulator'
-               f' {manipulator_id}')
+    com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
     return sh.get_pos(manipulator_id)
 
 
 @sio.event
-async def goto_pos(_, data: com.GotoPositionInputDataFormat) -> \
-        com.PositionalOutputData:
+async def goto_pos(
+    _, data: com.GotoPositionInputDataFormat
+) -> com.PositionalOutputData:
     """
     Move manipulator to position
     :param _: Socket session ID (unused)
@@ -128,31 +137,28 @@ async def goto_pos(_, data: com.GotoPositionInputDataFormat) -> \
     w) (or an empty tuple on error), error message)
     """
     try:
-        manipulator_id = data['manipulator_id']
-        pos = data['pos']
-        speed = data['speed']
+        manipulator_id = data["manipulator_id"]
+        pos = data["pos"]
+        speed = data["speed"]
 
     except KeyError:
-        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
-            else -1
-        print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return com.PositionalOutputData([], 'Invalid data format')
+        manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
+        print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+        return com.PositionalOutputData([], "Invalid data format")
 
     except Exception as e:
-        print(f'[ERROR]\t\t Error in goto_pos: {e}\n')
-        return com.PositionalOutputData([], 'Error in goto_pos')
+        print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
+        return com.PositionalOutputData([], "Error in goto_pos")
 
-    com.dprint(
-        f'[EVENT]\t\t Move manipulator {manipulator_id} '
-        f'to position {pos}'
-    )
+    com.dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
 
     return await sh.goto_pos(manipulator_id, pos, speed)
 
 
 @sio.event
-async def drive_to_depth(_, data: com.DriveToDepthInputDataFormat) \
-        -> com.DriveToDepthOutputData:
+async def drive_to_depth(
+    _, data: com.DriveToDepthInputDataFormat
+) -> com.DriveToDepthOutputData:
     """
     Drive to depth
     :param _: Socket session ID (unused)
@@ -161,32 +167,28 @@ async def drive_to_depth(_, data: com.DriveToDepthInputDataFormat) \
     error message)
     """
     try:
-        manipulator_id = data['manipulator_id']
-        depth = data['depth']
-        speed = data['speed']
+        manipulator_id = data["manipulator_id"]
+        depth = data["depth"]
+        speed = data["speed"]
 
     except KeyError:
-        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
-            else -1
-        print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return com.DriveToDepthOutputData(-1, 'Invalid data '
-                                              'format')
+        manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
+        print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+        return com.DriveToDepthOutputData(-1, "Invalid data " "format")
 
     except Exception as e:
-        print(f'[ERROR]\t\t Error in drive_to_depth: {e}\n')
-        return com.DriveToDepthOutputData(-1, 'Error in drive_to_depth')
+        print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
+        return com.DriveToDepthOutputData(-1, "Error in drive_to_depth")
 
-    com.dprint(
-        f'[EVENT]\t\t Drive manipulator {manipulator_id} '
-        f'to depth {depth}'
-    )
+    com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} " f"to depth {depth}")
 
     return await sh.drive_to_depth(manipulator_id, depth, speed)
 
 
 @sio.event
-async def set_inside_brain(_, data: com.InsideBrainInputDataFormat) -> \
-        com.StateOutputData:
+async def set_inside_brain(
+    _, data: com.InsideBrainInputDataFormat
+) -> com.StateOutputData:
     """
     Set the inside brain state
     :param _: Socket session ID (unused)
@@ -194,20 +196,19 @@ async def set_inside_brain(_, data: com.InsideBrainInputDataFormat) -> \
     :return: Callback parameters (manipulator ID, inside, error message)
     """
     try:
-        manipulator_id = data['manipulator_id']
-        inside = data['inside']
+        manipulator_id = data["manipulator_id"]
+        inside = data["inside"]
 
     except KeyError:
-        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
-            else -1
-        print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return com.StateOutputData(False, 'Invalid data format')
+        manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
+        print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+        return com.StateOutputData(False, "Invalid data format")
     except Exception as e:
-        print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
-        return com.StateOutputData(False, 'Error in set_inside_brain')
+        print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
+        return com.StateOutputData(False, "Error in set_inside_brain")
 
     com.dprint(
-        f'[EVENT]\t\t Set manipulator {manipulator_id} inside brain to '
+        f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to "
         f'{"true" if inside else "false"}'
     )
 
@@ -222,8 +223,7 @@ async def calibrate(_, manipulator_id: int) -> str:
     :param manipulator_id: ID of manipulator to calibrate
     :return: Callback parameters (manipulator ID, error message)
     """
-    com.dprint(f'[EVENT]\t\t Calibrate manipulator'
-               f' {manipulator_id}')
+    com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
 
     return await sh.calibrate(manipulator_id, sio)
 
@@ -236,15 +236,13 @@ async def bypass_calibration(_, manipulator_id: int) -> str:
     :param manipulator_id: ID of manipulator to bypass calibration
     :return: Callback parameters (manipulator ID, error message)
     """
-    com.dprint(f'[EVENT]\t\t Bypass calibration of manipulator'
-               f' {manipulator_id}')
+    com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
 
     return sh.bypass_calibration(manipulator_id)
 
 
 @sio.event
-async def set_can_write(_, data: com.CanWriteInputDataFormat) -> \
-        com.StateOutputData:
+async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutputData:
     """
     Set manipulator can_write state
     :param _: Socket session ID (unused)
@@ -252,23 +250,21 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> \
     :return: Callback parameters (manipulator ID, can_write, error message)
     """
     try:
-        manipulator_id = data['manipulator_id']
-        can_write = data['can_write']
-        hours = data['hours']
+        manipulator_id = data["manipulator_id"]
+        can_write = data["can_write"]
+        hours = data["hours"]
 
     except KeyError:
-        manipulator_id = data['manipulator_id'] if 'manipulator_id' in data \
-            else -1
-        print(f'[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n')
-        return com.StateOutputData(False, 'Invalid data '
-                                          'format')
+        manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
+        print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+        return com.StateOutputData(False, "Invalid data " "format")
 
     except Exception as e:
-        print(f'[ERROR]\t\t Error in inside_brain: {e}\n')
-        return com.StateOutputData(False, 'Error in set_can_write')
+        print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
+        return com.StateOutputData(False, "Error in set_can_write")
 
     com.dprint(
-        f'[EVENT]\t\t Set manipulator {manipulator_id} can_write state to '
+        f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to "
         f'{"true" if can_write else "false"}'
     )
 
@@ -282,12 +278,12 @@ async def stop(_) -> bool:
     :param _: Socket session ID (unused)
     :return: True if successful, False otherwise
     """
-    com.dprint('[EVENT]\t\t Stop all manipulators')
+    com.dprint("[EVENT]\t\t Stop all manipulators")
 
     return sh.stop()
 
 
-@sio.on('*')
+@sio.on("*")
 async def catch_all(_, __, data: Any) -> None:
     """
     Catch all event
@@ -296,7 +292,7 @@ async def catch_all(_, __, data: Any) -> None:
     :param data: Data received from client
     :return: None
     """
-    print(f'[UNKNOWN EVENT]:\t {data}')
+    print(f"[UNKNOWN EVENT]:\t {data}")
 
 
 # Handle server start
@@ -309,11 +305,11 @@ def launch() -> None:
 
 def close(_, __):
     """Close the server"""
-    print('[INFO]\t\t Closing server')
+    print("[INFO]\t\t Closing server")
     sh.continue_polling = False
     sh.stop()
     sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     launch()
