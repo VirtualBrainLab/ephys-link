@@ -1,2 +1,8 @@
 black==22.6.0
-isort==5.10.1
+eradicate==2.1.0
+mypy==0.971
+pylama==8.4.1
+pylint==2.14.5
+radon==5.1.0
+toml==0.10.2
+vulture==2.5

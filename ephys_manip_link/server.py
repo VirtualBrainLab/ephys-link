@@ -81,7 +81,7 @@ async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     :param _: Socket session ID (unused)
     :return: Callback parameters (manipulators, error message)
     """
-    com.dprint(f"[EVENT]\t\t Get discoverable manipulators")
+    com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
     return sh.get_manipulators()
 

@@ -1,4 +1,4 @@
-name: Autoformat
+name: Autoformat and Lint
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   autoformat:
-    name: Autoformat
+    name: Autoformat and Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -36,3 +36,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Autoformat code"
+
+      - name: 🔍 Lint
+        run: pylama
