@@ -236,7 +236,7 @@ def set_inside_brain(manipulator_id: int, inside: bool) -> com.StateOutputData:
     try:
         # Check calibration status
         if not manipulators[manipulator_id].get_calibrated():
-            print(f"[ERROR]\t\t Calibration not complete\n")
+            print("[ERROR]\t\t Calibration not complete\n")
             return com.StateOutputData(False, "Manipulator not calibrated")
 
         manipulators[manipulator_id].set_inside_brain(inside)

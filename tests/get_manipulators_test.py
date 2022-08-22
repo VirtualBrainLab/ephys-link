@@ -4,9 +4,6 @@ from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
 
-from ephys_manip_link.common import GetManipulatorsOutputData
-
-
 class GetManipulatorsTestCase(TestCase):
     """Tests get_pos event"""
 
