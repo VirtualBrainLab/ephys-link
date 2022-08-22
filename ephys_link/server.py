@@ -21,7 +21,7 @@ is_connected = False
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
     " manipulators in electrophysiology experiments",
-    prog="python -m ephys-manip-link",
+    prog="python -m ephys-link",
 )
 parser.add_argument(
     "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"

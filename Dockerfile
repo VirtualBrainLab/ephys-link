@@ -1,6 +1,6 @@
 FROM python:latest
 
-WORKDIR /root/ephys-manip-link
+WORKDIR /root/ephys-link
 
 COPY requirements.txt .
 

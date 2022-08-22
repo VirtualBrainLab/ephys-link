@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ephys-manip-link"
+name = "ephys-link"
 version = "0.0.0"
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 description = "A Python WebSocket server that allows any WebSocket compliant application to communicate with manipulators used in electrophysiology experiments."
@@ -22,4 +22,4 @@ dependencies = [
 ]
 
 [project.urls]
-"GitHub" = "https://github.com/VirtualBrainLab/ephys-manip-link"
+"GitHub" = "https://github.com/VirtualBrainLab/ephys-link"

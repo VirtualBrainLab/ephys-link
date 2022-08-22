@@ -1,4 +1,4 @@
-graft ephys_manip_link
+graft ephys_link
 graft scripts
 graft tests
 
