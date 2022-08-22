@@ -4,6 +4,7 @@ from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
 
+
 class GetManipulatorsTestCase(TestCase):
     """Tests get_pos event"""
 
