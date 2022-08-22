@@ -1,11 +1,11 @@
 version: "3.9"
 
 services:
-  ephys-manip-link:
-    container_name: ephys-manip-link
+  ephys-link:
+    container_name: ephys-link
     build: .
-    image: kjy5/ephys-manip-link:latest
-    working_dir: /root/ephys-manip-link
+    image: kjy5/ephys-link:latest
+    working_dir: /root/ephys-link
     stdin_open: true
     tty: true
     ports:
@@ -13,5 +13,5 @@ services:
     volumes:
       - type: bind
         source: .
-        target: /root/ephys-manip-link
-#    command: python ephys_manip_link/server.py -s no-e-stop -p 8080
+        target: /root/ephys-link
+    command: python ephys_link/server.py -s no-e-stop -p 8080

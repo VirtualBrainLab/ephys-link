@@ -4,7 +4,7 @@ from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
 
-from ephys_manip_link.common import PositionalOutputData
+from ephys_link.common import PositionalOutputData
 
 
 # noinspection DuplicatedCode
