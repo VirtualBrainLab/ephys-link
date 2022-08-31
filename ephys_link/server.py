@@ -1,3 +1,8 @@
+"""WebSocket server and communication handler
+
+Manages the WebSocket server and handles connections and events from the client.
+"""
+
 import argparse
 import signal
 import sys
@@ -20,7 +25,7 @@ is_connected = False
 # Parse arguments
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-    " manipulators in electrophysiology experiments",
+                " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
 parser.add_argument(
@@ -44,12 +49,17 @@ com.set_debug(args.debug)
 
 # Handle connection events
 @sio.event
-async def connect(sid, _, __):
-    """
-    Acknowledge connection to the server
+async def connect(sid, _, __) -> bool:
+    """Acknowledge connection to the server
+
     :param sid: Socket session ID
+    :type sid: str
     :param _: WSGI formatted dictionary with request info (unused)
+    :type _: dict
     :param __: Authentication details (unused)
+    :type __: dict
+    :return: False on error to refuse connection. None otherwise.
+    :rtype: bool
     """
     print(f"[CONNECTION]:\t\t {sid}\n")
 
@@ -61,10 +71,13 @@ async def connect(sid, _, __):
 
 
 @sio.event
-async def disconnect(sid):
-    """
-    Acknowledge disconnection from the server
+async def disconnect(sid) -> None:
+    """Acknowledge disconnection from the server
+
     :param sid: Socket session ID
+    :type sid: str
+    :return: None
+    :rtype: None
     """
     print(f"[DISCONNECTION]:\t {sid}\n")
 
@@ -76,10 +89,12 @@ async def disconnect(sid):
 # Events
 @sio.event
 async def get_manipulators(_) -> com.GetManipulatorsOutputData:
-    """
-    Get the list of discoverable manipulators
+    """Get the list of discoverable manipulators
+
     :param _: Socket session ID (unused)
+    :type _: str
     :return: Callback parameters (manipulators, error message)
+    :rtype: :class: `common.GetManipulatorsOutputData`
     """
     com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
@@ -88,11 +103,14 @@ async def get_manipulators(_) -> com.GetManipulatorsOutputData:
 
 @sio.event
 async def register_manipulator(_, manipulator_id: int) -> str:
-    """
-    Register a manipulator with the server
+    """Register a manipulator with the server
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param manipulator_id: ID of the manipulator to register
+    :type manipulator_id: int
     :return: Callback parameter (Error message (on error))
+    :rtype: str
     """
     com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
 
@@ -101,11 +119,14 @@ async def register_manipulator(_, manipulator_id: int) -> str:
 
 @sio.event
 async def unregister_manipulator(_, manipulator_id: int) -> str:
-    """
-    Unregister a manipulator from the server
+    """Unregister a manipulator from the server
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param manipulator_id: ID of the manipulator to unregister
+    :type manipulator_id: int
     :return: Callback parameter (Error message (on error))
+    :rtype: str
     """
     com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
 
@@ -114,11 +135,14 @@ async def unregister_manipulator(_, manipulator_id: int) -> str:
 
 @sio.event
 async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
-    """
-    Position of manipulator request
+    """Position of manipulator request
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param manipulator_id: ID of manipulator to pull position from
+    :type manipulator_id: int
     :return: Callback parameter (Error message (on error))
+    :rtype: str
     """
     com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
@@ -126,15 +150,17 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
 
 
 @sio.event
-async def goto_pos(
-    _, data: com.GotoPositionInputDataFormat
-) -> com.PositionalOutputData:
-    """
-    Move manipulator to position
+async def goto_pos(_,
+                   data: com.GotoPositionInputDataFormat) -> com.PositionalOutputData:
+    """Move manipulator to position
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param data: Data containing manipulator ID, position, and speed
+    :type data: :class: `common.GotoPositionInputDataFormat`
     :return: Callback parameters (manipulator ID, position in (x, y, z,
     w) (or an empty tuple on error), error message)
+    :rtype: :class: `common.PositionalOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -157,14 +183,17 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-    _, data: com.DriveToDepthInputDataFormat
+        _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
-    """
-    Drive to depth
+    """Drive to depth
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param data: Data containing manipulator ID, depth, and speed
+    :type data: :class: `common.DriveToDepthInputDataFormat`
     :return: Callback parameters (manipulator ID, depth (or -1 on error),
     error message)
+    :rtype: :class: `common.DriveToDepthOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -187,13 +216,16 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-    _, data: com.InsideBrainInputDataFormat
+        _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
-    """
-    Set the inside brain state
+    """Set the inside brain state
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param data: Data containing manipulator ID and inside brain state
+    :type data: :class: `common.InsideBrainInputDataFormat`
     :return: Callback parameters (manipulator ID, inside, error message)
+    :rtype: :class: `common.StateOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -217,11 +249,14 @@ async def set_inside_brain(
 
 @sio.event
 async def calibrate(_, manipulator_id: int) -> str:
-    """
-    Calibrate manipulator
+    """Calibrate manipulator
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param manipulator_id: ID of manipulator to calibrate
+    :type manipulator_id: int
     :return: Callback parameters (manipulator ID, error message)
+    :rtype: str
     """
     com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
 
@@ -230,11 +265,14 @@ async def calibrate(_, manipulator_id: int) -> str:
 
 @sio.event
 async def bypass_calibration(_, manipulator_id: int) -> str:
-    """
-    Bypass calibration of manipulator
+    """Bypass calibration of manipulator
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param manipulator_id: ID of manipulator to bypass calibration
+    :type manipulator_id: int
     :return: Callback parameters (manipulator ID, error message)
+    :rtype: str
     """
     com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
 
@@ -243,11 +281,14 @@ async def bypass_calibration(_, manipulator_id: int) -> str:
 
 @sio.event
 async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutputData:
-    """
-    Set manipulator can_write state
+    """Set manipulator can_write state
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param data: Data containing manipulator ID and can_write brain state
+    :type data: :class: `common.CanWriteInputDataFormat`
     :return: Callback parameters (manipulator ID, can_write, error message)
+    :rtype: :class: `common.StateOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -273,10 +314,12 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutput
 
 @sio.event
 async def stop(_) -> bool:
-    """
-    Stop all manipulators
+    """Stop all manipulators
+
     :param _: Socket session ID (unused)
+    :type _: str
     :return: True if successful, False otherwise
+    :rtype: bool
     """
     com.dprint("[EVENT]\t\t Stop all manipulators")
 
@@ -285,26 +328,42 @@ async def stop(_) -> bool:
 
 @sio.on("*")
 async def catch_all(_, __, data: Any) -> None:
-    """
-    Catch all event
+    """Catch all event
+
     :param _: Socket session ID (unused)
+    :type _: str
     :param __: Client ID (unused)
+    :type __: str
     :param data: Data received from client
+    :type data: Any
     :return: None
+    :rtype: None
     """
     print(f"[UNKNOWN EVENT]:\t {data}")
 
 
 # Handle server start
 def launch() -> None:
-    """Launch the server"""
+    """Launch the server
+
+    :return: None
+    :rtype: None
+    """
     signal.signal(signal.SIGINT, close)
     Thread(target=sh.poll_serial, args=(args.serial,)).start()
     web.run_app(app, port=args.port)
 
 
-def close(_, __):
-    """Close the server"""
+def close(_, __) -> None:
+    """Close the server
+
+    :param _: Signal number (unused)
+    :type _: int
+    :param __: Frame (unused)
+    :type __: Any
+    :return: None
+    :rtype: None
+    """
     print("[INFO]\t\t Closing server")
     sh.continue_polling = False
     sh.stop()
