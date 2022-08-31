@@ -9,10 +9,10 @@ import threading
 from collections import deque
 from copy import deepcopy
 
+import common as com
+
 # noinspection PyPackageRequirements
 import socketio
-
-import common as com
 from sensapex import SensapexDevice
 
 
@@ -21,10 +21,9 @@ class SensapexManipulator:
 
     :param device: A Sensapex device
     :type device: :class: `sensapex.SensapexDevice`
-    :return: None
-    :rtype: None
     """
 
+    # How fast a manipulator is allowed to drive when inside the brain (in µm/s)
     INSIDE_BRAIN_SPEED_LIMIT = 10
 
     def __init__(self, device: SensapexDevice) -> None:
@@ -38,15 +37,12 @@ class SensapexManipulator:
         self._move_queue = deque()
 
     class Movement:
-        """Movement struct
+        """Movement data struct
 
         :param event: An asyncio event
         :type event: :class: `asyncio.Event`
-        :param position: A tuple of floats (x, y, z, w) representing the
-        position to move to in µm
+        :param position: A tuple of floats (x, y, z, w) representing the position to move to in µm
         :type position: list[float]
-        :return: None
-        :rtype: None
         """
 
         def __init__(self, event: asyncio.Event, position: list[float]) -> None:
@@ -58,9 +54,8 @@ class SensapexManipulator:
     def get_pos(self) -> com.PositionalOutputData:
         """Get the current position of the manipulator
 
-        :return: Callback parameters (manipulator ID, position in (x, y, z,
-        w) (or an empty array on error), error message)
-        :rtype: :class: `common.PositionalOutputData`
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on error), error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
             position = self._device.get_pos(1)
@@ -80,9 +75,8 @@ class SensapexManipulator:
         :type position: list[float]
         :param speed: The speed to move at (in µm/s)
         :type speed: float
-        :return: Callback parameters (manipulator ID, position in (x, y, z,
-        w) (or an empty array on error), error message)
-        :rtype: :class:`common.PositionalOutputData`
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on error), error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         # Add movement to queue
         self._move_queue.appendleft(self.Movement(asyncio.Event(), position))
@@ -139,9 +133,8 @@ class SensapexManipulator:
         :type depth: float
         :param speed: The speed to drive at
         :type speed: int
-        :return: Callback parameters (manipulator ID, depth (or 0 on error),
-        error message)
-        :rtype: :class:`common.DriveToDepthOutputData`
+        :return: Callback parameters (depth (or 0 on error), error message)
+        :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
         # Get position before this movement
         target_pos = self._device.get_pos()
@@ -163,11 +156,9 @@ class SensapexManipulator:
 
         Used to signal that the brain should move at :const:`INSIDE_BRAIN_SPEED_LIMIT`
 
-        :param inside: True if the manipulator is inside the brain,
-        False otherwise
+        :param inside: True if the manipulator is inside the brain, False otherwise
         :type inside: bool
         :return: None
-        :rtype: None
         """
         self._inside_brain = inside
 
@@ -186,13 +177,11 @@ class SensapexManipulator:
 
         :param can_write: True if the manipulator can move, False otherwise
         :type can_write: bool
-        :param hours: The number of hours to allow the manipulator to move (
-        0 = forever)
+        :param hours: The number of hours to allow the manipulator to move (0 = forever)
         :type hours: float
         :param sio: SocketIO object from server to emit reset event
         :type sio: :class:`socketio.AsyncServer`
         :return: None
-        :rtype: None
         """
         self._can_write = can_write
 
@@ -210,7 +199,6 @@ class SensapexManipulator:
         :param sio: SocketIO object from server to emit reset event
         :type sio: :class:`socketio.AsyncServer`
         :return: None
-        :rtype: None
         """
         self._can_write = False
         asyncio.run(sio.emit("write_disabled", self._id))
@@ -220,7 +208,6 @@ class SensapexManipulator:
         """Calibrate the manipulator
 
         :return: None
-        :rtype: None
         """
         self._device.calibrate_zero_position()
 
@@ -236,7 +223,6 @@ class SensapexManipulator:
         """Set the manipulator to calibrated
 
         :return: None
-        :rtype: None
         """
         self._calibrated = True
 
@@ -244,7 +230,6 @@ class SensapexManipulator:
         """Stop the manipulator
 
         :return: None
-        :rtype: None
         """
         while self._move_queue:
             self._move_queue.pop().event.set()

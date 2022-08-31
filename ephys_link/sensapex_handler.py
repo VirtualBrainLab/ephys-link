@@ -1,17 +1,18 @@
-"""Handling communications with Sensapex manipulators and the uMp API
+"""Handle communications with Sensapex uMp API
 
 Handles loading the Sensapex SDK and connecting to uMp devices. WebSocket events are
-error checked and relayed to events to the :class:`Manipulator` class.
+error checked and relayed to events to the :class:`ephys_link.sensapex_manipulator.SensapexManipulator` class.
 """
+
 import time
 from pathlib import Path
 
+import common as com
+
 # noinspection PyPackageRequirements
 import socketio
-
-import common as com
-from sensapex_manipulator import SensapexManipulator
 from sensapex import UMP, UMError
+from sensapex_manipulator import SensapexManipulator
 from serial import Serial
 from serial.tools.list_ports import comports
 
@@ -33,7 +34,6 @@ def poll_serial(serial_port: str) -> None:
     :param serial_port: The serial port to poll
     :type serial_port: str
     :return: None
-    :rtype: None
     """
     target_port = serial_port
     if serial_port is None:
@@ -89,7 +89,7 @@ def get_manipulators() -> com.GetManipulatorsOutputData:
     """Get all registered manipulators
 
     :return: Callback parameters (manipulators, error)
-    :rtype: :class:`common.GetManipulatorsOutputData`
+    :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
     """
     devices = []
     error = "Error getting manipulators"
@@ -143,7 +143,6 @@ def unregister_manipulator(manipulator_id: int) -> str:
     :param manipulator_id: The ID of the manipulator to unregister.
     :type manipulator_id: int
     :return: Callback parameters (error message (on error))
-
     """
     # Check if manipulator is not registered
     if manipulator_id not in manipulators:
@@ -168,9 +167,8 @@ def get_pos(manipulator_id: int) -> com.PositionalOutputData:
 
     :param manipulator_id: The ID of the manipulator to get the position of.
     :type manipulator_id: int
-    :return: Callback parameters (manipulator ID, position in (x, y, z,
-    w) (or an empty array on error), error message)
-    :rtype: :class:`common.PositionalOutputData`
+    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty array on error), error message)
+    :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
     try:
         # Check calibration status
@@ -198,9 +196,8 @@ async def goto_pos(
     :type position: list[float]
     :param speed: The speed to move at (in µm/s)
     :type speed: int
-    :return: Callback parameters (manipulator ID, position in (x, y, z,
-    w) (or an empty array on error), error message)
-    :rtype: :class:`common.PositionalOutputData`
+    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty array on error), error message)
+    :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
     try:
         # Check calibration status
@@ -232,9 +229,8 @@ async def drive_to_depth(
     :type depth: float
     :param speed: The speed to drive at (in µm/s)
     :type speed: int
-    :return: Callback parameters (manipulator ID, depth (or 0 on error),
-    error message)
-    :rtype: :class:`common.DriveToDepthOutputData`
+    :return: Callback parameters (manipulator ID, depth (or 0 on error), error message)
+    :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
     """
     try:
         # Check calibration status
@@ -263,7 +259,7 @@ def set_inside_brain(manipulator_id: int, inside: bool) -> com.StateOutputData:
     :param inside: True if inside brain, False if outside
     :type inside: bool
     :return: Callback parameters (manipulator ID, inside, error message)
-    :rtype: :class:`common.StateOutputData`
+    :rtype: :class:`ephys_link.common.StateOutputData`
     """
     try:
         # Check calibration status
@@ -391,7 +387,7 @@ def set_can_write(
     :param sio: SocketIO object from server to emit reset event
     :type sio: :class:`socketio.AsyncServer`
     :return: Callback parameters (manipulator ID, can_write, error message)
-    :rtype: :class:`common.StateOutputData`
+    :rtype: :class:`ephys_link.common.StateOutputData`
     """
     try:
         manipulators[manipulator_id].set_can_write(can_write, hours, sio)

@@ -1,7 +1,7 @@
 """WebSocket server and communication handler
 
 Manages the WebSocket server and handles connections and events from the client.
-Calls the appropriate functions from :mod:`sensapex_handler` to handle the events
+Calls the appropriate functions from :mod:`ephys_link.sensapex_handler` to handle the events
 """
 
 import argparse
@@ -23,7 +23,7 @@ app = web.Application()
 sio.attach(app)
 is_connected = False
 
-# Parse arguments
+# Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
     " manipulators in electrophysiology experiments",
@@ -44,8 +44,6 @@ parser.add_argument(
     version="Electrophysiology Manipulator Link v0.0.1",
     help="Print version and exit",
 )
-args = parser.parse_args()
-com.set_debug(args.debug)
 
 
 # Handle connection events
@@ -78,7 +76,6 @@ async def disconnect(sid) -> None:
     :param sid: Socket session ID
     :type sid: str
     :return: None
-    :rtype: None
     """
     print(f"[DISCONNECTION]:\t {sid}\n")
 
@@ -95,7 +92,7 @@ async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     :param _: Socket session ID (unused)
     :type _: str
     :return: Callback parameters (manipulators, error message)
-    :rtype: :class:`common.GetManipulatorsOutputData`
+    :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
     """
     com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
@@ -142,8 +139,8 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
     :type _: str
     :param manipulator_id: ID of manipulator to pull position from
     :type manipulator_id: int
-    :return: Callback parameter (Error message (on error))
-    :rtype: str
+    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty array on error), error message)
+    :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
     com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
@@ -159,10 +156,9 @@ async def goto_pos(
     :param _: Socket session ID (unused)
     :type _: str
     :param data: Data containing manipulator ID, position, and speed
-    :type data: :class:`common.GotoPositionInputDataFormat`
-    :return: Callback parameters (manipulator ID, position in (x, y, z,
-    w) (or an empty tuple on error), error message)
-    :rtype: :class:`common.PositionalOutputData`
+    :type data: :class:`ephys_link.common.GotoPositionInputDataFormat`
+    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty tuple on error), error message)
+    :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -192,10 +188,9 @@ async def drive_to_depth(
     :param _: Socket session ID (unused)
     :type _: str
     :param data: Data containing manipulator ID, depth, and speed
-    :type data: :class:`common.DriveToDepthInputDataFormat`
-    :return: Callback parameters (manipulator ID, depth (or -1 on error),
-    error message)
-    :rtype: :class:`common.DriveToDepthOutputData`
+    :type data: :class:`ephys_link.common.DriveToDepthInputDataFormat`
+    :return: Callback parameters (manipulator ID, depth (or -1 on error), error message)
+    :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -225,9 +220,9 @@ async def set_inside_brain(
     :param _: Socket session ID (unused)
     :type _: str
     :param data: Data containing manipulator ID and inside brain state
-    :type data: :class:`common.InsideBrainInputDataFormat`
+    :type data: :class:`ephys_link.common.InsideBrainInputDataFormat`
     :return: Callback parameters (manipulator ID, inside, error message)
-    :rtype: :class:`common.StateOutputData`
+    :rtype: :class:`ephys_link.common.StateOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -288,9 +283,9 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutput
     :param _: Socket session ID (unused)
     :type _: str
     :param data: Data containing manipulator ID and can_write brain state
-    :type data: :class:`common.CanWriteInputDataFormat`
+    :type data: :class:`ephys_link.common.CanWriteInputDataFormat`
     :return: Callback parameters (manipulator ID, can_write, error message)
-    :rtype: :class:`common.StateOutputData`
+    :rtype: :class:`ephys_link.common.StateOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -339,7 +334,6 @@ async def catch_all(_, __, data: Any) -> None:
     :param data: Data received from client
     :type data: Any
     :return: None
-    :rtype: None
     """
     print(f"[UNKNOWN EVENT]:\t {data}")
 
@@ -349,8 +343,12 @@ def launch() -> None:
     """Launch the server
 
     :return: None
-    :rtype: None
     """
+    # Parse arguments
+    args = parser.parse_args()
+    com.set_debug(args.debug)
+
+    # Start server
     signal.signal(signal.SIGINT, close)
     Thread(target=sh.poll_serial, args=(args.serial,)).start()
     web.run_app(app, port=args.port)
@@ -364,7 +362,6 @@ def close(_, __) -> None:
     :param __: Frame (unused)
     :type __: Any
     :return: None
-    :rtype: None
     """
     print("[INFO]\t\t Closing server")
     sh.continue_polling = False

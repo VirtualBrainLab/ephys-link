@@ -6,7 +6,7 @@ callback parameters)
 
 from typing import TypedDict
 
-# Debugging stuff
+# Debugging flag
 DEBUG = False
 
 
@@ -16,7 +16,6 @@ def set_debug(debug: bool) -> None:
     :param debug: True to enable debug mode, False to disable
     :type debug: bool
     :return: None
-    :rtype: None
     """
     global DEBUG
     DEBUG = debug
@@ -28,7 +27,6 @@ def dprint(message: str) -> None:
     :param message: Message to print
     :type message: str
     :return: None
-    :rtype: None
     """
     if DEBUG:
         print(message)
@@ -74,8 +72,8 @@ class GetManipulatorsOutputData(dict):
     :type manipulators: list
     :param error: Error message
     :type error: str
-    :return: None
-    :rtype: None
+
+    :example: Example generated dictionary :code:`{"manipulators": [1, 2], "error": ""}`
     """
 
     def __init__(self, manipulators: list, error: str) -> None:
@@ -92,8 +90,8 @@ class PositionalOutputData(dict):
     :type position: list
     :param error: Error message
     :type error: str
-    :return: None
-    :rtype: None
+
+    :example: Example generated dictionary :code:`{"position": [10429, 12332, 2131, 12312], "error": ""}`
     """
 
     def __init__(self, position: list, error: str) -> None:
@@ -108,8 +106,8 @@ class DriveToDepthOutputData(dict):
     :type depth: float
     :param error: Error message
     :type error: str
-    :return: None
-    :rtype: None
+
+    :example: Example generated dictionary :code:`{"depth": 123, "error": ""}`
     """
 
     def __init__(self, depth: float, error: str) -> None:
@@ -124,8 +122,8 @@ class StateOutputData(dict):
     :type state: bool
     :param error: Error message
     :type error: str
-    :return: None
-    :rtype: None
+
+    :example: Example generated dictionary :code:`{"state": True, "error": ""}`
     """
 
     def __init__(self, state: bool, error: str) -> None:
