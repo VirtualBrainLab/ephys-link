@@ -2,7 +2,7 @@
 
 The Electrophysiology Manipulator Link (or Ephys Link for short) is a Python
 WebSocket server that allows any WebSocket-compliant application (such
-as [Pinpoint (Neuropixels Trajectory Planner)](https://github.com/dbirman/NPTrajectoryPlanner/))
+as [Pinpoint (Neuropixels Trajectory Planner)][NPTrajectoryPlanner])
 to communication with manipulators used in electrophysiology experiments.
 
 Currently, Ephys Link only supports Sensapex uMp Micromanipulators. However,
@@ -14,14 +14,13 @@ added in the future.
 ## Prerequisites
 
 1. A **x86 Windows PC is recommended** to run this server.
-    1. Running the server on Windows to control Sensapex devices has been
-       verified to work with the server. Communication with Sensapex devices is
-       unverified for Linux and macOS. However, developing the server is
-       possible on a Linux operating system (Mac users should use Docker).
-2. To use the emergency stop feature, ensure an Arduino with
-   the [StopSignal](https://github.com/VirtualBrainLab/StopSignal) sketch is
-   connected to the computer. Follow the
-   instructions on that repo for how to set up the Arduino.
+    1. The server has been verified to work well with Sensapex devices on
+       Windows. This is unverified for Linux and
+       macOS. However, developing the server is possible on a Linux operating
+       system (macOS users should virtualize Linux).
+    2. To use the emergency stop feature, ensure an Arduino with
+       the [StopSignal][StopSignal] sketch is connected to the computer. Follow
+       the instructions on that repo for how to set up the Arduino.
 
 ## Installation
 
@@ -36,17 +35,20 @@ added in the future.
 # Usage and more
 
 Complete documentation including API usage and development installation can be
-found on
-the [Virtual Brain Lab Documentation page](https://virtualbrainlab.org/05_misc/03_ephys_link.html)
-for this server.
+found on the [Virtual Brain Lab Documentation page][docs]for this server.
 
 # Citing
 
 If this project is used as part of a research project you should cite
-the [Pinpoint repository](https://github.com/VirtualBrainLab/NPTrajectoryPlanner)
-. Please email Dan ([dbirman@uw.edu](mailto:dbirman@uw.edu)) if you have
-questions.
+the [Pinpoint repository][NPTrajectoryPlanner]. Please email
+Dan ([dbirman@uw.edu](mailto:dbirman@uw.edu)) if you have questions.
 
 Please reach out to Kenneth ([kjy5@uw.edu](mailto:kjy5@uw.edu)) for questions
 about the Electrophysiology Manipulator Link server. Bugs may be reported
 through the issues tab.
+
+[NPTrajectoryPlanner]: https://github.com/dbirman/NPTrajectoryPlanner/
+
+[StopSignal]: https://github.com/VirtualBrainLab/StopSignal
+
+[docs]: https://virtualbrainlab.org/05_misc/03_ephys_link.html
