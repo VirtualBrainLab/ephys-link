@@ -21,16 +21,14 @@ class SensapexManipulator:
 
     :param device: A Sensapex device
     :type device: :class: `sensapex.SensapexDevice`
+    :return: None
+    :rtype: None
     """
 
     INSIDE_BRAIN_SPEED_LIMIT = 10
 
     def __init__(self, device: SensapexDevice) -> None:
-        """Construct a new Manipulator object
-
-        :return: None
-        :rtype: None
-        """
+        """Construct a new Manipulator object"""
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
@@ -40,17 +38,19 @@ class SensapexManipulator:
         self._move_queue = deque()
 
     class Movement:
-        """Movement struct"""
+        """Movement struct
 
-        def __init__(self, event: asyncio.Event, position: list[float]):
-            """Construct a new Movement object
+        :param event: An asyncio event
+        :type event: :class: `asyncio.Event`
+        :param position: A tuple of floats (x, y, z, w) representing the
+        position to move to in µm
+        :type position: list[float]
+        :return: None
+        :rtype: None
+        """
 
-            :param event: An asyncio event
-            :type event: :class: `asyncio.Event`
-            :param position: A tuple of floats (x, y, z, w) representing the
-            position to move to in µm
-            :type position: list[float]
-            """
+        def __init__(self, event: asyncio.Event, position: list[float]) -> None:
+            """Construct a new Movement object"""
             self.event = event
             self.position = position
 
@@ -82,7 +82,7 @@ class SensapexManipulator:
         :type speed: float
         :return: Callback parameters (manipulator ID, position in (x, y, z,
         w) (or an empty array on error), error message)
-        :rtype: :class: `common.PositionalOutputData`
+        :rtype: :class:`common.PositionalOutputData`
         """
         # Add movement to queue
         self._move_queue.appendleft(self.Movement(asyncio.Event(), position))
@@ -141,7 +141,7 @@ class SensapexManipulator:
         :type speed: int
         :return: Callback parameters (manipulator ID, depth (or 0 on error),
         error message)
-        :rtype: :class: `common.DriveToDepthOutputData`
+        :rtype: :class:`common.DriveToDepthOutputData`
         """
         # Get position before this movement
         target_pos = self._device.get_pos()
@@ -190,7 +190,7 @@ class SensapexManipulator:
         0 = forever)
         :type hours: float
         :param sio: SocketIO object from server to emit reset event
-        :type sio: :class: `socketio.AsyncServer`
+        :type sio: :class:`socketio.AsyncServer`
         :return: None
         :rtype: None
         """
@@ -208,7 +208,7 @@ class SensapexManipulator:
         """Reset the :attr:`can_write` flag
 
         :param sio: SocketIO object from server to emit reset event
-        :type sio: :class: `socketio.AsyncServer`
+        :type sio: :class:`socketio.AsyncServer`
         :return: None
         :rtype: None
         """

@@ -95,7 +95,7 @@ async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     :param _: Socket session ID (unused)
     :type _: str
     :return: Callback parameters (manipulators, error message)
-    :rtype: :class: `common.GetManipulatorsOutputData`
+    :rtype: :class:`common.GetManipulatorsOutputData`
     """
     com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
@@ -159,10 +159,10 @@ async def goto_pos(
     :param _: Socket session ID (unused)
     :type _: str
     :param data: Data containing manipulator ID, position, and speed
-    :type data: :class: `common.GotoPositionInputDataFormat`
+    :type data: :class:`common.GotoPositionInputDataFormat`
     :return: Callback parameters (manipulator ID, position in (x, y, z,
     w) (or an empty tuple on error), error message)
-    :rtype: :class: `common.PositionalOutputData`
+    :rtype: :class:`common.PositionalOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -192,10 +192,10 @@ async def drive_to_depth(
     :param _: Socket session ID (unused)
     :type _: str
     :param data: Data containing manipulator ID, depth, and speed
-    :type data: :class: `common.DriveToDepthInputDataFormat`
+    :type data: :class:`common.DriveToDepthInputDataFormat`
     :return: Callback parameters (manipulator ID, depth (or -1 on error),
     error message)
-    :rtype: :class: `common.DriveToDepthOutputData`
+    :rtype: :class:`common.DriveToDepthOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -225,9 +225,9 @@ async def set_inside_brain(
     :param _: Socket session ID (unused)
     :type _: str
     :param data: Data containing manipulator ID and inside brain state
-    :type data: :class: `common.InsideBrainInputDataFormat`
+    :type data: :class:`common.InsideBrainInputDataFormat`
     :return: Callback parameters (manipulator ID, inside, error message)
-    :rtype: :class: `common.StateOutputData`
+    :rtype: :class:`common.StateOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]
@@ -288,9 +288,9 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutput
     :param _: Socket session ID (unused)
     :type _: str
     :param data: Data containing manipulator ID and can_write brain state
-    :type data: :class: `common.CanWriteInputDataFormat`
+    :type data: :class:`common.CanWriteInputDataFormat`
     :return: Callback parameters (manipulator ID, can_write, error message)
-    :rtype: :class: `common.StateOutputData`
+    :rtype: :class:`common.StateOutputData`
     """
     try:
         manipulator_id = data["manipulator_id"]

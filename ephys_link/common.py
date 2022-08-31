@@ -12,6 +12,7 @@ DEBUG = False
 
 def set_debug(debug: bool) -> None:
     """Set debug flag
+
     :param debug: True to enable debug mode, False to disable
     :type debug: bool
     :return: None
@@ -73,6 +74,8 @@ class GetManipulatorsOutputData(dict):
     :type manipulators: list
     :param error: Error message
     :type error: str
+    :return: None
+    :rtype: None
     """
 
     def __init__(self, manipulators: list, error: str) -> None:
@@ -89,6 +92,8 @@ class PositionalOutputData(dict):
     :type position: list
     :param error: Error message
     :type error: str
+    :return: None
+    :rtype: None
     """
 
     def __init__(self, position: list, error: str) -> None:
@@ -103,6 +108,8 @@ class DriveToDepthOutputData(dict):
     :type depth: float
     :param error: Error message
     :type error: str
+    :return: None
+    :rtype: None
     """
 
     def __init__(self, depth: float, error: str) -> None:
@@ -117,6 +124,8 @@ class StateOutputData(dict):
     :type state: bool
     :param error: Error message
     :type error: str
+    :return: None
+    :rtype: None
     """
 
     def __init__(self, state: bool, error: str) -> None:
