@@ -1,8 +1,9 @@
 """Sensapex manipulator API calls
 
 Handles logic for calling Sensapex API functions. Also includes extra logic for safe
-function calls, error handling, and attribute getters and setters..
+function calls, error handling, and attribute getters and setters.
 """
+
 import asyncio
 import threading
 from collections import deque
@@ -16,15 +17,17 @@ from sensapex import SensapexDevice
 
 
 class SensapexManipulator:
-    """Representation of a single Sensapex manipulator"""
+    """Representation of a single Sensapex manipulator
+
+    :param device: A Sensapex device
+    :type device: :class: `sensapex.SensapexDevice`
+    """
 
     INSIDE_BRAIN_SPEED_LIMIT = 10
 
     def __init__(self, device: SensapexDevice) -> None:
         """Construct a new Manipulator object
 
-        :param device: A Sensapex device
-        :type device: :class: `sensapex.SensapexDevice`
         :return: None
         :rtype: None
         """
@@ -69,7 +72,7 @@ class SensapexManipulator:
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(
-            self, position: list[float], speed: float
+        self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
@@ -128,7 +131,7 @@ class SensapexManipulator:
             return com.PositionalOutputData([], "Error moving " "manipulator")
 
     async def drive_to_depth(
-            self, depth: float, speed: int
+        self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
@@ -176,8 +179,9 @@ class SensapexManipulator:
         """
         return self._can_write
 
-    def set_can_write(self, can_write: bool, hours: float,
-                      sio: socketio.AsyncServer) -> None:
+    def set_can_write(
+        self, can_write: bool, hours: float, sio: socketio.AsyncServer
+    ) -> None:
         """Set if the manipulator can move
 
         :param can_write: True if the manipulator can move, False otherwise

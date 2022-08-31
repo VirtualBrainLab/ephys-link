@@ -26,7 +26,7 @@ is_connected = False
 # Parse arguments
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-                " manipulators in electrophysiology experiments",
+    " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
 parser.add_argument(
@@ -151,8 +151,9 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
 
 
 @sio.event
-async def goto_pos(_,
-                   data: com.GotoPositionInputDataFormat) -> com.PositionalOutputData:
+async def goto_pos(
+    _, data: com.GotoPositionInputDataFormat
+) -> com.PositionalOutputData:
     """Move manipulator to position
 
     :param _: Socket session ID (unused)
@@ -184,7 +185,7 @@ async def goto_pos(_,
 
 @sio.event
 async def drive_to_depth(
-        _, data: com.DriveToDepthInputDataFormat
+    _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -217,7 +218,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-        _, data: com.InsideBrainInputDataFormat
+    _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
