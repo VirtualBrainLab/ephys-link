@@ -6,10 +6,11 @@ error checked and relayed to events to the :class:`Manipulator` class.
 import time
 from pathlib import Path
 
+# noinspection PyPackageRequirements
 import socketio
 
 import common as com
-from manipulator import Manipulator
+from sensapex_manipulator import SensapexManipulator
 from sensapex import UMP, UMError
 from serial import Serial
 from serial.tools.list_ports import comports
@@ -117,7 +118,7 @@ def register_manipulator(manipulator_id: int) -> str:
 
     try:
         # Register manipulator
-        manipulators[manipulator_id] = Manipulator(ump.get_device(manipulator_id))
+        manipulators[manipulator_id] = SensapexManipulator(ump.get_device(manipulator_id))
 
         com.dprint(f"[SUCCESS]\t Registered manipulator: {manipulator_id}\n")
         return ""
