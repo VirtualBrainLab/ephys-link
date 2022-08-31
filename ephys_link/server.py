@@ -1,7 +1,11 @@
 """WebSocket server and communication handler
 
-Manages the WebSocket server and handles connections and events from the client.
-Calls the appropriate functions from :mod:`ephys_link.sensapex_handler` to handle the events
+Manages the WebSocket server and handles connections and events from the client. For every event, the server does the following:
+
+1. Extract the arguments passed in the event
+2. Log that the event was received
+3. Call the appropriate function in :mod:`ephys_link.sensapex_handler` with the arguments
+4. Call the callback function with the response from :mod:`ephys_link.sensapex_handler` as parameters
 """
 
 import argparse

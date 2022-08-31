@@ -1,7 +1,8 @@
 """Sensapex manipulator API calls
 
 Handles logic for calling Sensapex API functions. Also includes extra logic for safe
-function calls, error handling, and attribute getters and setters.
+function calls, error handling, managing per-manipulator attributes, and returning the
+appropriate callback parameters like in :mod:`ephys_link.sensapex_handler`.
 """
 
 import asyncio
@@ -67,7 +68,7 @@ class SensapexManipulator:
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(
-        self, position: list[float], speed: float
+            self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
@@ -125,7 +126,7 @@ class SensapexManipulator:
             return com.PositionalOutputData([], "Error moving " "manipulator")
 
     async def drive_to_depth(
-        self, depth: float, speed: int
+            self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
@@ -171,7 +172,7 @@ class SensapexManipulator:
         return self._can_write
 
     def set_can_write(
-        self, can_write: bool, hours: float, sio: socketio.AsyncServer
+            self, can_write: bool, hours: float, sio: socketio.AsyncServer
     ) -> None:
         """Set if the manipulator can move
 

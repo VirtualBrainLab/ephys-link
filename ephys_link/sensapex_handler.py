@@ -2,6 +2,13 @@
 
 Handles loading the Sensapex SDK and connecting to uMp devices. WebSocket events are
 error checked and relayed to events to the :class:`ephys_link.sensapex_manipulator.SensapexManipulator` class.
+
+Function names here are the same as the WebSocket events. They are called when the server receives an event from a client. In general, each function does the following:
+
+1. Receive extracted arguments from :mod:`ephys_link.server`
+2. Inside try/except block, call the appropriate Sensapex API function
+3. Log/handle successes and failures
+4. Return the callback parameters to :mod:`ephys_link.server`
 """
 
 import time
