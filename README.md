@@ -10,13 +10,17 @@ to other manipulators and more may be added in the future.
 
 # Installation
 
-An x86 machine is required to run this server. Running the server on Windows to control Sensapex devices is
-recommended and has been verified to work with the server. Communication with Sensapex devices is unverified for Linux
-and macOS, however, development of the server is possible on a Linux operating system (Mac users should use Docker).
+An **x86 Windows PC is recommended** to run this server.
+
+Running the server on Windows to control Sensapex devices has been verified to work with the server. Communication with
+Sensapex devices is unverified for Linux
+and macOS. However, development of the server is possible on a Linux operating system (Mac users should use Docker).
 
 1. Ensure Python 3.8+ and pip are installed
 2. `pip install ephys-link`
-3. Run `python -m ephys-link` to start the server
+3. To use the emergency stop feature, ensure an Arduino with
+   the [StopSignal](https://github.com/VirtualBrainLab/StopSignal) sketch is connected to the computer.
+4. Run `python -m ephys-link` to start the server
     1. To view available command-line arguments, run `python -m ephys-link --help`
     2. Note: all arguments are optional and none are needed to use the server normally
 
