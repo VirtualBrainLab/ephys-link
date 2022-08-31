@@ -1,6 +1,7 @@
 """WebSocket server and communication handler
 
 Manages the WebSocket server and handles connections and events from the client.
+Calls the appropriate functions from :mod:`sensapex_handler` to handle the events
 """
 
 import argparse

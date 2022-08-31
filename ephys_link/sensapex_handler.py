@@ -1,5 +1,12 @@
+"""Handling communications with Sensapex manipulators and the uMp API
+
+Handles loading the Sensapex SDK and connecting to uMp devices. WebSocket events are
+error checked and relayed to events to the :class:`Manipulator` class.
+"""
 import time
 from pathlib import Path
+
+import socketio
 
 import common as com
 from manipulator import Manipulator
@@ -20,10 +27,12 @@ continue_polling = True
 
 
 def poll_serial(serial_port: str) -> None:
-    """
-    Continuously poll serial port for data
+    """Continuously poll serial port for data
+
     :param serial_port: The serial port to poll
+    :type serial_port: str
     :return: None
+    :rtype: None
     """
     target_port = serial_port
     if serial_port is None:
@@ -50,9 +59,10 @@ def poll_serial(serial_port: str) -> None:
 
 # Event handlers
 def reset() -> bool:
-    """
-    Reset handler
+    """Reset handler
+
     :return: True if successful, False otherwise
+    :rtype: bool
     """
     stop_result = stop()
     manipulators.clear()
@@ -60,9 +70,10 @@ def reset() -> bool:
 
 
 def stop() -> bool:
-    """
-    Stop handler
+    """Stop handler
+
     :return: True if successful, False otherwise
+    :rtype: bool
     """
     try:
         for manipulator in manipulators.values():
@@ -74,9 +85,10 @@ def stop() -> bool:
 
 
 def get_manipulators() -> com.GetManipulatorsOutputData:
-    """
-    Get all registered manipulators
+    """Get all registered manipulators
+
     :return: Callback parameters (manipulators, error)
+    :rtype: :class:`common.GetManipulatorsOutputData`
     """
     devices = []
     error = "Error getting manipulators"
@@ -91,10 +103,12 @@ def get_manipulators() -> com.GetManipulatorsOutputData:
 
 
 def register_manipulator(manipulator_id: int) -> str:
-    """
-    Register a manipulator
+    """Register a manipulator
+
     :param manipulator_id: The ID of the manipulator to register.
-    :return: Callback parameters (manipulator_id, error message (on error))
+    :type manipulator_id: int
+    :return: Callback parameter (Error message (on error))
+    :rtype: str
     """
     # Check if manipulator is already registered
     if manipulator_id in manipulators:
@@ -121,10 +135,12 @@ def register_manipulator(manipulator_id: int) -> str:
 
 
 def unregister_manipulator(manipulator_id: int) -> str:
-    """
-    Unregister a manipulator
+    """Unregister a manipulator
+
     :param manipulator_id: The ID of the manipulator to unregister.
-    :return: Callback parameters (manipulator ID, error message (on error))
+    :type manipulator_id: int
+    :return: Callback parameters (error message (on error))
+
     """
     # Check if manipulator is not registered
     if manipulator_id not in manipulators:
@@ -145,11 +161,13 @@ def unregister_manipulator(manipulator_id: int) -> str:
 
 
 def get_pos(manipulator_id: int) -> com.PositionalOutputData:
-    """
-    Get the current position of a manipulator
+    """Get the current position of a manipulator
+
     :param manipulator_id: The ID of the manipulator to get the position of.
+    :type manipulator_id: int
     :return: Callback parameters (manipulator ID, position in (x, y, z,
     w) (or an empty array on error), error message)
+    :rtype: :class:`common.PositionalOutputData`
     """
     try:
         # Check calibration status
@@ -167,15 +185,19 @@ def get_pos(manipulator_id: int) -> com.PositionalOutputData:
 
 
 async def goto_pos(
-    manipulator_id: int, position: list[float], speed: int
+        manipulator_id: int, position: list[float], speed: int
 ) -> com.PositionalOutputData:
-    """
-    Move manipulator to position
+    """Move manipulator to position
+
     :param manipulator_id: The ID of the manipulator to move
+    :type manipulator_id: int
     :param position: The position to move to
+    :type position: list[float]
     :param speed: The speed to move at (in µm/s)
+    :type speed: int
     :return: Callback parameters (manipulator ID, position in (x, y, z,
     w) (or an empty array on error), error message)
+    :rtype: :class:`common.PositionalOutputData`
     """
     try:
         # Check calibration status
@@ -197,15 +219,19 @@ async def goto_pos(
 
 
 async def drive_to_depth(
-    manipulator_id: int, depth: float, speed: int
+        manipulator_id: int, depth: float, speed: int
 ) -> com.DriveToDepthOutputData:
-    """
-    Drive manipulator to depth
+    """Drive manipulator to depth
+
     :param manipulator_id: The ID of the manipulator to drive
+    :type manipulator_id: int
     :param depth: The depth to drive to
+    :type depth: float
     :param speed: The speed to drive at (in µm/s)
+    :type speed: int
     :return: Callback parameters (manipulator ID, depth (or 0 on error),
     error message)
+    :rtype: :class:`common.DriveToDepthOutputData`
     """
     try:
         # Check calibration status
@@ -227,11 +253,14 @@ async def drive_to_depth(
 
 
 def set_inside_brain(manipulator_id: int, inside: bool) -> com.StateOutputData:
-    """
-    Set manipulator inside brain state (restricts motion)
+    """Set manipulator inside brain state (restricts motion)
+
     :param manipulator_id: The ID of the manipulator to set the state of
+    :type manipulator_id: int
     :param inside: True if inside brain, False if outside
+    :type inside: bool
     :return: Callback parameters (manipulator ID, inside, error message)
+    :rtype: :class:`common.StateOutputData`
     """
     try:
         # Check calibration status
@@ -257,12 +286,15 @@ def set_inside_brain(manipulator_id: int, inside: bool) -> com.StateOutputData:
         return com.StateOutputData(False, "Error setting " "inside brain")
 
 
-async def calibrate(manipulator_id: int, sio) -> str:
-    """
-    Calibrate manipulator
+async def calibrate(manipulator_id: int, sio: socketio.AsyncServer) -> str:
+    """Calibrate manipulator
+
     :param manipulator_id: ID of manipulator to calibrate
+    :type manipulator_id: int
     :param sio: SocketIO object (to call sleep)
+    :type sio: :class:`socketio.AsyncServer`
     :return: Callback parameters (manipulator ID, error message)
+    :rtype: str
     """
     try:
         # Check write state
@@ -315,10 +347,12 @@ async def calibrate(manipulator_id: int, sio) -> str:
 
 
 def bypass_calibration(manipulator_id: int) -> str:
-    """
-    Bypass calibration of manipulator
+    """Bypass calibration of manipulator
+
     :param manipulator_id: ID of manipulator to bypass calibration
+    :type manipulator_id: int
     :return: Callback parameters (manipulator ID, error message)
+    :rtype: str
     """
     try:
         # Bypass calibration
@@ -341,16 +375,20 @@ def bypass_calibration(manipulator_id: int) -> str:
 
 
 def set_can_write(
-    manipulator_id: int, can_write: bool, hours: float, sio
+        manipulator_id: int, can_write: bool, hours: float, sio: socketio.AsyncServer
 ) -> com.StateOutputData:
-    """
-    Set manipulator can_write state (enables/disabled moving manipulator)
-    :param sio:
+    """Set manipulator can_write state (enables/disabled moving manipulator)
+
     :param manipulator_id: The ID of the manipulator to set the state of
+    :type manipulator_id: int
     :param can_write: True if allowed to move, False if outside
+    :type can_write: bool
     :param hours: The number of hours to allow writing (0 = forever)
+    :type hours: float
     :param sio: SocketIO object from server to emit reset event
+    :type sio: :class:`socketio.AsyncServer`
     :return: Callback parameters (manipulator ID, can_write, error message)
+    :rtype: :class:`common.StateOutputData`
     """
     try:
         manipulators[manipulator_id].set_can_write(can_write, hours, sio)
