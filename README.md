@@ -10,8 +10,9 @@ to other manipulators and more may be added in the future.
 
 # Installation
 
-An x86 machine is required to run this server. Windows is recommended for smoothest compatibility with other manipulator
-software, however, Linux and macOS are also supported.
+An x86 machine is required to run this server. Running the server on Windows to control Sensapex devices is
+recommended and has been verified to work with the server. Communication with Sensapex devices is unverified for Linux
+and macOS, however, development of the server is possible on a Linux operating system (Mac users should use Docker).
 
 1. Ensure Python 3.8+ and pip are installed
 2. `pip install ephys-link`
@@ -28,8 +29,10 @@ for this server
 # Citing
 
 If this project is used as part of a research project you should cite
-the [Pinpoint repository](https://github.com/VirtualBrainLab/NPTrajectoryPlanner). Please email Dan ([dbirman@uw.edu](mailto:dbirman@uw.edu)) if
+the [Pinpoint repository](https://github.com/VirtualBrainLab/NPTrajectoryPlanner). Please email
+Dan ([dbirman@uw.edu](mailto:dbirman@uw.edu)) if
 you have questions.
 
-Please reach out to Kenneth ([kjy5@uw.edu](mailto:kjy5@uw.edu)) for questions about the Electrophysiology Manipulator Link server. Bugs may be
+Please reach out to Kenneth ([kjy5@uw.edu](mailto:kjy5@uw.edu)) for questions about the Electrophysiology Manipulator
+Link server. Bugs may be
 reported through the issues tab.
