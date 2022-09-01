@@ -1,4 +1,4 @@
-# pylama:ignore=W0611:ignore=E402
+# pylama:ignore=W611:ignore=E402
 import os
 import sys
 
