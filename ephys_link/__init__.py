@@ -1,4 +1,4 @@
-# pylama:ignore=W611:ignore=E402
+# pylama:skip=1
 import os
 import sys
 
