@@ -1,7 +1,7 @@
 """Handle communications with Sensapex uMp API
 
 Handles loading the Sensapex SDK and connecting to uMp devices. WebSocket events are
-error checked and relayed to events to the
+error checked and relayed to the
 :class:`ephys_link.sensapex_manipulator.SensapexManipulator` class.
 
 Function names here are the same as the WebSocket events. They are called when the
