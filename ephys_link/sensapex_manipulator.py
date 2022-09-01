@@ -1,23 +1,34 @@
+"""Sensapex manipulator API calls
+
+Handles logic for calling Sensapex API functions. Also includes extra logic for safe
+function calls, error handling, managing per-manipulator attributes, and returning the
+appropriate callback parameters like in :mod:`ephys_link.sensapex_handler`.
+"""
+
 import asyncio
 import threading
 from collections import deque
 from copy import deepcopy
 
 import common as com
+
+# noinspection PyPackageRequirements
+import socketio
 from sensapex import SensapexDevice
 
 
-class Manipulator:
-    """Representation of a single manipulator"""
+class SensapexManipulator:
+    """Representation of a single Sensapex manipulator
 
+    :param device: A Sensapex device
+    :type device: :class: `sensapex.SensapexDevice`
+    """
+
+    # How fast a manipulator is allowed to drive when inside the brain (in µm/s)
     INSIDE_BRAIN_SPEED_LIMIT = 10
 
     def __init__(self, device: SensapexDevice) -> None:
-        """
-        Construct a new Manipulator object
-        :param device: A Sensapex device
-        :return: None
-        """
+        """Construct a new Manipulator object"""
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
@@ -27,24 +38,27 @@ class Manipulator:
         self._move_queue = deque()
 
     class Movement:
-        """Movement struct"""
+        """Movement data struct
 
-        def __init__(self, event: asyncio.Event, position: list[float]):
-            """
-            Construct a new Movement object
-            :param event: An asyncio event
-            :param position: A tuple of floats (x, y, z, w) representing the
-            position to move to in µm
-            """
+        :param event: An asyncio event
+        :type event: :class: `asyncio.Event`
+        :param position: A tuple of floats (x, y, z, w) representing the position to
+            move to in µm
+        :type position: list[float]
+        """
+
+        def __init__(self, event: asyncio.Event, position: list[float]) -> None:
+            """Construct a new Movement object"""
             self.event = event
             self.position = position
 
     # Device functions
     def get_pos(self) -> com.PositionalOutputData:
-        """
-        Get the current position of the manipulator
-        :return: Callback parameters (manipulator ID, position in (x, y, z,
-        w) (or an empty array on error), error message)
+        """Get the current position of the manipulator
+
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on
+            error), error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
             position = self._device.get_pos(1)
@@ -58,12 +72,15 @@ class Manipulator:
     async def goto_pos(
         self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
-        """
-        Move manipulator to position
+        """Move manipulator to position
+
         :param position: The position to move to
+        :type position: list[float]
         :param speed: The speed to move at (in µm/s)
-        :return: Callback parameters (manipulator ID, position in (x, y, z,
-        w) (or an empty array on error), error message)
+        :type speed: float
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on
+            error), error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         # Add movement to queue
         self._move_queue.appendleft(self.Movement(asyncio.Event(), position))
@@ -114,12 +131,14 @@ class Manipulator:
     async def drive_to_depth(
         self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
-        """
-        Drive the manipulator to a certain depth
+        """Drive the manipulator to a certain depth
+
         :param depth: The depth to drive to
+        :type depth: float
         :param speed: The speed to drive at
-        :return: Callback parameters (manipulator ID, depth (or 0 on error),
-        error message)
+        :type speed: int
+        :return: Callback parameters (depth (or 0 on error), error message)
+        :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
         # Get position before this movement
         target_pos = self._device.get_pos()
@@ -137,29 +156,36 @@ class Manipulator:
             return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
 
     def set_inside_brain(self, inside: bool) -> None:
-        """
-        Set if the manipulator is inside the brain (and movement should
-        be restricted)
-        :param inside: True if the manipulator is inside the brain,
-        False otherwise
+        """Set if the manipulator is inside the brain
+
+        Used to signal that the brain should move at :const:`INSIDE_BRAIN_SPEED_LIMIT`
+
+        :param inside: True if the manipulator is inside the brain, False otherwise
+        :type inside: bool
         :return: None
         """
         self._inside_brain = inside
 
     def get_can_write(self) -> bool:
-        """
-        Return if the manipulator can move
+        """Return if the manipulator can move
+
         :return: True if the manipulator can move, False otherwise
+        :rtype: bool
         """
         return self._can_write
 
-    def set_can_write(self, can_write: bool, hours: float, sio) -> None:
-        """
-        Set if the manipulator can move
+    def set_can_write(
+        self, can_write: bool, hours: float, sio: socketio.AsyncServer
+    ) -> None:
+        """Set if the manipulator can move
+
         :param can_write: True if the manipulator can move, False otherwise
-        :param hours: The number of hours to allow the manipulator to move (
-        0 = forever)
+        :type can_write: bool
+        :param hours: The number of hours to allow the manipulator to move (0 =
+            forever)
+        :type hours: float
         :param sio: SocketIO object from server to emit reset event
+        :type sio: :class:`socketio.AsyncServer`
         :return: None
         """
         self._can_write = can_write
@@ -172,29 +198,44 @@ class Manipulator:
             )
             self._reset_timer.start()
 
-    def reset_can_write(self, sio):
-        """Reset the can_write flag"""
+    def reset_can_write(self, sio: socketio.AsyncServer) -> None:
+        """Reset the :attr:`can_write` flag
+
+        :param sio: SocketIO object from server to emit reset event
+        :type sio: :class:`socketio.AsyncServer`
+        :return: None
+        """
         self._can_write = False
         asyncio.run(sio.emit("write_disabled", self._id))
 
     # Calibration
-    def call_calibrate(self):
-        """Calibrate the manipulator"""
+    def call_calibrate(self) -> None:
+        """Calibrate the manipulator
+
+        :return: None
+        """
         self._device.calibrate_zero_position()
 
     def get_calibrated(self) -> bool:
-        """
-        Return the calibration state of the manipulator.
+        """Return the calibration state of the manipulator.
+
         :return: True if the manipulator is calibrated, False otherwise
+        :rtype: bool
         """
         return self._calibrated
 
-    def set_calibrated(self):
-        """Set the manipulator to calibrated"""
+    def set_calibrated(self) -> None:
+        """Set the manipulator to calibrated
+
+        :return: None
+        """
         self._calibrated = True
 
-    def stop(self):
-        """Stop the manipulator"""
+    def stop(self) -> None:
+        """Stop the manipulator
+
+        :return: None
+        """
         while self._move_queue:
             self._move_queue.pop().event.set()
         self._can_write = False
