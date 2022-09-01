@@ -356,6 +356,9 @@ def launch() -> None:
     args = parser.parse_args()
     com.set_debug(args.debug)
 
+    # Connect to uMp
+    sh.connect_to_ump()
+
     # Start server
     signal.signal(signal.SIGINT, close)
     Thread(target=sh.poll_serial, args=(args.serial,)).start()
