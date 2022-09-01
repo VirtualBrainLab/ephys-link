@@ -6,6 +6,10 @@ on:
   push:
     branches: [ "main" ]
 
+concurrency:
+  group: "cleanup"
+  cancel-in-progress: true
+
 jobs:
   autoformat:
     name: Autoformat and Lint
