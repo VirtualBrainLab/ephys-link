@@ -73,7 +73,8 @@ class GetManipulatorsOutputData(dict):
     :param error: Error message
     :type error: str
 
-    :example: Example generated dictionary :code:`{"manipulators": [1, 2], "error": ""}`
+    :example: Example generated dictionary
+        :code:`{"manipulators": [1, 2], "error": ""}`
     """
 
     def __init__(self, manipulators: list, error: str) -> None:
@@ -91,7 +92,8 @@ class PositionalOutputData(dict):
     :param error: Error message
     :type error: str
 
-    :example: Example generated dictionary :code:`{"position": [10429, 12332, 2131, 12312], "error": ""}`
+    :example: Example generated dictionary
+        :code:`{"position": [10429, 12332, 2131, 12312], "error": ""}`
     """
 
     def __init__(self, position: list, error: str) -> None:

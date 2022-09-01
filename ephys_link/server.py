@@ -1,11 +1,12 @@
 """WebSocket server and communication handler
 
-Manages the WebSocket server and handles connections and events from the client. For every event, the server does the following:
+Manages the WebSocket server and handles connections and events from the client. For
+every event, the server does the following:
 
 1. Extract the arguments passed in the event
 2. Log that the event was received
 3. Call the appropriate function in :mod:`ephys_link.sensapex_handler` with the arguments
-4. Call the callback function with the response from :mod:`ephys_link.sensapex_handler` as parameters
+4. Relay the response from :mod:`ephys_link.sensapex_handler` to the callback function
 """
 
 import argparse
@@ -143,7 +144,8 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
     :type _: str
     :param manipulator_id: ID of manipulator to pull position from
     :type manipulator_id: int
-    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty array on error), error message)
+    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
+        array on error), error message)
     :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
     com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
@@ -161,7 +163,8 @@ async def goto_pos(
     :type _: str
     :param data: Data containing manipulator ID, position, and speed
     :type data: :class:`ephys_link.common.GotoPositionInputDataFormat`
-    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty tuple on error), error message)
+    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
+        tuple on error), error message)
     :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
     try:
@@ -193,7 +196,8 @@ async def drive_to_depth(
     :type _: str
     :param data: Data containing manipulator ID, depth, and speed
     :type data: :class:`ephys_link.common.DriveToDepthInputDataFormat`
-    :return: Callback parameters (manipulator ID, depth (or -1 on error), error message)
+    :return: Callback parameters (manipulator ID, depth (or -1 on error), error message
+        )
     :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
     """
     try:

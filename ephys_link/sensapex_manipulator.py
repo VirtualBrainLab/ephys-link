@@ -42,7 +42,8 @@ class SensapexManipulator:
 
         :param event: An asyncio event
         :type event: :class: `asyncio.Event`
-        :param position: A tuple of floats (x, y, z, w) representing the position to move to in µm
+        :param position: A tuple of floats (x, y, z, w) representing the position to
+            move to in µm
         :type position: list[float]
         """
 
@@ -55,7 +56,8 @@ class SensapexManipulator:
     def get_pos(self) -> com.PositionalOutputData:
         """Get the current position of the manipulator
 
-        :return: Callback parameters (position in (x, y, z, w) (or an empty array on error), error message)
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on
+            error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
@@ -76,7 +78,8 @@ class SensapexManipulator:
         :type position: list[float]
         :param speed: The speed to move at (in µm/s)
         :type speed: float
-        :return: Callback parameters (position in (x, y, z, w) (or an empty array on error), error message)
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on
+            error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         # Add movement to queue
@@ -178,7 +181,8 @@ class SensapexManipulator:
 
         :param can_write: True if the manipulator can move, False otherwise
         :type can_write: bool
-        :param hours: The number of hours to allow the manipulator to move (0 = forever)
+        :param hours: The number of hours to allow the manipulator to move (0 =
+            forever)
         :type hours: float
         :param sio: SocketIO object from server to emit reset event
         :type sio: :class:`socketio.AsyncServer`
