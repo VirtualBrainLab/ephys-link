@@ -28,9 +28,8 @@ from serial.tools.list_ports import comports
 # Registered manipulators
 manipulators = {}
 
-# Setup Sensapex
-UMP.set_library_path(str(Path(__file__).parent.absolute()) + "/resources/")
-ump = UMP.get_ump()
+# Sensapex uMp reference
+ump = None
 
 # Setup Arduino serial port
 poll_rate = 0.05
@@ -65,6 +64,18 @@ def poll_serial(serial_port: str) -> None:
             ser.reset_input_buffer()
         time.sleep(poll_rate)
     ser.close()
+
+
+def connect_to_ump() -> None:
+    """Connect to uMp
+
+    Only establish connection to Sensapex API when this function is called
+
+    :return: None
+    """
+    UMP.set_library_path(str(Path(__file__).parent.absolute()) + "/resources/")
+    global ump
+    ump = UMP.get_ump()
 
 
 # Event handlers
