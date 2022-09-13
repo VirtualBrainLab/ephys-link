@@ -5,7 +5,7 @@ every event, the server does the following:
 
 1. Extract the arguments passed in the event
 2. Log that the event was received
-3. Call the appropriate function in :mod:`ephys_link.sensapex_handler` with the arguments
+3. Call the appropriate function in :mod:`ephys_link.sensapex_handler` with arguments
 4. Relay the response from :mod:`ephys_link.sensapex_handler` to the callback function
 """
 
@@ -65,12 +65,14 @@ async def connect(sid, _, __) -> bool:
     :return: False on error to refuse connection. None otherwise.
     :rtype: bool
     """
-    print(f"[CONNECTION]:\t\t {sid}\n")
+    print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
 
     global is_connected
     if not is_connected:
+        print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
         is_connected = True
     else:
+        print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
         return False
 
 
