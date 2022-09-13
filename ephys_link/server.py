@@ -72,7 +72,7 @@ async def connect(sid, _, __) -> bool:
         print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
         is_connected = True
     else:
-        print(f"[CONNECTION DENIED]:\t\t {sid}\n")
+        print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
         return False
 
 
