@@ -65,12 +65,14 @@ async def connect(sid, _, __) -> bool:
     :return: False on error to refuse connection. None otherwise.
     :rtype: bool
     """
-    print(f"[CONNECTION]:\t\t {sid}\n")
+    print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
 
     global is_connected
     if not is_connected:
+        print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
         is_connected = True
     else:
+        print(f"[CONNECTION DENIED]:\t\t {sid}\n")
         return False
 
 
