@@ -111,10 +111,14 @@ def get_manipulators() -> com.GetManipulatorsOutputData:
     :return: Callback parameters (manipulators, error)
     :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
     """
+    if ump is None:
+        raise ValueError("uMp not connected")
+
     devices = []
     error = "Error getting manipulators"
 
     try:
+        # noinspection PyUnresolvedReferences
         devices = ump.list_devices()
         error = ""
     except Exception as e:
@@ -131,6 +135,9 @@ def register_manipulator(manipulator_id: int) -> str:
     :return: Callback parameter (Error message (on error))
     :rtype: str
     """
+    if ump is None:
+        raise ValueError("uMp not connected")
+
     # Check if manipulator is already registered
     if manipulator_id in manipulators:
         print(f"[ERROR]\t\t Manipulator already registered:" f" {manipulator_id}\n")
@@ -138,6 +145,7 @@ def register_manipulator(manipulator_id: int) -> str:
 
     try:
         # Register manipulator
+        # noinspection PyUnresolvedReferences
         manipulators[manipulator_id] = SensapexManipulator(
             ump.get_device(manipulator_id)
         )

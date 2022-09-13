@@ -5,7 +5,7 @@ every event, the server does the following:
 
 1. Extract the arguments passed in the event
 2. Log that the event was received
-3. Call the appropriate function in :mod:`ephys_link.sensapex_handler` with the arguments
+3. Call the appropriate function in :mod:`ephys_link.sensapex_handler` with arguments
 4. Relay the response from :mod:`ephys_link.sensapex_handler` to the callback function
 """
 
