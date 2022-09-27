@@ -47,7 +47,7 @@ def poll_serial(serial_port: str) -> None:
     if serial_port is None:
         # Search for serial ports
         for port, desc, _ in comports():
-            if "USB Serial Device" in desc:
+            if "Arduino" in desc or "USB Serial Device" in desc:
                 target_port = port
                 break
     elif serial_port == "no-e-stop":

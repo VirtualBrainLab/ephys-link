@@ -87,7 +87,7 @@ class GetManipulatorsOutputData(dict):
 class PositionalOutputData(dict):
     """Output format for (position, error)
 
-    :param position: Position (as a tuple, can be empty tuple)
+    :param position: Position in mm (as a tuple, can be empty tuple)
     :type position: list
     :param error: Error message
     :type error: str

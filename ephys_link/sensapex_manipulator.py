@@ -54,15 +54,15 @@ class SensapexManipulator:
 
     # Device functions
     def get_pos(self) -> com.PositionalOutputData:
-        """Get the current position of the manipulator
+        """Get the current position of the manipulator and convert it into mm
 
         :return: Callback parameters (position in (x, y, z, w) (or an empty array on
             error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
-            position = self._device.get_pos(1)
-            com.dprint(f"[SUCCESS]\t Sent position of manipulator {self._id}\n")
+            position = [axis / 1000 for axis in self._device.get_pos(1)]
+            com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
