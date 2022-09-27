@@ -61,7 +61,7 @@ class SensapexManipulator:
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
-            position = [axis/1000 for axis in self._device.get_pos(1)]
+            position = [axis / 1000 for axis in self._device.get_pos(1)]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
         except Exception as e:
