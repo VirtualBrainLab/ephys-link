@@ -82,6 +82,9 @@ class SensapexManipulator:
             error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
+        # Convert position to µm
+        position = [axis * 1000 for axis in position]
+
         # Add movement to queue
         self._move_queue.appendleft(self.Movement(asyncio.Event(), position))
 
