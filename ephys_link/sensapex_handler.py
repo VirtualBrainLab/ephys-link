@@ -13,7 +13,6 @@ server receives an event from a client. In general, each function does the follo
 4. Return the callback parameters to :mod:`ephys_link.server`
 """
 
-import time
 from pathlib import Path
 
 import common as com
@@ -22,48 +21,12 @@ import common as com
 import socketio
 from sensapex import UMP, UMError
 from sensapex_manipulator import SensapexManipulator
-from serial import Serial
-from serial.tools.list_ports import comports
 
 # Registered manipulators
 manipulators = {}
 
 # Sensapex uMp reference
 ump = None
-
-# Setup Arduino serial port
-poll_rate = 0.05
-continue_polling = True
-
-
-def poll_serial(serial_port: str) -> None:
-    """Continuously poll serial port for data
-
-    :param serial_port: The serial port to poll
-    :type serial_port: str
-    :return: None
-    """
-    target_port = serial_port
-    if serial_port is None:
-        # Search for serial ports
-        for port, desc, _ in comports():
-            if "Arduino" in desc or "USB Serial Device" in desc:
-                target_port = port
-                break
-    elif serial_port == "no-e-stop":
-        # Stop polling if no-e-stop is specified
-        return None
-
-    ser = Serial(target_port, 9600, timeout=poll_rate)
-    while continue_polling:
-        if ser.in_waiting > 0:
-            ser.readline()
-            # Cause a break
-            com.dprint("STOPPING EVERYTHING")
-            stop()
-            ser.reset_input_buffer()
-        time.sleep(poll_rate)
-    ser.close()
 
 
 def connect_to_ump() -> None:
