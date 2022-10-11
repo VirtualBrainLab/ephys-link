@@ -178,7 +178,7 @@ def get_pos(manipulator_id: int) -> com.PositionalOutputData:
 
 
 async def goto_pos(
-        manipulator_id: int, position: list[float], speed: int
+    manipulator_id: int, position: list[float], speed: int
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -212,7 +212,7 @@ async def goto_pos(
 
 
 async def drive_to_depth(
-        manipulator_id: int, depth: float, speed: int
+    manipulator_id: int, depth: float, speed: int
 ) -> com.DriveToDepthOutputData:
     """Drive manipulator to depth
 
@@ -367,7 +367,7 @@ def bypass_calibration(manipulator_id: int) -> str:
 
 
 def set_can_write(
-        manipulator_id: int, can_write: bool, hours: float, sio: socketio.AsyncServer
+    manipulator_id: int, can_write: bool, hours: float, sio: socketio.AsyncServer
 ) -> com.StateOutputData:
     """Set manipulator can_write state (enables/disabled moving manipulator)
 

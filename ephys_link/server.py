@@ -12,11 +12,9 @@ every event, the server does the following:
 import argparse
 import signal
 import sys
-from threading import Thread
-from serial import Serial
-from serial.tools.list_ports import comports
-from typing import Any
 import time
+from threading import Thread
+from typing import Any
 
 import common as com
 import sensapex_handler as sh
@@ -24,6 +22,8 @@ import sensapex_handler as sh
 # noinspection PyPackageRequirements
 import socketio
 from aiohttp import web
+from serial import Serial
+from serial.tools.list_ports import comports
 
 # Setup server
 sio = socketio.AsyncServer()
@@ -34,7 +34,7 @@ is_connected = False
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-                " manipulators in electrophysiology experiments",
+    " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
 parser.add_argument(
@@ -44,8 +44,13 @@ parser.add_argument(
     "-p", "--port", type=int, default=8080, dest="port", help="Port to listen on"
 )
 parser.add_argument(
-    "-s", "--serial", type=str, default="no-e-stop", dest="serial", nargs='?',
-    help="Serial port to use"
+    "-s",
+    "--serial",
+    type=str,
+    default="no-e-stop",
+    dest="serial",
+    nargs="?",
+    help="Serial port to use",
 )
 parser.add_argument(
     "--version",
@@ -161,7 +166,7 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
 
 @sio.event
 async def goto_pos(
-        _, data: com.GotoPositionInputDataFormat
+    _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -194,7 +199,7 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-        _, data: com.DriveToDepthInputDataFormat
+    _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -227,7 +232,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-        _, data: com.InsideBrainInputDataFormat
+    _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
