@@ -13,7 +13,10 @@ import argparse
 import signal
 import sys
 from threading import Thread
+from serial import Serial
+from serial.tools.list_ports import comports
 from typing import Any
+import time
 
 import common as com
 import sensapex_handler as sh
@@ -31,7 +34,7 @@ is_connected = False
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-    " manipulators in electrophysiology experiments",
+                " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
 parser.add_argument(
@@ -41,7 +44,8 @@ parser.add_argument(
     "-p", "--port", type=int, default=8080, dest="port", help="Port to listen on"
 )
 parser.add_argument(
-    "-s", "--serial", type=str, default=None, dest="serial", help="Serial port to use"
+    "-s", "--serial", type=str, default="no-e-stop", dest="serial", nargs='?',
+    help="Serial port to use"
 )
 parser.add_argument(
     "--version",
@@ -157,7 +161,7 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
 
 @sio.event
 async def goto_pos(
-    _, data: com.GotoPositionInputDataFormat
+        _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -190,7 +194,7 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-    _, data: com.DriveToDepthInputDataFormat
+        _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -223,7 +227,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-    _, data: com.InsideBrainInputDataFormat
+        _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
@@ -348,6 +352,41 @@ async def catch_all(_, __, data: Any) -> None:
     print(f"[UNKNOWN EVENT]:\t {data}")
 
 
+# Setup Arduino serial port
+poll_rate = 0.05
+continue_polling = True
+
+
+def poll_serial(serial_port: str) -> None:
+    """Continuously poll serial port for data
+
+    :param serial_port: The serial port to poll
+    :type serial_port: str
+    :return: None
+    """
+    target_port = serial_port
+    if serial_port is None:
+        # Search for serial ports
+        for port, desc, _ in comports():
+            if "Arduino" in desc or "USB Serial Device" in desc:
+                target_port = port
+                break
+    elif serial_port == "no-e-stop":
+        # Stop polling if no-e-stop is specified
+        return None
+
+    ser = Serial(target_port, 9600, timeout=poll_rate)
+    while continue_polling:
+        if ser.in_waiting > 0:
+            ser.readline()
+            # Cause a break
+            com.dprint("[EMERGENCY STOP]\t\t Stopping all manipulators")
+            sh.stop()
+            ser.reset_input_buffer()
+        time.sleep(poll_rate)
+    ser.close()
+
+
 # Handle server start
 def launch() -> None:
     """Launch the server
@@ -363,7 +402,7 @@ def launch() -> None:
 
     # Start server
     signal.signal(signal.SIGINT, close)
-    Thread(target=sh.poll_serial, args=(args.serial,)).start()
+    Thread(target=poll_serial, args=(args.serial,)).start()
     web.run_app(app, port=args.port)
 
 
