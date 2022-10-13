@@ -11,11 +11,12 @@ import socketio
 MANIPULATOR_ID = 2
 IP = "localhost"
 PORT = 8080
+HOME_POSITION = [10, 10, 10, 10]  # in mm
 
 MOVEMENT_SPEED = 1
 RESET_SPEED = 1000  # in um/s
 TARGET_AXIS = 0  # 0 = X, 1 = Y, 2 = Z, 3 = Depth
-TARGET_POS = 10  # in mm
+TARGET_POS = 15  # in mm
 FILE_NAME_EXT = "x1"
 
 # Start time record
@@ -63,11 +64,11 @@ def record_position(data: PositionalOutputData):
 # Move to 0, 0, 0, 0
 sio.emit(
     "goto_pos",
-    {"manipulator_id": MANIPULATOR_ID, "pos": [0, 0, 0, 0], "speed": RESET_SPEED}
+    {"manipulator_id": MANIPULATOR_ID, "pos": HOME_POSITION, "speed": RESET_SPEED}
 )
 
 # Set target location
-target_location = [0, 0, 0, 0]
+target_location = HOME_POSITION
 target_location[TARGET_AXIS] = TARGET_POS
 
 # Update start time
