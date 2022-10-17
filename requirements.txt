@@ -1,4 +1,4 @@
 ﻿aiohttp==3.8.3
 pyserial==3.5
-python-socketio==5.7.1
+python-socketio==5.7.2
 sensapex==1.22.7
