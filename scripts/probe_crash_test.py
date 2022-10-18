@@ -1,11 +1,12 @@
+import atexit
 import csv
 import os.path
 import time
-import atexit
-from ephys_link.common import PositionalOutputData
 
 # noinspection PyPackageRequirements
 import socketio
+
+from ephys_link.common import PositionalOutputData
 
 # Parameters
 MANIPULATOR_ID = 2
@@ -64,7 +65,7 @@ def record_position(data: PositionalOutputData):
 # Move to 0, 0, 0, 0
 sio.emit(
     "goto_pos",
-    {"manipulator_id": MANIPULATOR_ID, "pos": HOME_POSITION, "speed": RESET_SPEED}
+    {"manipulator_id": MANIPULATOR_ID, "pos": HOME_POSITION, "speed": RESET_SPEED},
 )
 
 # Set target location
@@ -77,7 +78,7 @@ START_TIME = time.time() * 1000
 # Drive
 sio.emit(
     "goto_pos",
-    {"manipulator_id": MANIPULATOR_ID, "pos": target_location, "speed": MOVEMENT_SPEED}
+    {"manipulator_id": MANIPULATOR_ID, "pos": target_location, "speed": MOVEMENT_SPEED},
 )
 
 # Record data
