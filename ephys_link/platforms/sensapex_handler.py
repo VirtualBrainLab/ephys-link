@@ -53,7 +53,7 @@ class SensapexHandler(ephys_link.platform_handler.PlatformHandler):
 
         # noinspection PyUnresolvedReferences
         self.manipulators[manipulator_id] = SensapexManipulator(
-            ump.get_device(manipulator_id)
+            self.ump.get_device(manipulator_id)
         )
 
     def _unregister_manipulator(self, manipulator_id: int) -> None:
