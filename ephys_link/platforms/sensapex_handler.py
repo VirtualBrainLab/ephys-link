@@ -15,12 +15,12 @@ server receives an event from a client. In general, each function does the follo
 
 from pathlib import Path
 
-import common as com
+import ephys_link.common as com
 
-# noinspection PyPackageRequirements
-import socketio
 from sensapex import UMP, UMError
 from sensapex_manipulator import SensapexManipulator
+# noinspection PyPackageRequirements
+import socketio
 
 # Registered manipulators
 manipulators = {}
@@ -36,7 +36,7 @@ def connect_to_ump() -> None:
 
     :return: None
     """
-    UMP.set_library_path(str(Path(__file__).parent.absolute()) + "/resources/")
+    UMP.set_library_path(str(Path(__file__).parent.parent.absolute()) + "/resources/")
     global ump
     ump = UMP.get_ump()
 

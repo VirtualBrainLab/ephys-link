@@ -10,7 +10,7 @@ import threading
 from collections import deque
 from copy import deepcopy
 
-import common as com
+import ephys_link.common as com
 
 # noinspection PyPackageRequirements
 import socketio

@@ -413,7 +413,7 @@ def launch() -> None:
     # Import correct manipulator handler
     global mh
     if args.type == "sensapex":
-        mh = importlib.import_module("sensapex_handler")
+        mh = importlib.import_module("platforms.sensapex_handler")
         # Connect to uMp
         mh.connect_to_ump()
     else:
