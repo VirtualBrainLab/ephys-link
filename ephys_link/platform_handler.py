@@ -1,3 +1,17 @@
+"""Handle communications with platform specific API
+
+Handles relaying WebSocket messages to the appropriate platform API functions and
+conducting error checks on the input and output values
+
+Function names here are the same as the WebSocket events. They are called when the
+server receives an event from a client. In general, each function does the following:
+
+1. Receive extracted arguments from :mod:`ephys_link.server`
+2. Call and check the appropriate platform API function (overloaded by each platform)
+3. Log/handle successes and failures
+4. Return the callback parameters to :mod:`ephys_link.server`
+"""
+
 from abc import ABC, abstractmethod
 import common as com
 
