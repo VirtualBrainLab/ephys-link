@@ -10,6 +10,7 @@ every event, the server does the following:
 """
 
 import argparse
+import importlib
 import signal
 import sys
 import time
@@ -17,11 +18,11 @@ from threading import Thread
 from typing import Any
 
 import common as com
-import sensapex_handler as sh
 
 # noinspection PyPackageRequirements
 import socketio
 from aiohttp import web
+from platform_handler import PlatformHandler
 from serial import Serial
 from serial.tools.list_ports import comports
 
@@ -31,6 +32,9 @@ app = web.Application()
 sio.attach(app)
 is_connected = False
 
+# Declare platform handler
+platform: PlatformHandler
+
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
@@ -38,10 +42,23 @@ parser = argparse.ArgumentParser(
     prog="python -m ephys-link",
 )
 parser.add_argument(
+    "-t",
+    "--type",
+    type=str,
+    dest="type",
+    default="sensapex",
+    help='Manipulator type (i.e. "sensapex" or "new_scale"). Default: "sensapex"',
+)
+parser.add_argument(
     "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
 )
 parser.add_argument(
-    "-p", "--port", type=int, default=8080, dest="port", help="Port to listen on"
+    "-p",
+    "--port",
+    type=int,
+    default=8080,
+    dest="port",
+    help="Port to listen on (i.e. 8080). Default: 8080",
 )
 parser.add_argument(
     "-s",
@@ -50,7 +67,7 @@ parser.add_argument(
     default="no-e-stop",
     dest="serial",
     nargs="?",
-    help="Serial port to use",
+    help="Emergency stop serial port (i.e. COM3). Default: disables emergency stop",
 )
 parser.add_argument(
     "--version",
@@ -59,8 +76,44 @@ parser.add_argument(
     help="Print version and exit",
 )
 
+# Setup Arduino serial port
+poll_rate = 0.05
+continue_polling = True
+
+
+def poll_serial(serial_port: str) -> None:
+    """Continuously poll serial port for data
+
+    :param serial_port: The serial port to poll
+    :type serial_port: str
+    :return: None
+    """
+    target_port = serial_port
+    if serial_port is None:
+        # Search for serial ports
+        for port, desc, _ in comports():
+            if "Arduino" in desc or "USB Serial Device" in desc:
+                target_port = port
+                break
+    elif serial_port == "no-e-stop":
+        # Stop polling if no-e-stop is specified
+        return None
+
+    ser = Serial(target_port, 9600, timeout=poll_rate)
+    while continue_polling:
+        if ser.in_waiting > 0:
+            ser.readline()
+            # Cause a break
+            com.dprint("[EMERGENCY STOP]\t\t Stopping all manipulators")
+            platform.stop()
+            ser.reset_input_buffer()
+        time.sleep(poll_rate)
+    ser.close()
+
 
 # Handle connection events
+
+
 @sio.event
 async def connect(sid, _, __) -> bool:
     """Acknowledge connection to the server
@@ -95,7 +148,7 @@ async def disconnect(sid) -> None:
     """
     print(f"[DISCONNECTION]:\t {sid}\n")
 
-    sh.reset()
+    platform.reset()
     global is_connected
     is_connected = False
 
@@ -112,7 +165,7 @@ async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     """
     com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
-    return sh.get_manipulators()
+    return platform.get_manipulators()
 
 
 @sio.event
@@ -128,7 +181,7 @@ async def register_manipulator(_, manipulator_id: int) -> str:
     """
     com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
 
-    return sh.register_manipulator(manipulator_id)
+    return platform.register_manipulator(manipulator_id)
 
 
 @sio.event
@@ -144,7 +197,7 @@ async def unregister_manipulator(_, manipulator_id: int) -> str:
     """
     com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
 
-    return sh.unregister_manipulator(manipulator_id)
+    return platform.unregister_manipulator(manipulator_id)
 
 
 @sio.event
@@ -161,7 +214,7 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
     """
     com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
-    return sh.get_pos(manipulator_id)
+    return platform.get_pos(manipulator_id)
 
 
 @sio.event
@@ -194,7 +247,7 @@ async def goto_pos(
 
     com.dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
 
-    return await sh.goto_pos(manipulator_id, pos, speed)
+    return await platform.goto_pos(manipulator_id, pos, speed)
 
 
 @sio.event
@@ -227,7 +280,7 @@ async def drive_to_depth(
 
     com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} " f"to depth {depth}")
 
-    return await sh.drive_to_depth(manipulator_id, depth, speed)
+    return await platform.drive_to_depth(manipulator_id, depth, speed)
 
 
 @sio.event
@@ -260,7 +313,7 @@ async def set_inside_brain(
         f'{"true" if inside else "false"}'
     )
 
-    return sh.set_inside_brain(manipulator_id, inside)
+    return platform.set_inside_brain(manipulator_id, inside)
 
 
 @sio.event
@@ -276,7 +329,7 @@ async def calibrate(_, manipulator_id: int) -> str:
     """
     com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
 
-    return await sh.calibrate(manipulator_id, sio)
+    return await platform.calibrate(manipulator_id, sio)
 
 
 @sio.event
@@ -292,7 +345,7 @@ async def bypass_calibration(_, manipulator_id: int) -> str:
     """
     com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
 
-    return sh.bypass_calibration(manipulator_id)
+    return platform.bypass_calibration(manipulator_id)
 
 
 @sio.event
@@ -325,7 +378,7 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutput
         f'{"true" if can_write else "false"}'
     )
 
-    return sh.set_can_write(manipulator_id, can_write, hours, sio)
+    return platform.set_can_write(manipulator_id, can_write, hours, sio)
 
 
 @sio.event
@@ -339,7 +392,7 @@ async def stop(_) -> bool:
     """
     com.dprint("[EVENT]\t\t Stop all manipulators")
 
-    return sh.stop()
+    return platform.stop()
 
 
 @sio.on("*")
@@ -357,42 +410,9 @@ async def catch_all(_, __, data: Any) -> None:
     print(f"[UNKNOWN EVENT]:\t {data}")
 
 
-# Setup Arduino serial port
-poll_rate = 0.05
-continue_polling = True
+# Handle server start and end
 
 
-def poll_serial(serial_port: str) -> None:
-    """Continuously poll serial port for data
-
-    :param serial_port: The serial port to poll
-    :type serial_port: str
-    :return: None
-    """
-    target_port = serial_port
-    if serial_port is None:
-        # Search for serial ports
-        for port, desc, _ in comports():
-            if "Arduino" in desc or "USB Serial Device" in desc:
-                target_port = port
-                break
-    elif serial_port == "no-e-stop":
-        # Stop polling if no-e-stop is specified
-        return None
-
-    ser = Serial(target_port, 9600, timeout=poll_rate)
-    while continue_polling:
-        if ser.in_waiting > 0:
-            ser.readline()
-            # Cause a break
-            com.dprint("[EMERGENCY STOP]\t\t Stopping all manipulators")
-            sh.stop()
-            ser.reset_input_buffer()
-        time.sleep(poll_rate)
-    ser.close()
-
-
-# Handle server start
 def launch() -> None:
     """Launch the server
 
@@ -402,8 +422,16 @@ def launch() -> None:
     args = parser.parse_args()
     com.set_debug(args.debug)
 
-    # Connect to uMp
-    sh.connect_to_ump()
+    # Import correct manipulator handler
+    global platform
+    if args.type == "sensapex":
+        platform = importlib.import_module(
+            "platforms.sensapex_handler"
+        ).SensapexHandler()
+        # Connect to uMp
+        platform.connect_to_ump()
+    else:
+        exit(f"[ERROR]\t\t Invalid manipulator type: {args.type}")
 
     # Start server
     signal.signal(signal.SIGINT, close)
@@ -421,8 +449,9 @@ def close(_, __) -> None:
     :return: None
     """
     print("[INFO]\t\t Closing server")
-    sh.continue_polling = False
-    sh.stop()
+    global continue_polling
+    continue_polling = False
+    platform.stop()  # noqa
     sys.exit(0)
 
 
