@@ -12,6 +12,8 @@ class PlatformHandler(ABC):
         """Initialize the manipulator handler with a dictionary of manipulators."""
         self.manipulators = {}
 
+    # Platform Handler Methods
+
     def reset(self) -> bool:
         """Reset handler
 
@@ -36,16 +38,23 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Stopping manipulators: {e}\n")
             return False
 
-    @abstractmethod
     def get_manipulators(self) -> com.GetManipulatorsOutputData:
         """Get all registered manipulators
 
         :return: Callback parameters (manipulators, error)
         :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
         """
-        pass
+        devices = []
+        error = "Error getting manipulators"
+        try:
+            # noinspection PyUnresolvedReferences
+            devices = self._get_manipulators()
+            error = ""
+        except Exception as e:
+            print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
+        finally:
+            return com.GetManipulatorsOutputData(devices, error)
 
-    @abstractmethod
     def register_manipulator(self, manipulator_id: int) -> str:
         """Register a manipulator
 
@@ -54,9 +63,29 @@ class PlatformHandler(ABC):
         :return: Callback parameter (Error message (on error))
         :rtype: str
         """
-        pass
+        # Check if manipulator is already registered
+        if manipulator_id in self.manipulators:
+            print(
+                f"[ERROR]\t\t Manipulator already registered:" f" {manipulator_id}\n")
+            return "Manipulator already registered"
 
-    @abstractmethod
+        try:
+            # Register manipulator
+            self._register_manipulator(manipulator_id)
+            com.dprint(f"[SUCCESS]\t Registered manipulator: {manipulator_id}\n")
+            return ""
+
+        except ValueError as ve:
+            # Manipulator not found in UMP
+            print(f"[ERROR]\t\t Manipulator not found: {manipulator_id}: {ve}\n")
+            return "Manipulator not found"
+
+        except Exception as e:
+            # Other error
+            print(f"[ERROR]\t\t Registering manipulator: {manipulator_id}")
+            print(f"{type(e)}: {e}\n")
+            return "Error registering manipulator"
+
     def unregister_manipulator(self, manipulator_id: int) -> str:
         """Unregister a manipulator
 
@@ -64,9 +93,23 @@ class PlatformHandler(ABC):
         :type manipulator_id: int
         :return: Callback parameters (error message (on error))
         """
-        pass
+        # Check if manipulator is not registered
+        if manipulator_id not in self.manipulators:
+            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
+            return "Manipulator not registered"
 
-    @abstractmethod
+        try:
+            # Unregister manipulator
+            self._unregister_manipulator(manipulator_id)
+
+            com.dprint(f"[SUCCESS]\t Unregistered manipulator: {manipulator_id}\n")
+            return ""
+        except Exception as e:
+            # Other error
+            print(f"[ERROR]\t\t Unregistering manipulator: {manipulator_id}")
+            print(f"{e}\n")
+            return "Error unregistering manipulator"
+
     def get_pos(self, manipulator_id: int) -> com.PositionalOutputData:
         """Get the current position of a manipulator
 
@@ -76,9 +119,22 @@ class PlatformHandler(ABC):
             empty array on error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        pass
+        try:
+            # Check calibration status
+            if not self.manipulators[manipulator_id].get_calibrated():
+                print(
+                    f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
+                return com.PositionalOutputData([],
+                                                "Manipulator not calibrated")
 
-    @abstractmethod
+            # Get position
+            return self._get_pos(manipulator_id)
+
+        except KeyError:
+            # Manipulator not found in registered manipulators
+            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
+            return com.PositionalOutputData([], "Manipulator not registered")
+
     async def goto_pos(self,
                        manipulator_id: int, position: list[float], speed: int
                        ) -> com.PositionalOutputData:
@@ -94,9 +150,24 @@ class PlatformHandler(ABC):
                  empty array on error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        pass
+        try:
+            # Check calibration status
+            if not self.manipulators[manipulator_id].get_calibrated():
+                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
+                return com.PositionalOutputData([], "Manipulator not calibrated")
 
-    @abstractmethod
+            # Check write state
+            if not self.manipulators[manipulator_id].get_can_write():
+                print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
+                return com.PositionalOutputData([], "Cannot write to manipulator")
+
+            return await self._goto_pos(manipulator_id, position, speed)
+
+        except KeyError:
+            # Manipulator not found in registered manipulators
+            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
+            return com.PositionalOutputData([], "Manipulator not registered")
+
     async def drive_to_depth(self,
                              manipulator_id: int, depth: float, speed: int
                              ) -> com.DriveToDepthOutputData:
@@ -112,11 +183,219 @@ class PlatformHandler(ABC):
                  message)
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
+        try:
+            # Check calibration status
+            if not self.manipulators[manipulator_id].get_calibrated():
+                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
+                return com.DriveToDepthOutputData(0, "Manipulator not calibrated")
+
+            # Check write state
+            if not self.manipulators[manipulator_id].get_can_write():
+                print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
+                return com.DriveToDepthOutputData(0, "Cannot write to manipulator")
+
+            return await self._drive_to_depth(manipulator_id, depth, speed)
+
+        except KeyError:
+            # Manipulator not found in registered manipulators
+            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
+            return com.DriveToDepthOutputData(0, "Manipulator " "not registered")
+
+    def set_inside_brain(self, manipulator_id: int,
+                         inside: bool) -> com.StateOutputData:
+        """Set manipulator inside brain state (restricts motion)
+
+        :param manipulator_id: The ID of the manipulator to set the state of
+        :type manipulator_id: int
+        :param inside: True if inside brain, False if outside
+        :type inside: bool
+        :return: Callback parameters (manipulator ID, inside, error message)
+        :rtype: :class:`ephys_link.common.StateOutputData`
+        """
+        try:
+            # Check calibration status
+            if not self.manipulators[manipulator_id].get_calibrated():
+                print("[ERROR]\t\t Calibration not complete\n")
+                return com.StateOutputData(False, "Manipulator not calibrated")
+
+            return self._set_inside_brain(manipulator_id, inside)
+
+        except KeyError:
+            # Manipulator not found in registered manipulators
+            print(f"[ERROR]\t\t Manipulator {manipulator_id} not registered\n")
+            return com.StateOutputData(False, "Manipulator not " "registered")
+
+        except Exception as e:
+            # Other error
+            print(
+                f"[ERROR]\t\t Set manipulator {manipulator_id} inside brain " f"state")
+            print(f"{e}\n")
+            return com.StateOutputData(False, "Error setting " "inside brain")
+
+    async def calibrate(self, manipulator_id: int, sio: socketio.AsyncServer) -> str:
+        """Calibrate manipulator
+
+        :param manipulator_id: ID of manipulator to calibrate
+        :type manipulator_id: int
+        :param sio: SocketIO object (to call sleep)
+        :type sio: :class:`socketio.AsyncServer`
+        :return: Callback parameters (manipulator ID, error message)
+        :rtype: str
+        """
+        try:
+            # Check write state
+            if not self.manipulators[manipulator_id].get_can_write():
+                print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
+                return "Cannot write to manipulator"
+
+            return await self._calibrate(manipulator_id, sio)
+
+        except KeyError:
+            # Manipulator not found in registered manipulators
+            print(f"[ERROR]\t\t Manipulator {manipulator_id} not registered\n")
+            return "Manipulator not registered"
+
+        except Exception as e:
+            # Other error
+            print(f"[ERROR]\t\t Calibrate manipulator {manipulator_id}")
+            print(f"{e}\n")
+            return "Error calibrating manipulator"
+
+    def bypass_calibration(self, manipulator_id: int) -> str:
+        """Bypass calibration of manipulator
+
+        :param manipulator_id: ID of manipulator to bypass calibration
+        :type manipulator_id: int
+        :return: Callback parameters (manipulator ID, error message)
+        :rtype: str
+        """
+        try:
+            # Bypass calibration
+            return self._bypass_calibration(manipulator_id)
+
+        except KeyError:
+            # Manipulator not found in registered manipulators
+            print(f"[ERROR]\t\t Manipulator {manipulator_id} not registered\n")
+            return "Manipulator not registered"
+
+        except Exception as e:
+            # Other error
+            print(f"[ERROR]\t\t Bypass calibration of manipulator {manipulator_id}")
+            print(f"{e}\n")
+            return "Error bypassing calibration"
+
+    def set_can_write(self,
+                      manipulator_id: int, can_write: bool, hours: float,
+                      sio: socketio.AsyncServer
+                      ) -> com.StateOutputData:
+        """Set manipulator can_write state (enables/disabled moving manipulator)
+
+        :param manipulator_id: The ID of the manipulator to set the state of
+        :type manipulator_id: int
+        :param can_write: True if allowed to move, False if outside
+        :type can_write: bool
+        :param hours: The number of hours to allow writing (0 = forever)
+        :type hours: float
+        :param sio: SocketIO object from server to emit reset event
+        :type sio: :class:`socketio.AsyncServer`
+        :return: Callback parameters (manipulator ID, can_write, error message)
+        :rtype: :class:`ephys_link.common.StateOutputData`
+        """
+        try:
+            return self._set_can_write(manipulator_id, can_write, hours, sio)
+        except KeyError:
+            # Manipulator not found in registered manipulators
+            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
+            return com.StateOutputData(False, "Manipulator not " "registered")
+
+        except Exception as e:
+            # Other error
+            print(f"[ERROR]\t\t Set manipulator {manipulator_id} can_write state")
+            print(f"{e}\n")
+            return com.StateOutputData(False, "Error setting " "can_write")
+
+    # Platform specific methods to override
+
+    @abstractmethod
+    def _get_manipulators(self) -> list:
+        """Get all registered manipulators
+
+        :return: List of manipulator IDs
+        :rtype: list
+        """
         pass
 
     @abstractmethod
-    def set_inside_brain(self, manipulator_id: int,
-                         inside: bool) -> com.StateOutputData:
+    def _register_manipulator(self, manipulator_id: int) -> None:
+        """Register a manipulator
+
+        :param manipulator_id: The ID of the manipulator to register.
+        :type manipulator_id: int
+        :return: None
+        """
+        pass
+
+    @abstractmethod
+    def _unregister_manipulator(self, manipulator_id: int) -> None:
+        """Unregister a manipulator
+
+        :param manipulator_id: The ID of the manipulator to unregister.
+        :type manipulator_id: int
+        :return: None
+        """
+        pass
+
+    @abstractmethod
+    def _get_pos(self, manipulator_id: int) -> com.PositionalOutputData:
+        """Get the current position of a manipulator
+
+        :param manipulator_id: The ID of the manipulator to get the position of.
+        :type manipulator_id: int
+        :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
+            empty array on error), error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        """
+        pass
+
+    @abstractmethod
+    async def _goto_pos(self,
+                        manipulator_id: int, position: list[float], speed: int
+                        ) -> com.PositionalOutputData:
+        """Move manipulator to position
+
+        :param manipulator_id: The ID of the manipulator to move
+        :type manipulator_id: int
+        :param position: The position to move to
+        :type position: list[float]
+        :param speed: The speed to move at (in µm/s)
+        :type speed: int
+        :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
+                 empty array on error), error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        """
+        pass
+
+    @abstractmethod
+    async def _drive_to_depth(self,
+                              manipulator_id: int, depth: float, speed: int
+                              ) -> com.DriveToDepthOutputData:
+        """Drive manipulator to depth
+
+        :param manipulator_id: The ID of the manipulator to drive
+        :type manipulator_id: int
+        :param depth: The depth to drive to
+        :type depth: float
+        :param speed: The speed to drive at (in µm/s)
+        :type speed: int
+        :return: Callback parameters (manipulator ID, depth (or 0 on error), error
+                 message)
+        :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
+        """
+        pass
+
+    @abstractmethod
+    def _set_inside_brain(self, manipulator_id: int,
+                          inside: bool) -> com.StateOutputData:
         """Set manipulator inside brain state (restricts motion)
 
         :param manipulator_id: The ID of the manipulator to set the state of
@@ -129,7 +408,7 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    async def calibrate(self, manipulator_id: int, sio: socketio.AsyncServer) -> str:
+    async def _calibrate(self, manipulator_id: int, sio: socketio.AsyncServer) -> str:
         """Calibrate manipulator
 
         :param manipulator_id: ID of manipulator to calibrate
@@ -139,9 +418,10 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, error message)
         :rtype: str
         """
+        pass
 
     @abstractmethod
-    def bypass_calibration(self, manipulator_id: int) -> str:
+    def _bypass_calibration(self, manipulator_id: int) -> str:
         """Bypass calibration of manipulator
 
         :param manipulator_id: ID of manipulator to bypass calibration
@@ -152,10 +432,10 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    def set_can_write(self,
-                      manipulator_id: int, can_write: bool, hours: float,
-                      sio: socketio.AsyncServer
-                      ) -> com.StateOutputData:
+    def _set_can_write(self,
+                       manipulator_id: int, can_write: bool, hours: float,
+                       sio: socketio.AsyncServer
+                       ) -> com.StateOutputData:
         """Set manipulator can_write state (enables/disabled moving manipulator)
 
         :param manipulator_id: The ID of the manipulator to set the state of
