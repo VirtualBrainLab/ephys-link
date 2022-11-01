@@ -38,7 +38,7 @@ platform: PlatformHandler
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-                " manipulators in electrophysiology experiments",
+    " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
 parser.add_argument(
@@ -112,6 +112,7 @@ def poll_serial(serial_port: str) -> None:
 
 
 # Handle connection events
+
 
 @sio.event
 async def connect(sid, _, __) -> bool:
@@ -218,7 +219,7 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
 
 @sio.event
 async def goto_pos(
-        _, data: com.GotoPositionInputDataFormat
+    _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -251,7 +252,7 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-        _, data: com.DriveToDepthInputDataFormat
+    _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -284,7 +285,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-        _, data: com.InsideBrainInputDataFormat
+    _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
@@ -410,6 +411,7 @@ async def catch_all(_, __, data: Any) -> None:
 
 
 # Handle server start and end
+
 
 def launch() -> None:
     """Launch the server
