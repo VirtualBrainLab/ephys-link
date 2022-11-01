@@ -16,14 +16,14 @@ import sys
 import time
 from threading import Thread
 from typing import Any
-
-import common as com
-
-# noinspection PyPackageRequirements
-import socketio
 from aiohttp import web
 from serial import Serial
 from serial.tools.list_ports import comports
+import common as com
+from platform_handler import PlatformHandler
+
+# noinspection PyPackageRequirements
+import socketio
 
 # Setup server
 sio = socketio.AsyncServer()
@@ -64,8 +64,8 @@ parser.add_argument(
     help="Print version and exit",
 )
 
-# Manipulator handler
-mh = None
+# Declare platform handler
+platform: PlatformHandler
 
 
 # Handle connection events
@@ -103,7 +103,7 @@ async def disconnect(sid) -> None:
     """
     print(f"[DISCONNECTION]:\t {sid}\n")
 
-    mh.reset()
+    platform.reset()
     global is_connected
     is_connected = False
 
@@ -120,7 +120,7 @@ async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     """
     com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
-    return mh.get_manipulators()
+    return platform.get_manipulators()
 
 
 @sio.event
@@ -136,7 +136,7 @@ async def register_manipulator(_, manipulator_id: int) -> str:
     """
     com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
 
-    return mh.register_manipulator(manipulator_id)
+    return platform.register_manipulator(manipulator_id)
 
 
 @sio.event
@@ -152,7 +152,7 @@ async def unregister_manipulator(_, manipulator_id: int) -> str:
     """
     com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
 
-    return mh.unregister_manipulator(manipulator_id)
+    return platform.unregister_manipulator(manipulator_id)
 
 
 @sio.event
@@ -169,7 +169,7 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
     """
     com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
-    return mh.get_pos(manipulator_id)
+    return platform.get_pos(manipulator_id)
 
 
 @sio.event
@@ -202,7 +202,7 @@ async def goto_pos(
 
     com.dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
 
-    return await mh.goto_pos(manipulator_id, pos, speed)
+    return await platform.goto_pos(manipulator_id, pos, speed)
 
 
 @sio.event
@@ -235,7 +235,7 @@ async def drive_to_depth(
 
     com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} " f"to depth {depth}")
 
-    return await mh.drive_to_depth(manipulator_id, depth, speed)
+    return await platform.drive_to_depth(manipulator_id, depth, speed)
 
 
 @sio.event
@@ -268,7 +268,7 @@ async def set_inside_brain(
         f'{"true" if inside else "false"}'
     )
 
-    return mh.set_inside_brain(manipulator_id, inside)
+    return platform.set_inside_brain(manipulator_id, inside)
 
 
 @sio.event
@@ -284,7 +284,7 @@ async def calibrate(_, manipulator_id: int) -> str:
     """
     com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
 
-    return await mh.calibrate(manipulator_id, sio)
+    return await platform.calibrate(manipulator_id, sio)
 
 
 @sio.event
@@ -300,7 +300,7 @@ async def bypass_calibration(_, manipulator_id: int) -> str:
     """
     com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
 
-    return mh.bypass_calibration(manipulator_id)
+    return platform.bypass_calibration(manipulator_id)
 
 
 @sio.event
@@ -333,7 +333,7 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutput
         f'{"true" if can_write else "false"}'
     )
 
-    return mh.set_can_write(manipulator_id, can_write, hours, sio)
+    return platform.set_can_write(manipulator_id, can_write, hours, sio)
 
 
 @sio.event
@@ -347,7 +347,7 @@ async def stop(_) -> bool:
     """
     com.dprint("[EVENT]\t\t Stop all manipulators")
 
-    return mh.stop()
+    return platform.stop()
 
 
 @sio.on("*")
@@ -394,7 +394,7 @@ def poll_serial(serial_port: str) -> None:
             ser.readline()
             # Cause a break
             com.dprint("[EMERGENCY STOP]\t\t Stopping all manipulators")
-            mh.stop()
+            platform.stop()
             ser.reset_input_buffer()
         time.sleep(poll_rate)
     ser.close()
@@ -411,11 +411,12 @@ def launch() -> None:
     com.set_debug(args.debug)
 
     # Import correct manipulator handler
-    global mh
+    global platform
     if args.type == "sensapex":
-        mh = importlib.import_module("platforms.sensapex_handler")
+        platform = importlib.import_module(
+            "platforms.sensapex_handler").SensapexHandler()
         # Connect to uMp
-        mh.connect_to_ump()
+        platform.connect_to_ump()
     else:
         exit(f"[ERROR]\t\t Invalid manipulator type: {args.type}")
 
@@ -435,8 +436,8 @@ def close(_, __) -> None:
     :return: None
     """
     print("[INFO]\t\t Closing server")
-    mh.continue_polling = False
-    mh.stop()
+    platform.continue_polling = False
+    platform.stop()
     sys.exit(0)
 
 

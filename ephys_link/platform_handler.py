@@ -25,9 +25,9 @@ class PlatformHandler(ABC):
     def stop(self) -> bool:
         """Stop handler
 
-            :return: True if successful, False otherwise
-            :rtype: bool
-            """
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         try:
             for manipulator in self.manipulators.values():
                 manipulator.stop()
