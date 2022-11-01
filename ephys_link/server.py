@@ -16,14 +16,15 @@ import sys
 import time
 from threading import Thread
 from typing import Any
-from aiohttp import web
-from serial import Serial
-from serial.tools.list_ports import comports
+
 import common as com
-from platform_handler import PlatformHandler
 
 # noinspection PyPackageRequirements
 import socketio
+from aiohttp import web
+from platform_handler import PlatformHandler
+from serial import Serial
+from serial.tools.list_ports import comports
 
 # Setup server
 sio = socketio.AsyncServer()
@@ -34,19 +35,27 @@ is_connected = False
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-                " manipulators in electrophysiology experiments",
+    " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
 parser.add_argument(
-    "-t", "--type", type=str, dest="type", default="sensapex",
-    help="Manipulator type (i.e. \"sensapex\" or \"new_scale\"). Default: \"sensapex\""
+    "-t",
+    "--type",
+    type=str,
+    dest="type",
+    default="sensapex",
+    help='Manipulator type (i.e. "sensapex" or "new_scale"). Default: "sensapex"',
 )
 parser.add_argument(
     "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
 )
 parser.add_argument(
-    "-p", "--port", type=int, default=8080, dest="port",
-    help="Port to listen on (i.e. 8080). Default: 8080"
+    "-p",
+    "--port",
+    type=int,
+    default=8080,
+    dest="port",
+    help="Port to listen on (i.e. 8080). Default: 8080",
 )
 parser.add_argument(
     "-s",
@@ -174,7 +183,7 @@ async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
 
 @sio.event
 async def goto_pos(
-        _, data: com.GotoPositionInputDataFormat
+    _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -207,7 +216,7 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-        _, data: com.DriveToDepthInputDataFormat
+    _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -240,7 +249,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-        _, data: com.InsideBrainInputDataFormat
+    _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
@@ -414,7 +423,8 @@ def launch() -> None:
     global platform
     if args.type == "sensapex":
         platform = importlib.import_module(
-            "platforms.sensapex_handler").SensapexHandler()
+            "platforms.sensapex_handler"
+        ).SensapexHandler()
         # Connect to uMp
         platform.connect_to_ump()
     else:

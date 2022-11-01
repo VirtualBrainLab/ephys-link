@@ -8,13 +8,13 @@ This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 
 from pathlib import Path
 
-import ephys_link.common as com
-import ephys_link.platform_handler
-
-from sensapex import UMP, UMError
-from sensapex_manipulator import SensapexManipulator
 # noinspection PyPackageRequirements
 import socketio
+from sensapex import UMP, UMError
+from sensapex_manipulator import SensapexManipulator
+
+import ephys_link.common as com
+import ephys_link.platform_handler
 
 
 class SensapexHandler(ephys_link.platform_handler.PlatformHandler):
@@ -32,7 +32,8 @@ class SensapexHandler(ephys_link.platform_handler.PlatformHandler):
         :return: None
         """
         UMP.set_library_path(
-            str(Path(__file__).parent.parent.absolute()) + "/resources/")
+            str(Path(__file__).parent.parent.absolute()) + "/resources/"
+        )
         self.ump = UMP.get_ump()
 
     def _get_manipulators(self) -> list:
@@ -55,18 +56,19 @@ class SensapexHandler(ephys_link.platform_handler.PlatformHandler):
     def _get_pos(self, manipulator_id: int) -> com.PositionalOutputData:
         return self.manipulators[manipulator_id].get_pos()
 
-    async def _goto_pos(self,
-                        manipulator_id: int, position: list[float], speed: int
-                        ) -> com.PositionalOutputData:
+    async def _goto_pos(
+        self, manipulator_id: int, position: list[float], speed: int
+    ) -> com.PositionalOutputData:
         return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
-    async def _drive_to_depth(self,
-                              manipulator_id: int, depth: float, speed: int
-                              ) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(
+        self, manipulator_id: int, depth: float, speed: int
+    ) -> com.DriveToDepthOutputData:
         return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
 
-    def _set_inside_brain(self, manipulator_id: int,
-                          inside: bool) -> com.StateOutputData:
+    def _set_inside_brain(
+        self, manipulator_id: int, inside: bool
+    ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_inside_brain(inside)
         com.dprint(
             f"[SUCCESS]\t Set inside brain state for manipulator:"
@@ -78,7 +80,8 @@ class SensapexHandler(ephys_link.platform_handler.PlatformHandler):
         try:
             # Move manipulator to max position
             await self.manipulators[manipulator_id].goto_pos(
-                [20000, 20000, 20000, 20000], 2000)
+                [20000, 20000, 20000, 20000], 2000
+            )
 
             # Call calibrate
             self.manipulators[manipulator_id].call_calibrate()
@@ -115,10 +118,13 @@ class SensapexHandler(ephys_link.platform_handler.PlatformHandler):
         )
         return ""
 
-    def _set_can_write(self,
-                       manipulator_id: int, can_write: bool, hours: float,
-                       sio: socketio.AsyncServer
-                       ) -> com.StateOutputData:
+    def _set_can_write(
+        self,
+        manipulator_id: int,
+        can_write: bool,
+        hours: float,
+        sio: socketio.AsyncServer,
+    ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         com.dprint(
             f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n"

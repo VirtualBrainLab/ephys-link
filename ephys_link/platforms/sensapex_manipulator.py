@@ -10,11 +10,11 @@ import threading
 from collections import deque
 from copy import deepcopy
 
-import ephys_link.common as com
-
 # noinspection PyPackageRequirements
 import socketio
 from sensapex import SensapexDevice
+
+import ephys_link.common as com
 
 
 class SensapexManipulator:

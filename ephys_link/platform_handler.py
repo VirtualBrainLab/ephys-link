@@ -13,6 +13,7 @@ server receives an event from a client. In general, each function does the follo
 """
 
 from abc import ABC, abstractmethod
+
 import common as com
 
 # noinspection PyPackageRequirements
@@ -79,8 +80,7 @@ class PlatformHandler(ABC):
         """
         # Check if manipulator is already registered
         if manipulator_id in self.manipulators:
-            print(
-                f"[ERROR]\t\t Manipulator already registered:" f" {manipulator_id}\n")
+            print(f"[ERROR]\t\t Manipulator already registered:" f" {manipulator_id}\n")
             return "Manipulator already registered"
 
         try:
@@ -136,10 +136,8 @@ class PlatformHandler(ABC):
         try:
             # Check calibration status
             if not self.manipulators[manipulator_id].get_calibrated():
-                print(
-                    f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.PositionalOutputData([],
-                                                "Manipulator not calibrated")
+                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
+                return com.PositionalOutputData([], "Manipulator not calibrated")
 
             # Get position
             return self._get_pos(manipulator_id)
@@ -149,9 +147,9 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
             return com.PositionalOutputData([], "Manipulator not registered")
 
-    async def goto_pos(self,
-                       manipulator_id: int, position: list[float], speed: int
-                       ) -> com.PositionalOutputData:
+    async def goto_pos(
+        self, manipulator_id: int, position: list[float], speed: int
+    ) -> com.PositionalOutputData:
         """Move manipulator to position
 
         :param manipulator_id: The ID of the manipulator to move
@@ -182,9 +180,9 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
             return com.PositionalOutputData([], "Manipulator not registered")
 
-    async def drive_to_depth(self,
-                             manipulator_id: int, depth: float, speed: int
-                             ) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(
+        self, manipulator_id: int, depth: float, speed: int
+    ) -> com.DriveToDepthOutputData:
         """Drive manipulator to depth
 
         :param manipulator_id: The ID of the manipulator to drive
@@ -215,8 +213,9 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
             return com.DriveToDepthOutputData(0, "Manipulator " "not registered")
 
-    def set_inside_brain(self, manipulator_id: int,
-                         inside: bool) -> com.StateOutputData:
+    def set_inside_brain(
+        self, manipulator_id: int, inside: bool
+    ) -> com.StateOutputData:
         """Set manipulator inside brain state (restricts motion)
 
         :param manipulator_id: The ID of the manipulator to set the state of
@@ -242,7 +241,8 @@ class PlatformHandler(ABC):
         except Exception as e:
             # Other error
             print(
-                f"[ERROR]\t\t Set manipulator {manipulator_id} inside brain " f"state")
+                f"[ERROR]\t\t Set manipulator {manipulator_id} inside brain " f"state"
+            )
             print(f"{e}\n")
             return com.StateOutputData(False, "Error setting " "inside brain")
 
@@ -298,10 +298,13 @@ class PlatformHandler(ABC):
             print(f"{e}\n")
             return "Error bypassing calibration"
 
-    def set_can_write(self,
-                      manipulator_id: int, can_write: bool, hours: float,
-                      sio: socketio.AsyncServer
-                      ) -> com.StateOutputData:
+    def set_can_write(
+        self,
+        manipulator_id: int,
+        can_write: bool,
+        hours: float,
+        sio: socketio.AsyncServer,
+    ) -> com.StateOutputData:
         """Set manipulator can_write state (enables/disabled moving manipulator)
 
         :param manipulator_id: The ID of the manipulator to set the state of
@@ -372,9 +375,9 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    async def _goto_pos(self,
-                        manipulator_id: int, position: list[float], speed: int
-                        ) -> com.PositionalOutputData:
+    async def _goto_pos(
+        self, manipulator_id: int, position: list[float], speed: int
+    ) -> com.PositionalOutputData:
         """Move manipulator to position
 
         :param manipulator_id: The ID of the manipulator to move
@@ -390,9 +393,9 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    async def _drive_to_depth(self,
-                              manipulator_id: int, depth: float, speed: int
-                              ) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(
+        self, manipulator_id: int, depth: float, speed: int
+    ) -> com.DriveToDepthOutputData:
         """Drive manipulator to depth
 
         :param manipulator_id: The ID of the manipulator to drive
@@ -408,8 +411,9 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    def _set_inside_brain(self, manipulator_id: int,
-                          inside: bool) -> com.StateOutputData:
+    def _set_inside_brain(
+        self, manipulator_id: int, inside: bool
+    ) -> com.StateOutputData:
         """Set manipulator inside brain state (restricts motion)
 
         :param manipulator_id: The ID of the manipulator to set the state of
@@ -446,10 +450,13 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    def _set_can_write(self,
-                       manipulator_id: int, can_write: bool, hours: float,
-                       sio: socketio.AsyncServer
-                       ) -> com.StateOutputData:
+    def _set_can_write(
+        self,
+        manipulator_id: int,
+        can_write: bool,
+        hours: float,
+        sio: socketio.AsyncServer,
+    ) -> com.StateOutputData:
         """Set manipulator can_write state (enables/disabled moving manipulator)
 
         :param manipulator_id: The ID of the manipulator to set the state of
