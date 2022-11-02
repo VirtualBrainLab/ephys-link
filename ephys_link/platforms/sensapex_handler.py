@@ -14,23 +14,16 @@ from sensapex import UMP, UMError
 from sensapex_manipulator import SensapexManipulator
 
 import ephys_link.common as com
-import ephys_link.platform_handler
+from ephys_link.platform_handler import PlatformHandler
 
 
-class SensapexHandler(ephys_link.platform_handler.PlatformHandler):
+class SensapexHandler(PlatformHandler):
     """Handler for Sensapex platform"""
 
     def __init__(self):
         super().__init__()
-        self.ump = None
 
-    def connect_to_ump(self) -> None:
-        """Connect to uMp
-
-        Only establish connection to Sensapex API when this function is called
-
-        :return: None
-        """
+        # Establish connection to Sensapex API
         UMP.set_library_path(
             str(Path(__file__).parent.parent.absolute()) + "/resources/"
         )

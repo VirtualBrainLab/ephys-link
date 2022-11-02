@@ -428,8 +428,10 @@ def launch() -> None:
         platform = importlib.import_module(
             "platforms.sensapex_handler"
         ).SensapexHandler()
-        # Connect to uMp
-        platform.connect_to_ump()
+    elif args.type == "new_scale":
+        platform = importlib.import_module(
+            "platforms.new_scale_handler"
+        ).NewScaleHandler()
     else:
         exit(f"[ERROR]\t\t Invalid manipulator type: {args.type}")
 
