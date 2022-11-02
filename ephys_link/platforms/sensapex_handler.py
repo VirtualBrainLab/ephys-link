@@ -23,22 +23,18 @@ class SensapexHandler(PlatformHandler):
     def __init__(self):
         super().__init__()
 
-        # Establish connection to Sensapex API
+        # Establish connection to Sensapex API (exit if connection fails)
         UMP.set_library_path(
             str(Path(__file__).parent.parent.absolute()) + "/resources/"
         )
         self.ump = UMP.get_ump()
-
-    def _get_manipulators(self) -> list:
         if self.ump is None:
             raise ValueError("uMp not connected")
+
+    def _get_manipulators(self) -> list:
         return self.ump.list_devices()
 
     def _register_manipulator(self, manipulator_id: int) -> None:
-        if self.ump is None:
-            raise ValueError("uMp not connected")
-
-        # noinspection PyUnresolvedReferences
         self.manipulators[manipulator_id] = SensapexManipulator(
             self.ump.get_device(manipulator_id)
         )
@@ -50,17 +46,17 @@ class SensapexHandler(PlatformHandler):
         return self.manipulators[manipulator_id].get_pos()
 
     async def _goto_pos(
-        self, manipulator_id: int, position: list[float], speed: int
+            self, manipulator_id: int, position: list[float], speed: int
     ) -> com.PositionalOutputData:
         return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
     async def _drive_to_depth(
-        self, manipulator_id: int, depth: float, speed: int
+            self, manipulator_id: int, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
 
     def _set_inside_brain(
-        self, manipulator_id: int, inside: bool
+            self, manipulator_id: int, inside: bool
     ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_inside_brain(inside)
         com.dprint(
@@ -112,11 +108,11 @@ class SensapexHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-        self,
-        manipulator_id: int,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: int,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         com.dprint(

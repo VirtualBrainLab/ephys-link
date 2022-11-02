@@ -30,6 +30,10 @@ class NewScaleHandler(PlatformHandler):
                 f"New Scale HTTP server not online on port {self.port}") from e
 
     def query_data(self) -> dict:
+        """Query New Scale HTTP server for data and return as dict
+
+        :return: dict of data (originally in JSON)
+        """
         try:
             raw_data = request.urlopen(f"http://localhost:{self.port}").read()
             return loads(raw_data)
@@ -37,7 +41,7 @@ class NewScaleHandler(PlatformHandler):
             print(f"[ERROR]\t\t Unable to query for New Scale data: {type(e)} {e}\n")
 
     def _get_manipulators(self) -> list:
-        pass
+        return [probe['Id'] for probe in self.query_data()['ProbeArray']]
 
     def _register_manipulator(self, manipulator_id: int) -> None:
         pass
