@@ -41,8 +41,7 @@ class NewScaleHandler(PlatformHandler):
         :return: dict of data (originally in JSON)
         """
         try:
-            raw_data = request.urlopen(f"http://localhost:{self.port}").read()
-            return loads(raw_data)
+            return loads(request.urlopen(f"http://localhost:{self.port}").read())
         except Exception as e:
             print(f"[ERROR]\t\t Unable to query for New Scale data: {type(e)} {e}\n")
 
@@ -53,12 +52,26 @@ class NewScaleHandler(PlatformHandler):
         :return: dict of data (originally in JSON)
         :raises ValueError: if manipulator ID is not found in query
         """
-        data = next(
-            (manipulator for manipulator in self.query_data()['ProbeArray'] if
-             manipulator['Id'] == manipulator_id), None)
-        if not data:
+        data_query = self.query_data()['ProbeArray']
+        manipulator_data = data_query[self.manipulators[manipulator_id]]
+
+        # If the order of the manipulators switched (somehow)
+        if manipulator_data['Id'] != manipulator_id:
+            # Recalculate index and get data
+            (manipulator_index, manipulator_data) = next(
+                ((index, data) for index, data in
+                 enumerate(self.query_data()['ProbeArray']) if
+                 data['Id'] == manipulator_id), (None, None))
+            # Update index in manipulators dict
+            if manipulator_index:
+                self.manipulators[manipulator_id] = manipulator_index
+
+        # If data query was unsuccessful
+        if not manipulator_data:
             raise ValueError(f"Unable to find manipulator {manipulator_id}")
-        return data
+
+        # Return data
+        return manipulator_data
 
     def _get_manipulators(self) -> list:
         return [probe['Id'] for probe in self.query_data()['ProbeArray']]
@@ -72,8 +85,13 @@ class NewScaleHandler(PlatformHandler):
         if manipulator_id not in self._get_manipulators():
             raise ValueError(f"Manipulator {manipulator_id} not connected")
 
-        manipulator_data = self.query_manipulator_data(manipulator_id)
-        self.manipulators[manipulator_id] = manipulator_data['SerialNumber']
+        # Get index of the manipulator
+        manipulator_index = next(
+            (index for index, data in self.query_data()['ProbeArray'] if
+             data['Id'] == manipulator_id), None)
+        if not manipulator_index:
+            raise ValueError(f"Unable to find manipulator {manipulator_id}")
+        self.manipulators[manipulator_id] = manipulator_index
 
     def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
