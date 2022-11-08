@@ -36,7 +36,7 @@ def dprint(message: str) -> None:
 class GotoPositionInputDataFormat(TypedDict):
     """Data format for :func:`server.goto_pos`"""
 
-    manipulator_id: int
+    manipulator_id: str
     pos: list[float]
     speed: int
 
@@ -44,14 +44,14 @@ class GotoPositionInputDataFormat(TypedDict):
 class InsideBrainInputDataFormat(TypedDict):
     """Data format for :func:`server.set_inside_brain`"""
 
-    manipulator_id: int
+    manipulator_id: str
     inside: bool
 
 
 class DriveToDepthInputDataFormat(TypedDict):
     """Data format for :func:`server.drive_to_depth`"""
 
-    manipulator_id: int
+    manipulator_id: str
     depth: float
     speed: int
 
@@ -59,7 +59,7 @@ class DriveToDepthInputDataFormat(TypedDict):
 class CanWriteInputDataFormat(TypedDict):
     """Data format for :func:`server.set_can_write`"""
 
-    manipulator_id: int
+    manipulator_id: str
     can_write: bool
     hours: float
 
@@ -68,13 +68,13 @@ class CanWriteInputDataFormat(TypedDict):
 class GetManipulatorsOutputData(dict):
     """Output format for (manipulators)
 
-    :param manipulators: Tuple of manipulator IDs
+    :param manipulators: Tuple of manipulator IDs (as strings)
     :type manipulators: list
     :param error: Error message
     :type error: str
 
     :example: Example generated dictionary
-        :code:`{"manipulators": [1, 2], "error": ""}`
+        :code:`{"manipulators": ["1", "2"], "error": ""}`
     """
 
     def __init__(self, manipulators: list, error: str) -> None:

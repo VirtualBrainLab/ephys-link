@@ -34,29 +34,32 @@ class SensapexHandler(PlatformHandler):
     def _get_manipulators(self) -> list:
         return self.ump.list_devices()
 
-    def _register_manipulator(self, manipulator_id: int) -> None:
+    def _register_manipulator(self, manipulator_id: str) -> None:
+        if not manipulator_id.isnumeric():
+            raise ValueError("Manipulator ID must be numeric")
+
         self.manipulators[manipulator_id] = SensapexManipulator(
-            self.ump.get_device(manipulator_id)
+            self.ump.get_device(int(manipulator_id))
         )
 
-    def _unregister_manipulator(self, manipulator_id: int) -> None:
+    def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
 
-    def _get_pos(self, manipulator_id: int) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
         return self.manipulators[manipulator_id].get_pos()
 
     async def _goto_pos(
-            self, manipulator_id: int, position: list[float], speed: int
+            self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
         return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
     async def _drive_to_depth(
-            self, manipulator_id: int, depth: float, speed: int
+            self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
 
     def _set_inside_brain(
-            self, manipulator_id: int, inside: bool
+            self, manipulator_id: str, inside: bool
     ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_inside_brain(inside)
         com.dprint(
@@ -65,7 +68,7 @@ class SensapexHandler(PlatformHandler):
         )
         return com.StateOutputData(inside, "")
 
-    async def _calibrate(self, manipulator_id: int, sio: socketio.AsyncServer) -> str:
+    async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         try:
             # Move manipulator to max position
             await self.manipulators[manipulator_id].goto_pos(
@@ -100,7 +103,7 @@ class SensapexHandler(PlatformHandler):
             print(f"{e}\n")
             return "Error calling calibrate"
 
-    def _bypass_calibration(self, manipulator_id: int) -> str:
+    def _bypass_calibration(self, manipulator_id: str) -> str:
         self.manipulators[manipulator_id].set_calibrated()
         com.dprint(
             f"[SUCCESS]\t Bypassed calibration for manipulator" f" {manipulator_id}\n"
@@ -109,7 +112,7 @@ class SensapexHandler(PlatformHandler):
 
     def _set_can_write(
             self,
-            manipulator_id: int,
+            manipulator_id: str,
             can_write: bool,
             hours: float,
             sio: socketio.AsyncServer,
