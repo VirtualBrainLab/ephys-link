@@ -46,6 +46,20 @@ class NewScaleHandler(PlatformHandler):
         except Exception as e:
             print(f"[ERROR]\t\t Unable to query for New Scale data: {type(e)} {e}\n")
 
+    def query_manipulator_data(self, manipulator_id: str) -> dict:
+        """Query New Scale HTTP server for data on a specific manipulator
+
+        :param manipulator_id: manipulator ID
+        :return: dict of data (originally in JSON)
+        :raises ValueError: if manipulator ID is not found in query
+        """
+        data = next(
+            (manipulator for manipulator in self.query_data()['ProbeArray'] if
+             manipulator['Id'] == manipulator_id), None)
+        if not data:
+            raise ValueError(f"Unable to find manipulator {manipulator_id}")
+        return data
+
     def _get_manipulators(self) -> list:
         return [probe['Id'] for probe in self.query_data()['ProbeArray']]
 
@@ -58,18 +72,17 @@ class NewScaleHandler(PlatformHandler):
         if manipulator_id not in self._get_manipulators():
             raise ValueError(f"Manipulator {manipulator_id} not connected")
 
-        manipulator_data = next(
-            (manipulator for manipulator in self.query_data()['ProbeArray'] if
-             manipulator['Id'] == manipulator_id), None)
-        if manipulator_data is None:
-            raise ValueError(f"Unable to find manipulator {manipulator_id}")
+        manipulator_data = self.query_manipulator_data(manipulator_id)
         self.manipulators[manipulator_id] = manipulator_data['SerialNumber']
 
     def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
 
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
-        pass
+        manipulator_data = self.query_manipulator_data(manipulator_id)
+        return com.PositionalOutputData(
+            [manipulator_data['Stage_X'], manipulator_data['Stage_Y'],
+             manipulator_data['Stage_Z'], 0], "")
 
     async def _goto_pos(self, manipulator_id: str, position: list[float],
                         speed: int) -> com.PositionalOutputData:
