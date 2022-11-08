@@ -29,7 +29,7 @@ class SensapexHandler(PlatformHandler):
         )
         self.ump = UMP.get_ump()
         if self.ump is None:
-            raise ValueError("uMp not connected")
+            raise ValueError("Unable to connect to uMp")
 
     def _get_manipulators(self) -> list:
         return self.ump.list_devices()
