@@ -32,7 +32,7 @@ class SensapexHandler(PlatformHandler):
             raise ValueError("Unable to connect to uMp")
 
     def _get_manipulators(self) -> list:
-        return self.ump.list_devices()
+        return list(map(str, self.ump.list_devices()))
 
     def _register_manipulator(self, manipulator_id: str) -> None:
         if not manipulator_id.isnumeric():

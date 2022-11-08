@@ -50,10 +50,11 @@ class PlatformHandler(ABC):
         """
         try:
             for manipulator in self.manipulators.values():
-                manipulator.stop()
+                if hasattr(manipulator, "stop"):
+                    manipulator.stop()
             return True
         except Exception as e:
-            print(f"[ERROR]\t\t Stopping manipulators: {e}\n")
+            print(f"[ERROR]\t\t Could not stop manipulators: {e}\n")
             return False
 
     def get_manipulators(self) -> com.GetManipulatorsOutputData:
@@ -139,7 +140,8 @@ class PlatformHandler(ABC):
         """
         try:
             # Check calibration status
-            if not self.manipulators[manipulator_id].get_calibrated():
+            if hasattr(self.manipulators[manipulator_id], "get_calibrated") and not \
+                    self.manipulators[manipulator_id].get_calibrated():
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
                 return com.PositionalOutputData([], "Manipulator not calibrated")
 

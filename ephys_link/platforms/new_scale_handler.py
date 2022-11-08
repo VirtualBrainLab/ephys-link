@@ -87,9 +87,9 @@ class NewScaleHandler(PlatformHandler):
 
         # Get index of the manipulator
         manipulator_index = next(
-            (index for index, data in self.query_data()['ProbeArray'] if
+            (index for index, data in enumerate(self.query_data()['ProbeArray']) if
              data['Id'] == manipulator_id), None)
-        if not manipulator_index:
+        if manipulator_index is None:
             raise ValueError(f"Unable to find manipulator {manipulator_id}")
         self.manipulators[manipulator_id] = manipulator_index
 
@@ -118,7 +118,7 @@ class NewScaleHandler(PlatformHandler):
         pass
 
     def _bypass_calibration(self, manipulator_id: str) -> str:
-        pass
+        return ""
 
     def _set_can_write(self, manipulator_id: str, can_write: bool, hours: float,
                        sio: socketio.AsyncServer) -> com.StateOutputData:
