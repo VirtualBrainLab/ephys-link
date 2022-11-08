@@ -18,7 +18,7 @@ import socketio
 class NewScaleHandler(PlatformHandler):
     """Handler for New Scale platform"""
 
-    def __init__(self, port: int = 8081):
+    def __init__(self, port: int = 8080):
         super().__init__()
         self.port = port
 
