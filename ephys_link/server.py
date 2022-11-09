@@ -56,9 +56,16 @@ parser.add_argument(
     "-p",
     "--port",
     type=int,
-    default=8080,
+    default=8081,
     dest="port",
-    help="Port to listen on (i.e. 8080). Default: 8080",
+    help="Port to serve on. Default: 8081 (avoids conflict with other HTTP servers)",
+)
+parser.add_argument(
+    "--new-scale-port",
+    type=int,
+    default=8080,
+    dest="new_scale_port",
+    help="Port to query New Scale HTTP server on. Default: 8080",
 )
 parser.add_argument(
     "-s",
@@ -169,13 +176,13 @@ async def get_manipulators(_) -> com.GetManipulatorsOutputData:
 
 
 @sio.event
-async def register_manipulator(_, manipulator_id: int) -> str:
+async def register_manipulator(_, manipulator_id: str) -> str:
     """Register a manipulator with the server
 
     :param _: Socket session ID (unused)
     :type _: str
     :param manipulator_id: ID of the manipulator to register
-    :type manipulator_id: int
+    :type manipulator_id: str
     :return: Callback parameter (Error message (on error))
     :rtype: str
     """
@@ -185,13 +192,13 @@ async def register_manipulator(_, manipulator_id: int) -> str:
 
 
 @sio.event
-async def unregister_manipulator(_, manipulator_id: int) -> str:
+async def unregister_manipulator(_, manipulator_id: str) -> str:
     """Unregister a manipulator from the server
 
     :param _: Socket session ID (unused)
     :type _: str
     :param manipulator_id: ID of the manipulator to unregister
-    :type manipulator_id: int
+    :type manipulator_id: str
     :return: Callback parameter (Error message (on error))
     :rtype: str
     """
@@ -201,13 +208,13 @@ async def unregister_manipulator(_, manipulator_id: int) -> str:
 
 
 @sio.event
-async def get_pos(_, manipulator_id: int) -> com.PositionalOutputData:
+async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
     """Position of manipulator request
 
     :param _: Socket session ID (unused)
     :type _: str
     :param manipulator_id: ID of manipulator to pull position from
-    :type manipulator_id: int
+    :type manipulator_id: str
     :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
         array on error), error message)
     :rtype: :class:`ephys_link.common.PositionalOutputData`
@@ -317,13 +324,13 @@ async def set_inside_brain(
 
 
 @sio.event
-async def calibrate(_, manipulator_id: int) -> str:
+async def calibrate(_, manipulator_id: str) -> str:
     """Calibrate manipulator
 
     :param _: Socket session ID (unused)
     :type _: str
     :param manipulator_id: ID of manipulator to calibrate
-    :type manipulator_id: int
+    :type manipulator_id: str
     :return: Callback parameters (manipulator ID, error message)
     :rtype: str
     """
@@ -333,13 +340,13 @@ async def calibrate(_, manipulator_id: int) -> str:
 
 
 @sio.event
-async def bypass_calibration(_, manipulator_id: int) -> str:
+async def bypass_calibration(_, manipulator_id: str) -> str:
     """Bypass calibration of manipulator
 
     :param _: Socket session ID (unused)
     :type _: str
     :param manipulator_id: ID of manipulator to bypass calibration
-    :type manipulator_id: int
+    :type manipulator_id: str
     :return: Callback parameters (manipulator ID, error message)
     :rtype: str
     """
@@ -428,8 +435,10 @@ def launch() -> None:
         platform = importlib.import_module(
             "platforms.sensapex_handler"
         ).SensapexHandler()
-        # Connect to uMp
-        platform.connect_to_ump()
+    elif args.type == "new_scale":
+        platform = importlib.import_module(
+            "platforms.new_scale_handler"
+        ).NewScaleHandler(args.new_scale_port)
     else:
         exit(f"[ERROR]\t\t Invalid manipulator type: {args.type}")
 

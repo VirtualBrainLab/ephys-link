@@ -25,6 +25,9 @@ class PlatformHandler(ABC):
 
     def __init__(self):
         """Initialize the manipulator handler with a dictionary of manipulators."""
+
+        # Registered manipulators are stored as a dictionary of IDs (string) to
+        # manipulator objects
         self.manipulators = {}
 
     # Platform Handler Methods
@@ -47,10 +50,11 @@ class PlatformHandler(ABC):
         """
         try:
             for manipulator in self.manipulators.values():
-                manipulator.stop()
+                if hasattr(manipulator, "stop"):
+                    manipulator.stop()
             return True
         except Exception as e:
-            print(f"[ERROR]\t\t Stopping manipulators: {e}\n")
+            print(f"[ERROR]\t\t Could not stop manipulators: {e}\n")
             return False
 
     def get_manipulators(self) -> com.GetManipulatorsOutputData:
@@ -70,11 +74,11 @@ class PlatformHandler(ABC):
         finally:
             return com.GetManipulatorsOutputData(devices, error)
 
-    def register_manipulator(self, manipulator_id: int) -> str:
+    def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator
 
         :param manipulator_id: The ID of the manipulator to register.
-        :type manipulator_id: int
+        :type manipulator_id: str
         :return: Callback parameter (Error message (on error))
         :rtype: str
         """
@@ -100,11 +104,11 @@ class PlatformHandler(ABC):
             print(f"{type(e)}: {e}\n")
             return "Error registering manipulator"
 
-    def unregister_manipulator(self, manipulator_id: int) -> str:
+    def unregister_manipulator(self, manipulator_id: str) -> str:
         """Unregister a manipulator
 
         :param manipulator_id: The ID of the manipulator to unregister.
-        :type manipulator_id: int
+        :type manipulator_id: str
         :return: Callback parameters (error message (on error))
         """
         # Check if manipulator is not registered
@@ -124,18 +128,21 @@ class PlatformHandler(ABC):
             print(f"{e}\n")
             return "Error unregistering manipulator"
 
-    def get_pos(self, manipulator_id: int) -> com.PositionalOutputData:
+    def get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
         """Get the current position of a manipulator
 
         :param manipulator_id: The ID of the manipulator to get the position of.
-        :type manipulator_id: int
+        :type manipulator_id: str
         :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
             empty array on error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
             # Check calibration status
-            if not self.manipulators[manipulator_id].get_calibrated():
+            if (
+                hasattr(self.manipulators[manipulator_id], "get_calibrated")
+                and not self.manipulators[manipulator_id].get_calibrated()
+            ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
                 return com.PositionalOutputData([], "Manipulator not calibrated")
 
@@ -148,12 +155,12 @@ class PlatformHandler(ABC):
             return com.PositionalOutputData([], "Manipulator not registered")
 
     async def goto_pos(
-        self, manipulator_id: int, position: list[float], speed: int
+        self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
         :param manipulator_id: The ID of the manipulator to move
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param position: The position to move to
         :type position: list[float]
         :param speed: The speed to move at (in µm/s)
@@ -181,12 +188,12 @@ class PlatformHandler(ABC):
             return com.PositionalOutputData([], "Manipulator not registered")
 
     async def drive_to_depth(
-        self, manipulator_id: int, depth: float, speed: int
+        self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive manipulator to depth
 
         :param manipulator_id: The ID of the manipulator to drive
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param depth: The depth to drive to
         :type depth: float
         :param speed: The speed to drive at (in µm/s)
@@ -214,12 +221,12 @@ class PlatformHandler(ABC):
             return com.DriveToDepthOutputData(0, "Manipulator " "not registered")
 
     def set_inside_brain(
-        self, manipulator_id: int, inside: bool
+        self, manipulator_id: str, inside: bool
     ) -> com.StateOutputData:
         """Set manipulator inside brain state (restricts motion)
 
         :param manipulator_id: The ID of the manipulator to set the state of
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param inside: True if inside brain, False if outside
         :type inside: bool
         :return: Callback parameters (manipulator ID, inside, error message)
@@ -246,11 +253,11 @@ class PlatformHandler(ABC):
             print(f"{e}\n")
             return com.StateOutputData(False, "Error setting " "inside brain")
 
-    async def calibrate(self, manipulator_id: int, sio: socketio.AsyncServer) -> str:
+    async def calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         """Calibrate manipulator
 
         :param manipulator_id: ID of manipulator to calibrate
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param sio: SocketIO object (to call sleep)
         :type sio: :class:`socketio.AsyncServer`
         :return: Callback parameters (manipulator ID, error message)
@@ -275,11 +282,11 @@ class PlatformHandler(ABC):
             print(f"{e}\n")
             return "Error calibrating manipulator"
 
-    def bypass_calibration(self, manipulator_id: int) -> str:
+    def bypass_calibration(self, manipulator_id: str) -> str:
         """Bypass calibration of manipulator
 
         :param manipulator_id: ID of manipulator to bypass calibration
-        :type manipulator_id: int
+        :type manipulator_id: str
         :return: Callback parameters (manipulator ID, error message)
         :rtype: str
         """
@@ -300,7 +307,7 @@ class PlatformHandler(ABC):
 
     def set_can_write(
         self,
-        manipulator_id: int,
+        manipulator_id: str,
         can_write: bool,
         hours: float,
         sio: socketio.AsyncServer,
@@ -308,7 +315,7 @@ class PlatformHandler(ABC):
         """Set manipulator can_write state (enables/disabled moving manipulator)
 
         :param manipulator_id: The ID of the manipulator to set the state of
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param can_write: True if allowed to move, False if outside
         :type can_write: bool
         :param hours: The number of hours to allow writing (0 = forever)
@@ -343,27 +350,27 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    def _register_manipulator(self, manipulator_id: int) -> None:
+    def _register_manipulator(self, manipulator_id: str) -> None:
         """Register a manipulator
 
         :param manipulator_id: The ID of the manipulator to register.
-        :type manipulator_id: int
+        :type manipulator_id: str
         :return: None
         """
         pass
 
     @abstractmethod
-    def _unregister_manipulator(self, manipulator_id: int) -> None:
+    def _unregister_manipulator(self, manipulator_id: str) -> None:
         """Unregister a manipulator
 
         :param manipulator_id: The ID of the manipulator to unregister.
-        :type manipulator_id: int
+        :type manipulator_id: str
         :return: None
         """
         pass
 
     @abstractmethod
-    def _get_pos(self, manipulator_id: int) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
         """Get the current position of a manipulator
 
         :param manipulator_id: The ID of the manipulator to get the position of.
@@ -376,12 +383,12 @@ class PlatformHandler(ABC):
 
     @abstractmethod
     async def _goto_pos(
-        self, manipulator_id: int, position: list[float], speed: int
+        self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
         :param manipulator_id: The ID of the manipulator to move
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param position: The position to move to
         :type position: list[float]
         :param speed: The speed to move at (in µm/s)
@@ -394,12 +401,12 @@ class PlatformHandler(ABC):
 
     @abstractmethod
     async def _drive_to_depth(
-        self, manipulator_id: int, depth: float, speed: int
+        self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive manipulator to depth
 
         :param manipulator_id: The ID of the manipulator to drive
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param depth: The depth to drive to
         :type depth: float
         :param speed: The speed to drive at (in µm/s)
@@ -412,12 +419,12 @@ class PlatformHandler(ABC):
 
     @abstractmethod
     def _set_inside_brain(
-        self, manipulator_id: int, inside: bool
+        self, manipulator_id: str, inside: bool
     ) -> com.StateOutputData:
         """Set manipulator inside brain state (restricts motion)
 
         :param manipulator_id: The ID of the manipulator to set the state of
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param inside: True if inside brain, False if outside
         :type inside: bool
         :return: Callback parameters (manipulator ID, inside, error message)
@@ -426,11 +433,11 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    async def _calibrate(self, manipulator_id: int, sio: socketio.AsyncServer) -> str:
+    async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         """Calibrate manipulator
 
         :param manipulator_id: ID of manipulator to calibrate
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param sio: SocketIO object (to call sleep)
         :type sio: :class:`socketio.AsyncServer`
         :return: Callback parameters (manipulator ID, error message)
@@ -439,11 +446,11 @@ class PlatformHandler(ABC):
         pass
 
     @abstractmethod
-    def _bypass_calibration(self, manipulator_id: int) -> str:
+    def _bypass_calibration(self, manipulator_id: str) -> str:
         """Bypass calibration of manipulator
 
         :param manipulator_id: ID of manipulator to bypass calibration
-        :type manipulator_id: int
+        :type manipulator_id: str
         :return: Callback parameters (manipulator ID, error message)
         :rtype: str
         """
@@ -452,7 +459,7 @@ class PlatformHandler(ABC):
     @abstractmethod
     def _set_can_write(
         self,
-        manipulator_id: int,
+        manipulator_id: str,
         can_write: bool,
         hours: float,
         sio: socketio.AsyncServer,
@@ -460,7 +467,7 @@ class PlatformHandler(ABC):
         """Set manipulator can_write state (enables/disabled moving manipulator)
 
         :param manipulator_id: The ID of the manipulator to set the state of
-        :type manipulator_id: int
+        :type manipulator_id: str
         :param can_write: True if allowed to move, False if outside
         :type can_write: bool
         :param hours: The number of hours to allow writing (0 = forever)
