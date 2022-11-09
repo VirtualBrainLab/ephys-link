@@ -49,17 +49,17 @@ class SensapexHandler(PlatformHandler):
         return self.manipulators[manipulator_id].get_pos()
 
     async def _goto_pos(
-            self, manipulator_id: str, position: list[float], speed: int
+        self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
         return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
     async def _drive_to_depth(
-            self, manipulator_id: str, depth: float, speed: int
+        self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
 
     def _set_inside_brain(
-            self, manipulator_id: str, inside: bool
+        self, manipulator_id: str, inside: bool
     ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_inside_brain(inside)
         com.dprint(
@@ -111,11 +111,11 @@ class SensapexHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-            self,
-            manipulator_id: str,
-            can_write: bool,
-            hours: float,
-            sio: socketio.AsyncServer,
+        self,
+        manipulator_id: str,
+        can_write: bool,
+        hours: float,
+        sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         com.dprint(
