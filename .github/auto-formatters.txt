@@ -1,6 +1,6 @@
 black==22.10.0
 eradicate==2.1.0
-mypy==0.990
+mypy==0.991
 pylama==8.4.1
 pylint==2.15.6
 radon==5.1.0
