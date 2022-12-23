@@ -38,8 +38,15 @@ platform: PlatformHandler
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-    " manipulators in electrophysiology experiments",
+                " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
+)
+parser.add_argument(
+    "-g",
+    "--gui",
+    dest="gui",
+    action="store_true",
+    help="Launch using GUI. Default: False (use CLI instead)"
 )
 parser.add_argument(
     "-t",
@@ -226,7 +233,7 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
 
 @sio.event
 async def goto_pos(
-    _, data: com.GotoPositionInputDataFormat
+        _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -259,7 +266,7 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-    _, data: com.DriveToDepthInputDataFormat
+        _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -292,7 +299,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-    _, data: com.InsideBrainInputDataFormat
+        _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
@@ -420,32 +427,39 @@ async def catch_all(_, __, data: Any) -> None:
 # Handle server start and end
 
 
-def launch() -> None:
+def launch(platform_type: str, server_port: int, e_stop_port: str,
+           new_scale_port: str) -> None:
     """Launch the server
 
+    :param platform_type: Parsed argument for platform type
+    :type platform_type: str
+    :param server_port: HTTP port to serve the server
+    :type server_port: int
+    :param e_stop_port: Serial port which the emergency stop button is on
+    :type e_stop_port: str
+    :param new_scale_port: HTTP port which the New Scale HTTP server is served on
+    :type new_scale_port: str
     :return: None
     """
-    # Parse arguments
-    args = parser.parse_args()
-    com.set_debug(args.debug)
 
     # Import correct manipulator handler
     global platform
-    if args.type == "sensapex":
-        platform = importlib.import_module(
-            "platforms.sensapex_handler"
-        ).SensapexHandler()
-    elif args.type == "new_scale":
-        platform = importlib.import_module(
-            "platforms.new_scale_handler"
-        ).NewScaleHandler(args.new_scale_port)
-    else:
-        exit(f"[ERROR]\t\t Invalid manipulator type: {args.type}")
+    match platform_type:
+        case "sensapex":
+            platform = importlib.import_module(
+                "platforms.sensapex_handler"
+            ).SensapexHandler()
+        case "new_scale":
+            platform = importlib.import_module(
+                "platforms.new_scale_handler"
+            ).NewScaleHandler(new_scale_port)
+        case unknown_type:
+            exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
     # Start server
     signal.signal(signal.SIGINT, close)
-    Thread(target=poll_serial, args=(args.serial,)).start()
-    web.run_app(app, port=args.port)
+    Thread(target=poll_serial, args=(e_stop_port,)).start()
+    web.run_app(app, port=server_port)
 
 
 def close(_, __) -> None:
@@ -465,4 +479,9 @@ def close(_, __) -> None:
 
 
 if __name__ == "__main__":
-    launch()
+    # Parse arguments
+    args = parser.parse_args()
+    com.set_debug(args.debug)
+
+    # Launch with parsed arguments
+    launch(args.type, args.port, args.serial, args.new_scale_port)
