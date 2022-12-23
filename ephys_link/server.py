@@ -16,8 +16,10 @@ import sys
 import time
 from threading import Thread
 from typing import Any
+from tkinter import Tk
 
 import common as com
+from gui import GUI
 
 # noinspection PyPackageRequirements
 import socketio
@@ -42,11 +44,7 @@ parser = argparse.ArgumentParser(
     prog="python -m ephys-link",
 )
 parser.add_argument(
-    "-g",
-    "--gui",
-    dest="gui",
-    action="store_true",
-    help="Launch using GUI. Default: False (use CLI instead)"
+    "-g", "--gui", dest="gui", action="store_true", help="Launches GUI"
 )
 parser.add_argument(
     "-t",
@@ -483,5 +481,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     com.set_debug(args.debug)
 
-    # Launch with parsed arguments
-    launch(args.type, args.port, args.serial, args.new_scale_port)
+    if args.gui:
+        # Start GUI (doesn't launch server yet)
+        root = Tk()
+        GUI(root, launch, close, stop, args)
+        root.mainloop()
+    else:
+        # Launch with parsed arguments
+        launch(args.type, args.port, args.serial, args.new_scale_port)

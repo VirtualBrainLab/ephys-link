@@ -40,7 +40,7 @@ class SensapexManipulator:
     class Movement:
         """Movement data struct
 
-        :param event: An asyncio event
+        :param event: An asyncio event which fires upon completion of movement
         :type event: :class: `asyncio.Event`
         :param position: A tuple of floats (x, y, z, w) representing the position to
             move to in µm
