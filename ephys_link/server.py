@@ -88,6 +88,9 @@ parser.add_argument(
     help="Print version and exit",
 )
 
+# Is the server running
+is_running = False
+
 # Setup Arduino serial port
 poll_rate = 0.05
 continue_polling = True
@@ -455,8 +458,14 @@ def launch(platform_type: str, server_port: int, e_stop_port: str,
             exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
     # Start server
+
+    # Start emergency stop system
     signal.signal(signal.SIGINT, close)
     Thread(target=poll_serial, args=(e_stop_port,)).start()
+
+    # Mark that server is running
+    global is_running
+    is_running = True
     web.run_app(app, port=server_port)
 
 
@@ -486,6 +495,10 @@ if __name__ == "__main__":
         root = Tk()
         GUI(root, launch, close, stop, args)
         root.mainloop()
+
+        # Close server on mainloop end (if it was running)
+        if is_running:
+            close(0, 0)
     else:
         # Launch with parsed arguments
         launch(args.type, args.port, args.serial, args.new_scale_port)
