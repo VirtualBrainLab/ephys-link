@@ -401,7 +401,7 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutput
 
 
 @sio.event
-async def stop(_) -> bool:
+def stop(_) -> bool:
     """Stop all manipulators
 
     :param _: Socket session ID (unused)
@@ -464,35 +464,39 @@ def launch_server(platform_type: str, server_port: int, new_scale_port: str) -> 
     web.run_app(app, port=server_port)
 
 
-def close_server(_, __) -> None:
-    """Close the server
-
-    :param _: Signal number (unused)
-    :type _: int
-    :param __: Frame (unused)
-    :type __: Any
-    :return: None
-    """
+def close_server() -> None:
+    """Close the server"""
     print("[INFO]\t\t Closing server")
 
     # Stop movement
     platform.stop()  # noqa
-    print("Platform end")
 
     # Exit
     raise GracefulExit()
 
 
-def end() -> None:
-    """Stops everything"""
-
-    # Stop server
-    close_server(0, 0)
-
-    # Stop serial
-    print("Killing serial")
+def close_serial() -> None:
+    """Close the serial connection"""
+    print("[INFO]\t\t Closing serial")
     kill_serial_event.set()
     poll_serial_thread.join()
+
+
+def end(_, __) -> None:
+    """Stops everything
+
+    :param _: Signal number (unused)
+    :type _: int
+    :param __: Frame (unused)
+    :type __: Any
+    :returns None
+    """
+
+    # Close serial
+    close_serial()
+
+    # Close server
+    close_server()
 
 
 def start() -> None:
@@ -515,11 +519,11 @@ def start() -> None:
     if args.gui:
         # Start GUI (doesn't launch server yet)
         root = Tk()
-        GUI(root, launch_server, close_server, stop, args)
+        GUI(root, launch_server, stop, args)
         root.mainloop()
 
-        # Cleanup everything on mainloop end
-        end()
+        # Close serial (server closes on exit)
+        close_serial()
 
     else:
         # Launch with parsed arguments on main thread

@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from argparse import Namespace
 import socket
-from threading import Thread
+from threading import Thread, Event
 
 # GUI Variables
 is_running = False
@@ -17,23 +17,18 @@ class GUI:
     :type root: Tk
     """
 
-    def __init__(self, root: Tk, launch_func: callable, close_func: callable,
-                 stop_func: callable, parsed_args: Namespace) -> None:
+    def __init__(self, root: Tk, launch_func: callable,
+                 manipulator_stop_func: callable, parsed_args: Namespace) -> None:
         """Setup and construction of the Tk GUI"""
 
         # Fields
         self._root = root
         self._launch_func = launch_func
-        self._close_func = close_func
-        self._stop_func = stop_func
+        self._manipulator_stop_func = manipulator_stop_func
         self._parsed_args = parsed_args
 
         # Build GUI
         self.build_gui()
-
-        # Launch server
-        # self._launch_func(self._parsed_args.type, self._parsed_args.port,
-        #                   self._parsed_args.serial, self._parsed_args.new_scale_port)
 
     def build_gui(self):
         """Build GUI"""
@@ -95,11 +90,16 @@ class GUI:
         global server_port, server_launch_button_text, is_running
         is_running = not is_running
         if start:
-            # Launch server on new thread
+            # Launch server
             Thread(target=self._launch_func, args=(
                 self._parsed_args.type, self._parsed_args.port,
-                self._parsed_args.new_scale_port)).start()
+                self._parsed_args.new_scale_port), daemon=True).start()
 
+            # Update UI
             server_launch_button_text.set("Close Server")
         else:
-            server_launch_button_text.set(f"Start on port {server_port.get()}")
+            # Stop manipulators
+            self._manipulator_stop_func(0)
+
+            # Close
+            self._root.destroy()
