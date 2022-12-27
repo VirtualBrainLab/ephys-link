@@ -506,12 +506,6 @@ def start() -> None:
     args = parser.parse_args()
     com.set_debug(args.debug)
 
-    # Start emergency stop system
-    global poll_serial_thread
-    poll_serial_thread = Thread(target=poll_serial,
-                                args=(kill_serial_event, args.serial,), daemon=True)
-    poll_serial_thread.start()
-
     # Register exit
     signal.signal(signal.SIGTERM, end)
     signal.signal(signal.SIGINT, end)
@@ -519,13 +513,17 @@ def start() -> None:
     if args.gui:
         # Start GUI (doesn't launch server yet)
         root = Tk()
-        GUI(root, launch_server, stop, args)
+        GUI(root, launch_server, stop, poll_serial, args)
         root.mainloop()
 
-        # Close serial (server closes on exit)
-        close_serial()
-
     else:
+        # Start emergency stop system
+        global poll_serial_thread
+        poll_serial_thread = Thread(target=poll_serial,
+                                    args=(kill_serial_event, args.serial,),
+                                    daemon=True)
+        poll_serial_thread.start()
+
         # Launch with parsed arguments on main thread
         launch_server(args.type, args.port, args.new_scale_port)
 
