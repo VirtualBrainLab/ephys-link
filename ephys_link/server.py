@@ -12,7 +12,6 @@ every event, the server does the following:
 import argparse
 import importlib
 import signal
-import sys
 import time
 from threading import Thread, Event
 from typing import Any
@@ -433,16 +432,13 @@ async def catch_all(_, __, data: Any) -> None:
 # Handle server start and end
 
 
-def launch(platform_type: str, server_port: int, e_stop_port: str,
-           new_scale_port: str) -> None:
+def launch(platform_type: str, server_port: int, new_scale_port: str) -> None:
     """Launch the server
 
     :param platform_type: Parsed argument for platform type
     :type platform_type: str
     :param server_port: HTTP port to serve the server
     :type server_port: int
-    :param e_stop_port: Serial port which the emergency stop button is on
-    :type e_stop_port: str
     :param new_scale_port: HTTP port which the New Scale HTTP server is served on
     :type new_scale_port: str
     :return: None
@@ -465,12 +461,6 @@ def launch(platform_type: str, server_port: int, e_stop_port: str,
     # Register exit
     signal.signal(signal.SIGTERM, close)
     signal.signal(signal.SIGINT, close)
-
-    # Start emergency stop system
-    global poll_serial_thread
-    poll_serial_thread = Thread(target=poll_serial,
-                                args=(kill_serial_event, e_stop_port,), daemon=True)
-    poll_serial_thread.start()
 
     # Mark that server is running
     global is_running
@@ -497,26 +487,35 @@ def close(_, __) -> None:
     poll_serial_thread.join()
 
     # Exit
-    # sys.exit(0)
     raise GracefulExit()
 
 
-if __name__ == "__main__":
+def start() -> None:
+    """Starts everything"""
+
     # Parse arguments
     args = parser.parse_args()
     com.set_debug(args.debug)
+
+    # Start emergency stop system
+    global poll_serial_thread
+    poll_serial_thread = Thread(target=poll_serial,
+                                args=(kill_serial_event, args.serial,), daemon=True)
+    poll_serial_thread.start()
 
     if args.gui:
         # Start GUI (doesn't launch server yet)
         root = Tk()
         GUI(root, launch, close, stop, args)
-        Thread(target=root.mainloop()).start()
-        print("Do more stuff")
-        # root.mainloop()
+        root.mainloop()
 
         # Close server on mainloop end (if it was running)
-        # if is_running:
-        #     close(0, 0)
+        if is_running:
+            close(0, 0)
     else:
         # Launch with parsed arguments
-        launch(args.type, args.port, args.serial, args.new_scale_port)
+        launch(args.type, args.port, args.new_scale_port)
+
+
+if __name__ == "__main__":
+    start()

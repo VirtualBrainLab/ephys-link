@@ -1,4 +1,4 @@
-from server import launch
+from server import start
 
 if __name__ == "__main__":
-    launch()
+    start()
