@@ -458,6 +458,10 @@ def launch_server(platform_type: str, server_port: int, new_scale_port: str) -> 
         case unknown_type:
             exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
+    # List available manipulators
+    print("Available Manipulators:")
+    print(platform.get_manipulators()["manipulators"])
+
     # Mark that server is running
     global is_running
     is_running = True
