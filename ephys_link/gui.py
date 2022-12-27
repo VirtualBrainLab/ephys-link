@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from argparse import Namespace
 import socket
+from threading import Thread
 
 # GUI Variables
 is_running = False
@@ -84,8 +85,7 @@ class GUI:
             columnspan=2,
             sticky="we")
 
-    @staticmethod
-    def start_stop_server(start: bool) -> None:
+    def start_stop_server(self, start: bool) -> None:
         """Start/stop server and update button text
 
         :param start: Whether to start or stop the server
@@ -95,6 +95,11 @@ class GUI:
         global server_port, server_launch_button_text, is_running
         is_running = not is_running
         if start:
+            # Launch server on new thread
+            Thread(target=self._launch_func, args=(
+                self._parsed_args.type, self._parsed_args.port,
+                self._parsed_args.new_scale_port)).start()
+
             server_launch_button_text.set("Close Server")
         else:
             server_launch_button_text.set(f"Start on port {server_port.get()}")

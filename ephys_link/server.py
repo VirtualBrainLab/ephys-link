@@ -432,7 +432,7 @@ async def catch_all(_, __, data: Any) -> None:
 # Handle server start and end
 
 
-def launch(platform_type: str, server_port: int, new_scale_port: str) -> None:
+def launch_server(platform_type: str, server_port: int, new_scale_port: str) -> None:
     """Launch the server
 
     :param platform_type: Parsed argument for platform type
@@ -458,17 +458,13 @@ def launch(platform_type: str, server_port: int, new_scale_port: str) -> None:
         case unknown_type:
             exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
-    # Register exit
-    signal.signal(signal.SIGTERM, close)
-    signal.signal(signal.SIGINT, close)
-
     # Mark that server is running
     global is_running
     is_running = True
     web.run_app(app, port=server_port)
 
 
-def close(_, __) -> None:
+def close_server(_, __) -> None:
     """Close the server
 
     :param _: Signal number (unused)
@@ -481,13 +477,22 @@ def close(_, __) -> None:
 
     # Stop movement
     platform.stop()  # noqa
-
-    # Stop serial
-    kill_serial_event.set()
-    poll_serial_thread.join()
+    print("Platform end")
 
     # Exit
     raise GracefulExit()
+
+
+def end() -> None:
+    """Stops everything"""
+
+    # Stop server
+    close_server(0, 0)
+
+    # Stop serial
+    print("Killing serial")
+    kill_serial_event.set()
+    poll_serial_thread.join()
 
 
 def start() -> None:
@@ -503,18 +508,22 @@ def start() -> None:
                                 args=(kill_serial_event, args.serial,), daemon=True)
     poll_serial_thread.start()
 
+    # Register exit
+    signal.signal(signal.SIGTERM, end)
+    signal.signal(signal.SIGINT, end)
+
     if args.gui:
         # Start GUI (doesn't launch server yet)
         root = Tk()
-        GUI(root, launch, close, stop, args)
+        GUI(root, launch_server, close_server, stop, args)
         root.mainloop()
 
-        # Close server on mainloop end (if it was running)
-        if is_running:
-            close(0, 0)
+        # Cleanup everything on mainloop end
+        end()
+
     else:
-        # Launch with parsed arguments
-        launch(args.type, args.port, args.new_scale_port)
+        # Launch with parsed arguments on main thread
+        launch_server(args.type, args.port, args.new_scale_port)
 
 
 if __name__ == "__main__":
