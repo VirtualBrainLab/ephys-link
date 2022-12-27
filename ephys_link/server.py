@@ -14,7 +14,7 @@ import importlib
 import signal
 import sys
 import time
-from threading import Thread
+from threading import Thread, Event
 from typing import Any
 from tkinter import Tk
 
@@ -24,6 +24,7 @@ from gui import GUI
 # noinspection PyPackageRequirements
 import socketio
 from aiohttp import web
+from aiohttp.web_runner import GracefulExit
 from platform_handler import PlatformHandler
 from serial import Serial
 from serial.tools.list_ports import comports
@@ -93,12 +94,15 @@ is_running = False
 
 # Setup Arduino serial port
 poll_rate = 0.05
-continue_polling = True
+kill_serial_event = Event()
+poll_serial_thread: Thread
 
 
-def poll_serial(serial_port: str) -> None:
+def poll_serial(kill_event: Event, serial_port: str) -> None:
     """Continuously poll serial port for data
 
+    :param kill_event: Event to stop polling
+    :type kill_event: Event
     :param serial_port: The serial port to poll
     :type serial_port: str
     :return: None
@@ -115,7 +119,7 @@ def poll_serial(serial_port: str) -> None:
         return None
 
     ser = Serial(target_port, 9600, timeout=poll_rate)
-    while continue_polling:
+    while not kill_event.is_set():
         if ser.in_waiting > 0:
             ser.readline()
             # Cause a break
@@ -123,6 +127,7 @@ def poll_serial(serial_port: str) -> None:
             platform.stop()
             ser.reset_input_buffer()
         time.sleep(poll_rate)
+    print("Close poll")
     ser.close()
 
 
@@ -457,11 +462,15 @@ def launch(platform_type: str, server_port: int, e_stop_port: str,
         case unknown_type:
             exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
-    # Start server
+    # Register exit
+    signal.signal(signal.SIGTERM, close)
+    signal.signal(signal.SIGINT, close)
 
     # Start emergency stop system
-    signal.signal(signal.SIGINT, close)
-    Thread(target=poll_serial, args=(e_stop_port,)).start()
+    global poll_serial_thread
+    poll_serial_thread = Thread(target=poll_serial,
+                                args=(kill_serial_event, e_stop_port,), daemon=True)
+    poll_serial_thread.start()
 
     # Mark that server is running
     global is_running
@@ -479,10 +488,17 @@ def close(_, __) -> None:
     :return: None
     """
     print("[INFO]\t\t Closing server")
-    global continue_polling
-    continue_polling = False
+
+    # Stop movement
     platform.stop()  # noqa
-    sys.exit(0)
+
+    # Stop serial
+    kill_serial_event.set()
+    poll_serial_thread.join()
+
+    # Exit
+    # sys.exit(0)
+    raise GracefulExit()
 
 
 if __name__ == "__main__":
@@ -494,11 +510,13 @@ if __name__ == "__main__":
         # Start GUI (doesn't launch server yet)
         root = Tk()
         GUI(root, launch, close, stop, args)
-        root.mainloop()
+        Thread(target=root.mainloop()).start()
+        print("Do more stuff")
+        # root.mainloop()
 
         # Close server on mainloop end (if it was running)
-        if is_running:
-            close(0, 0)
+        # if is_running:
+        #     close(0, 0)
     else:
         # Launch with parsed arguments
         launch(args.type, args.port, args.serial, args.new_scale_port)
