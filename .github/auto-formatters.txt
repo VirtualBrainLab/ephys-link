@@ -2,7 +2,7 @@ black==23.1.0
 eradicate==2.1.0
 mypy==0.991
 pylama==8.4.1
-pylint==2.15.9
+pylint==2.16.1
 radon==5.1.0
 toml==0.10.2
 vulture==2.7
