@@ -12,9 +12,9 @@ every event, the server does the following:
 import argparse
 import importlib
 import signal
-import sys
 import time
-from threading import Thread
+from threading import Event, Thread
+from tkinter import Tk
 from typing import Any
 
 import common as com
@@ -22,6 +22,8 @@ import common as com
 # noinspection PyPackageRequirements
 import socketio
 from aiohttp import web
+from aiohttp.web_runner import GracefulExit
+from gui import GUI
 from platform_handler import PlatformHandler
 from serial import Serial
 from serial.tools.list_ports import comports
@@ -41,6 +43,7 @@ parser = argparse.ArgumentParser(
     " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
+parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
 parser.add_argument(
     "-t",
     "--type",
@@ -83,14 +86,20 @@ parser.add_argument(
     help="Print version and exit",
 )
 
+# Is the server running
+is_running = False
+
 # Setup Arduino serial port
 poll_rate = 0.05
-continue_polling = True
+kill_serial_event = Event()
+poll_serial_thread: Thread
 
 
-def poll_serial(serial_port: str) -> None:
+def poll_serial(kill_event: Event, serial_port: str) -> None:
     """Continuously poll serial port for data
 
+    :param kill_event: Event to stop polling
+    :type kill_event: Event
     :param serial_port: The serial port to poll
     :type serial_port: str
     :return: None
@@ -107,7 +116,7 @@ def poll_serial(serial_port: str) -> None:
         return None
 
     ser = Serial(target_port, 9600, timeout=poll_rate)
-    while continue_polling:
+    while not kill_event.is_set():
         if ser.in_waiting > 0:
             ser.readline()
             # Cause a break
@@ -115,6 +124,7 @@ def poll_serial(serial_port: str) -> None:
             platform.stop()
             ser.reset_input_buffer()
         time.sleep(poll_rate)
+    print("Close poll")
     ser.close()
 
 
@@ -389,7 +399,7 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutput
 
 
 @sio.event
-async def stop(_) -> bool:
+def stop(_) -> bool:
     """Stop all manipulators
 
     :param _: Socket session ID (unused)
@@ -420,49 +430,110 @@ async def catch_all(_, __, data: Any) -> None:
 # Handle server start and end
 
 
-def launch() -> None:
+def launch_server(platform_type: str, server_port: int, new_scale_port: str) -> None:
     """Launch the server
 
+    :param platform_type: Parsed argument for platform type
+    :type platform_type: str
+    :param server_port: HTTP port to serve the server
+    :type server_port: int
+    :param new_scale_port: HTTP port which the New Scale HTTP server is served on
+    :type new_scale_port: str
     :return: None
     """
-    # Parse arguments
-    args = parser.parse_args()
-    com.set_debug(args.debug)
 
     # Import correct manipulator handler
     global platform
-    if args.type == "sensapex":
-        platform = importlib.import_module(
-            "platforms.sensapex_handler"
-        ).SensapexHandler()
-    elif args.type == "new_scale":
-        platform = importlib.import_module(
-            "platforms.new_scale_handler"
-        ).NewScaleHandler(args.new_scale_port)
-    else:
-        exit(f"[ERROR]\t\t Invalid manipulator type: {args.type}")
+    match platform_type:
+        case "sensapex":
+            platform = importlib.import_module(
+                "platforms.sensapex_handler"
+            ).SensapexHandler()
+        case "new_scale":
+            platform = importlib.import_module(
+                "platforms.new_scale_handler"
+            ).NewScaleHandler(new_scale_port)
+        case unknown_type:
+            exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
-    # Start server
-    signal.signal(signal.SIGINT, close)
-    Thread(target=poll_serial, args=(args.serial,)).start()
-    web.run_app(app, port=args.port)
+    # List available manipulators
+    print("Available Manipulators:")
+    print(platform.get_manipulators()["manipulators"])
+
+    # Mark that server is running
+    global is_running
+    is_running = True
+    web.run_app(app, port=server_port)
 
 
-def close(_, __) -> None:
-    """Close the server
+def close_server() -> None:
+    """Close the server"""
+    print("[INFO]\t\t Closing server")
+
+    # Stop movement
+    platform.stop()  # noqa
+
+    # Exit
+    raise GracefulExit()
+
+
+def close_serial() -> None:
+    """Close the serial connection"""
+    print("[INFO]\t\t Closing serial")
+    kill_serial_event.set()
+    poll_serial_thread.join()
+
+
+def end(_, __) -> None:
+    """Stops everything
 
     :param _: Signal number (unused)
     :type _: int
     :param __: Frame (unused)
     :type __: Any
-    :return: None
+    :returns None
     """
-    print("[INFO]\t\t Closing server")
-    global continue_polling
-    continue_polling = False
-    platform.stop()  # noqa
-    sys.exit(0)
+
+    # Close serial
+    close_serial()
+
+    # Close server
+    close_server()
+
+
+def start() -> None:
+    """Starts everything"""
+
+    # Parse arguments
+    args = parser.parse_args()
+    com.set_debug(args.debug)
+
+    # Register exit
+    signal.signal(signal.SIGTERM, end)
+    signal.signal(signal.SIGINT, end)
+
+    if args.gui:
+        # Start GUI (doesn't launch server yet)
+        root = Tk()
+        GUI(root, launch_server, stop, poll_serial, args)
+        root.mainloop()
+
+    else:
+        # Start emergency stop system
+        global poll_serial_thread
+        poll_serial_thread = Thread(
+            target=poll_serial,
+            args=(
+                kill_serial_event,
+                args.serial,
+            ),
+            daemon=True,
+        )
+        poll_serial_thread.start()
+
+        # Launch with parsed arguments on main thread
+        launch_server(args.type, args.port, args.new_scale_port)
 
 
 if __name__ == "__main__":
-    launch()
+    start()

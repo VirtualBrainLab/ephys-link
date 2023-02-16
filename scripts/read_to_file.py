@@ -132,7 +132,7 @@ def cleanup(_, __):
 
     for manipulator in manipulators:
         manipulator.file.flush()
-        manipulator.file.close()
+        manipulator.file.close_server()
 
     sio.disconnect()
 
