@@ -13,17 +13,17 @@ import argparse
 import importlib
 import signal
 import time
-from threading import Thread, Event
-from typing import Any
+from threading import Event, Thread
 from tkinter import Tk
+from typing import Any
 
 import common as com
-from gui import GUI
 
 # noinspection PyPackageRequirements
 import socketio
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
+from gui import GUI
 from platform_handler import PlatformHandler
 from serial import Serial
 from serial.tools.list_ports import comports
@@ -40,12 +40,10 @@ platform: PlatformHandler
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-                " manipulators in electrophysiology experiments",
+    " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
-parser.add_argument(
-    "-g", "--gui", dest="gui", action="store_true", help="Launches GUI"
-)
+parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
 parser.add_argument(
     "-t",
     "--type",
@@ -238,7 +236,7 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
 
 @sio.event
 async def goto_pos(
-        _, data: com.GotoPositionInputDataFormat
+    _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -271,7 +269,7 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-        _, data: com.DriveToDepthInputDataFormat
+    _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -304,7 +302,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-        _, data: com.InsideBrainInputDataFormat
+    _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
@@ -523,9 +521,14 @@ def start() -> None:
     else:
         # Start emergency stop system
         global poll_serial_thread
-        poll_serial_thread = Thread(target=poll_serial,
-                                    args=(kill_serial_event, args.serial,),
-                                    daemon=True)
+        poll_serial_thread = Thread(
+            target=poll_serial,
+            args=(
+                kill_serial_event,
+                args.serial,
+            ),
+            daemon=True,
+        )
         poll_serial_thread.start()
 
         # Launch with parsed arguments on main thread
