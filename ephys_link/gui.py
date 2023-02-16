@@ -1,3 +1,4 @@
+# pylama:skip=1
 import socket
 from argparse import Namespace
 from threading import Event, Thread
