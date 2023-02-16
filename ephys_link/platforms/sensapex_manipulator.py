@@ -24,9 +24,6 @@ class SensapexManipulator:
     :type device: :class: `sensapex.SensapexDevice`
     """
 
-    # How fast a manipulator is allowed to drive when inside the brain (in µm/s)
-    INSIDE_BRAIN_SPEED_LIMIT = 10
-
     def __init__(self, device: SensapexDevice) -> None:
         """Construct a new Manipulator object"""
         self._device = device
@@ -104,7 +101,6 @@ class SensapexManipulator:
             if self._inside_brain:
                 target_position = self._device.get_pos()
                 target_position[3] = position[3]
-                target_speed = min(speed, self.INSIDE_BRAIN_SPEED_LIMIT)
 
             # Move manipulator
             movement = self._device.goto_pos(target_position, target_speed)
