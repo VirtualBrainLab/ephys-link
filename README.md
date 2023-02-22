@@ -28,7 +28,7 @@ added in the future.
 
 ## Installation
 
-1. Ensure Python 3.8+ and pip are installed
+1. Ensure Python 3.10+ and pip are installed
 2. `pip install ephys-link --use-pep517`
     1. PEP 517 is needed to allow the Sensapex Manipulator API to be installed
 3. Run `python -m ephys_link` to start the server
