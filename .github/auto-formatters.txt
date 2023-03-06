@@ -1,5 +1,5 @@
 black==23.1.0
-eradicate==2.1.0
+eradicate==2.2.0
 mypy==1.0.1
 pylama==8.4.1
 pylint==2.16.2
