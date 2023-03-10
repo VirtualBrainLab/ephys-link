@@ -5,21 +5,18 @@ on:
   push:
     branches: [ "main" ]
 
-concurrency:
-  group: "cleanup"
-  cancel-in-progress: true
-
 jobs:
   autoformat:
     name: Autoformat and Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: 🛎 Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.WORKFLOW_COMMIT }}
 
       - name: 🐍 Setup Python
         uses: actions/setup-python@v4
@@ -37,6 +34,7 @@ jobs:
         run: black .
 
       - name: ✅ Commit code format changes
+        if: github.event.pull_request.user.login != 'dependabot[bot]'
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Autoformat code"
