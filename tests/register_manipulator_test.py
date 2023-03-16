@@ -13,11 +13,11 @@ class RegisterManipulatorTestCase(TestCase):
         self.sio = socketio.Client()
         self.mock = Mock()
 
-        self.sio.connect("http://localhost:8080")
+        self.sio.connect("http://localhost:8081")
 
     def test_register_manipulator(self):
         """Tests registering a manipulator"""
-        self.sio.emit("register_manipulator", 1, callback=self.mock)
+        self.sio.emit("register_manipulator", "1", callback=self.mock)
         self.wait_for_callback()
 
         self.mock.assert_called_with("")
@@ -32,7 +32,7 @@ class RegisterManipulatorTestCase(TestCase):
 
     def test_register_unknown_manipulator(self):
         """Test registering an unknown manipulator"""
-        self.sio.emit("register_manipulator", 3, callback=self.mock)
+        self.sio.emit("register_manipulator", 99, callback=self.mock)
         self.wait_for_callback()
 
         self.mock.assert_called_with("Manipulator not found")
