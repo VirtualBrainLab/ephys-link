@@ -1,5 +1,6 @@
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlAxis
+import ephys_link.common as com
 
 
 class NewScaleManipulator:
@@ -12,12 +13,34 @@ class NewScaleManipulator:
         :param z_axis: Z axis object
         """
 
-        self.id = manipulator_id
-        self.x = x_axis
-        self.y = y_axis
-        self.z = z_axis
+        self._id = manipulator_id
+        self._x = x_axis
+        self._y = y_axis
+        self._z = z_axis
 
         # Calibrate frequency
-        self.x.CalibrateFrequency()
-        self.y.CalibrateFrequency()
-        self.z.CalibrateFrequency()
+        self._x.CalibrateFrequency()
+        self._y.CalibrateFrequency()
+        self._z.CalibrateFrequency()
+
+    def get_pos(self) -> com.PositionalOutputData:
+        """Get the current position of the manipulator and convert it into mm
+
+        :return: Callback parameters (position in (x, y, z, 0) (or an empty array on
+            error), error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        """
+        # Query position data
+        self._x.QueryPosStatus()
+        self._y.QueryPosStatus()
+        self._z.QueryPosStatus()
+
+        # Get position data
+        try:
+            position = [self._x.CurPosition / 1000, self._y.CurPosition / 1000, self._z.CurPosition / 1000, 0]
+            com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
+            return com.PositionalOutputData(position, "")
+        except Exception as e:
+            print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
+            print(f"{e}\n")
+            return com.PositionalOutputData([], "Error getting position")

@@ -60,16 +60,7 @@ class NewScaleHandler(PlatformHandler):
         del self.manipulators[manipulator_id]
 
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
-        manipulator_data = self.query_manipulator_data(manipulator_id)
-        return com.PositionalOutputData(
-            [
-                manipulator_data["Stage_X"],
-                manipulator_data["Stage_Y"],
-                manipulator_data["Stage_Z"],
-                0,
-            ],
-            "",
-        )
+        return self.manipulators[manipulator_id].get_pos()
 
     async def _goto_pos(
             self, manipulator_id: str, position: list[float], speed: int
