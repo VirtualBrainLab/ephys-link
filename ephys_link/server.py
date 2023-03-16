@@ -27,8 +27,10 @@ from gui import GUI
 from platform_handler import PlatformHandler
 from serial import Serial
 from serial.tools.list_ports import comports
+from pythonnet import load
 
 # Setup server
+load("netfx")
 sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
@@ -64,13 +66,6 @@ parser.add_argument(
     help="Port to serve on. Default: 8081 (avoids conflict with other HTTP servers)",
 )
 parser.add_argument(
-    "--new-scale-port",
-    type=int,
-    default=8080,
-    dest="new_scale_port",
-    help="Port to query New Scale HTTP server on. Default: 8080",
-)
-parser.add_argument(
     "-s",
     "--serial",
     type=str,
@@ -82,7 +77,7 @@ parser.add_argument(
 parser.add_argument(
     "--version",
     action="version",
-    version="Electrophysiology Manipulator Link v0.0.1",
+    version="Electrophysiology Manipulator Link v0.1",
     help="Print version and exit",
 )
 
@@ -430,15 +425,13 @@ async def catch_all(_, __, data: Any) -> None:
 # Handle server start and end
 
 
-def launch_server(platform_type: str, server_port: int, new_scale_port: str) -> None:
+def launch_server(platform_type: str, server_port: int) -> None:
     """Launch the server
 
     :param platform_type: Parsed argument for platform type
     :type platform_type: str
     :param server_port: HTTP port to serve the server
     :type server_port: int
-    :param new_scale_port: HTTP port which the New Scale HTTP server is served on
-    :type new_scale_port: str
     :return: None
     """
 
@@ -452,7 +445,7 @@ def launch_server(platform_type: str, server_port: int, new_scale_port: str) -> 
         case "new_scale":
             platform = importlib.import_module(
                 "platforms.new_scale_handler"
-            ).NewScaleHandler(new_scale_port)
+            ).NewScaleHandler()
         case unknown_type:
             exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
@@ -532,7 +525,7 @@ def start() -> None:
         poll_serial_thread.start()
 
         # Launch with parsed arguments on main thread
-        launch_server(args.type, args.port, args.new_scale_port)
+        launch_server(args.type, args.port)
 
 
 if __name__ == "__main__":

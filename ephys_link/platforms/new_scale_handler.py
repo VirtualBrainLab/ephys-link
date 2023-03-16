@@ -5,6 +5,7 @@ Implements New Scale specific API calls.
 This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 """
 
+import clr
 from json import loads
 from urllib import request
 
@@ -15,6 +16,7 @@ from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
 
 
+# noinspection PyUnresolvedReferences
 class NewScaleHandler(PlatformHandler):
     """Handler for New Scale platform"""
 
@@ -62,17 +64,31 @@ class NewScaleHandler(PlatformHandler):
         "AN",
     }
 
-    def __init__(self, port: int = 8080):
+    def __init__(self):
         super().__init__()
-        self.port = port
 
-        # Test connection to New Scale HTTP server
-        try:
-            request.urlopen(f"http://localhost:{self.port}")
-        except Exception as e:
-            raise ValueError(
-                f"New Scale HTTP server not online on port {self.port}"
-            ) from e
+        # Load New Scale API
+        clr.AddReference("../resources/NstMotorCtrl")
+        from NstMotorCtrl import NstCtrlHostIntf
+        self.ctrl = NstCtrlHostIntf()
+
+        # Connect to manipulators
+        self.ctrl.ShowProperties()
+
+        # Initialize axes
+        self.n_axes = self.ctrl.Initialize()
+        for i in range(self.n_axes):
+            self.ctrl.CalibrateFrequency(i)
+
+        x = self.ctrl.GetAxis(0)
+        y = self.ctrl.GetAxis(1)
+        z = self.ctrl.GetAxis(2)
+        x.MoveAbsolute(0)
+        y.MoveAbsolute(0)
+        z.MoveAbsolute(0)
+        # x.MoveAbsolute(7500)
+        # y.MoveAbsolute(7500)
+        # z.MoveAbsolute(7500)
 
     def query_data(self) -> dict:
         """Query New Scale HTTP server for data and return as dict
@@ -157,17 +173,17 @@ class NewScaleHandler(PlatformHandler):
         )
 
     async def _goto_pos(
-        self, manipulator_id: str, position: list[float], speed: int
+            self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
         pass
 
     async def _drive_to_depth(
-        self, manipulator_id: str, depth: float, speed: int
+            self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         pass
 
     def _set_inside_brain(
-        self, manipulator_id: str, inside: bool
+            self, manipulator_id: str, inside: bool
     ) -> com.StateOutputData:
         pass
 
@@ -178,10 +194,10 @@ class NewScaleHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: str,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         pass
