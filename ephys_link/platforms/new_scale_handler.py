@@ -78,9 +78,13 @@ class NewScaleHandler(PlatformHandler):
         pass
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
-        pass
+        return "" if self.manipulators[manipulator_id].calibrate() else "Error calling calibrate"
 
     def _bypass_calibration(self, manipulator_id: str) -> str:
+        self.manipulators[manipulator_id].set_calibrated()
+        com.dprint(
+            f"[SUCCESS]\t Bypassed calibration for manipulator" f" {manipulator_id}\n"
+        )
         return ""
 
     def _set_can_write(
@@ -90,4 +94,8 @@ class NewScaleHandler(PlatformHandler):
             hours: float,
             sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
-        pass
+        self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
+        com.dprint(
+            f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n"
+        )
+        return com.StateOutputData(can_write, "")

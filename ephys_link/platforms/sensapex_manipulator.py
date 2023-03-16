@@ -1,4 +1,4 @@
-"""Sensapex manipulator API calls
+"""Sensapex Manipulator class
 
 Handles logic for calling Sensapex API functions. Also includes extra logic for safe
 function calls, error handling, managing per-manipulator attributes, and returning the
