@@ -5,9 +5,8 @@ Implements New Scale specific API calls.
 This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 """
 
+# noinspection PyPackageRequirements
 import clr
-from json import loads
-from urllib import request
 
 # noinspection PyPackageRequirements
 import socketio
@@ -16,124 +15,36 @@ from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
 
 
-# noinspection PyUnresolvedReferences
 class NewScaleHandler(PlatformHandler):
     """Handler for New Scale platform"""
 
-    # Valid New Scale manipulator IDs
-    VALID_MANIPULATOR_IDS = {
-        "A",
-        "B",
-        "C",
-        "D",
-        "E",
-        "F",
-        "G",
-        "H",
-        "I",
-        "J",
-        "K",
-        "L",
-        "M",
-        "N",
-        "O",
-        "P",
-        "Q",
-        "R",
-        "S",
-        "T",
-        "U",
-        "V",
-        "W",
-        "X",
-        "Y",
-        "Z",
-        "AA",
-        "AB",
-        "AC",
-        "AD",
-        "AE",
-        "AF",
-        "AG",
-        "AH",
-        "AI",
-        "AJ",
-        "AK",
-        "AL",
-        "AM",
-        "AN",
-    }
-
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize New Scale handler"""
         super().__init__()
 
         # Load New Scale API
         clr.AddReference("../resources/NstMotorCtrl")
+        # noinspection PyUnresolvedReferences
         from NstMotorCtrl import NstCtrlHostIntf
         self.ctrl = NstCtrlHostIntf()
 
-        # Connect to manipulators
+        # Connect manipulators and initialize
         self.ctrl.ShowProperties()
+        self.ctrl.Initialize()
 
-        # Initialize axes
-        self.n_axes = self.ctrl.Initialize()
-        for i in range(self.n_axes):
-            self.ctrl.CalibrateFrequency(i)
+        # Create manipulator objects
+        self.manipulators = {}
+        from new_scale_manipulator import NewScaleManipulator
+        axis_index = 0
 
-        x = self.ctrl.GetAxis(0)
-        y = self.ctrl.GetAxis(1)
-        z = self.ctrl.GetAxis(2)
-        x.MoveAbsolute(0)
-        y.MoveAbsolute(0)
-        z.MoveAbsolute(0)
-        # x.MoveAbsolute(7500)
-        # y.MoveAbsolute(7500)
-        # z.MoveAbsolute(7500)
-
-    def query_data(self) -> dict:
-        """Query New Scale HTTP server for data and return as dict
-
-        :return: dict of data (originally in JSON)
-        """
-        try:
-            return loads(request.urlopen(f"http://localhost:{self.port}").read())
-        except Exception as e:
-            print(f"[ERROR]\t\t Unable to query for New Scale data: {type(e)} {e}\n")
-
-    def query_manipulator_data(self, manipulator_id: str) -> dict:
-        """Query New Scale HTTP server for data on a specific manipulator
-
-        :param manipulator_id: manipulator ID
-        :return: dict of data (originally in JSON)
-        :raises ValueError: if manipulator ID is not found in query
-        """
-        data_query = self.query_data()["ProbeArray"]
-        manipulator_data = data_query[self.manipulators[manipulator_id]]
-
-        # If the order of the manipulators switched (somehow)
-        if manipulator_data["Id"] != manipulator_id:
-            # Recalculate index and get data
-            (manipulator_index, manipulator_data) = next(
-                (
-                    (index, data)
-                    for index, data in enumerate(self.query_data()["ProbeArray"])
-                    if data["Id"] == manipulator_id
-                ),
-                (None, None),
-            )
-            # Update index in manipulators dict
-            if manipulator_index:
-                self.manipulators[manipulator_id] = manipulator_index
-
-        # If data query was unsuccessful
-        if not manipulator_data:
-            raise ValueError(f"Unable to find manipulator {manipulator_id}")
-
-        # Return data
-        return manipulator_data
+        for i in range(self.ctrl.PortCount):
+            self.manipulators[i] = NewScaleManipulator(str(i), self.ctrl.GetAxis(axis_index),
+                                                       self.ctrl.GetAxis(axis_index + 1),
+                                                       self.ctrl.GetAxis(axis_index + 2))
+            axis_index += 3
 
     def _get_manipulators(self) -> list:
-        return [probe["Id"] for probe in self.query_data()["ProbeArray"]]
+        return list(self.manipulators.keys())
 
     def _register_manipulator(self, manipulator_id: str) -> None:
         # Check if ID is a valid New Scale manipulator ID

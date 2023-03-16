@@ -25,7 +25,10 @@ class SensapexManipulator:
     """
 
     def __init__(self, device: SensapexDevice) -> None:
-        """Construct a new Manipulator object"""
+        """Construct a new Manipulator object
+
+        :param device: A Sensapex device
+        """
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
