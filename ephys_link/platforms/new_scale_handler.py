@@ -65,7 +65,7 @@ class NewScaleHandler(PlatformHandler):
     async def _goto_pos(
             self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
-        pass
+        return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
     async def _drive_to_depth(
             self, manipulator_id: str, depth: float, speed: int

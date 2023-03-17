@@ -11,9 +11,13 @@ from NstMotorCtrl import NstCtrlAxis
 import ephys_link.common as com
 from collections import deque
 import threading
+import time
 
 # noinspection PyPackageRequirements
 import socketio
+
+# Constants
+ACCELERATION_MULTIPLIER = 5
 
 
 class NewScaleManipulator:
@@ -30,11 +34,17 @@ class NewScaleManipulator:
         self._x = x_axis
         self._y = y_axis
         self._z = z_axis
+        self._axes = [self._x, self._y, self._z]
         self._calibrated = False
         self._inside_brain = False
         self._can_write = False
         self._reset_timer = None
         self._move_queue = deque()
+
+        # Set to CL control
+        self._x.SetCL_Enable(True)
+        self._y.SetCL_Enable(True)
+        self._z.SetCL_Enable(True)
 
     class Movement:
         """Movement data struct
@@ -87,10 +97,10 @@ class NewScaleManipulator:
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         # Convert position to µm
-        position = [axis * 1000 for axis in position]
+        position_um = [axis * 1000 for axis in position]
 
         # Add movement to queue
-        self._move_queue.appendleft(self.Movement(asyncio.Event(), position))
+        self._move_queue.appendleft(self.Movement(asyncio.Event(), position_um))
 
         # Wait for preceding movement to finish
         if len(self._move_queue) > 1:
@@ -101,22 +111,48 @@ class NewScaleManipulator:
             return com.PositionalOutputData([], "Manipulator " "movement canceled")
 
         try:
-            target_position = position
+            target_position = position_um
             target_speed = speed
 
             # Alter target position if inside brain
             if self._inside_brain:
                 target_position = self.get_pos()["position"]
-                target_position[3] = position[3]
+                target_position[3] = position_um[3]
 
-            # Move manipulator
-            x_movement = self._x.MoveAbsolute(target_position[0])
-            y_movement = self._y.MoveAbsolute(target_position[1])
-            z_movement = self._z.MoveAbsolute(target_position[2])
+            # Send move command
+            for i in range(3):
+                self._axes[i].SetCL_Speed(target_speed, target_speed * ACCELERATION_MULTIPLIER, 0.005 * target_speed)
+                self._axes[i].MoveAbsolute(target_position[i])
 
-            # Wait for movement to finish
-            while not x_movement and y_movement and z_movement:
-                await asyncio.sleep(0.1)
+            def check_done(axis: NstCtrlAxis, target: float, event: threading.Event):
+                """Check if the axis has reached the target position
+
+                :param axis: The axis to check
+                :type axis: :class:`NstMotorCtrl.NstCtrlAxis`
+                :param target: The target position
+                :type target: float
+                :param event: The event to set when the axis has reached the target position
+                :type event: :class:`threading.Event`
+                """
+                axis.QueryPosStatus()
+                pos = axis.CurPosition
+                while not abs(pos - target) < 1:
+                    time.sleep(0.1)
+                    axis.QueryPosStatus()
+                    pos = axis.CurPosition
+                event.set()
+
+            # Start completion checkers
+            done_events = [threading.Event() for _ in range(3)]
+            threading.Thread(target=check_done, args=(self._x, target_position[0], done_events[0])).start()
+            threading.Thread(target=check_done, args=(self._y, target_position[1], done_events[1])).start()
+            threading.Thread(target=check_done, args=(self._z, target_position[2], done_events[2])).start()
+            # for i in range(3):
+            #     threading.Thread(target=check_done, args=(self._axes[i], target_position[i], done_events[i])).start()
+
+            # Wait for them to finish
+            for i in range(3):
+                done_events[i].wait()
 
             # Get position
             manipulator_final_position = self.get_pos()["position"]

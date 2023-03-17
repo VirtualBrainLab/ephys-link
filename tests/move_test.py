@@ -58,7 +58,7 @@ class MoveTest(TestCase):
             "goto_pos",
             {
                 "manipulator_id": "0",
-                "pos": [10000, 10000, 10000, 10000],
+                "pos": [10, 10, 10, 10],
                 "speed": self.DRIVE_SPEED,
             },
             callback=self.mock,
@@ -67,7 +67,7 @@ class MoveTest(TestCase):
             "goto_pos",
             {
                 "manipulator_id": "1",
-                "pos": [10000, 10000, 10000, 10000],
+                "pos": [10, 10, 10, 10],
                 "speed": self.DRIVE_SPEED,
             },
             callback=self.mock,
@@ -83,25 +83,25 @@ class MoveTest(TestCase):
         # )
 
         while self.mock.call_count != 4:
-            pass
+            print(self.mock.call_count)
 
     def test_move_with_asserts(self):
         """Test movement with asserts"""
         self.sio.emit("register_manipulator", "0")
-        self.sio.emit("bypass_calibration", "0")
         self.sio.emit("register_manipulator", "1")
+        self.sio.emit("bypass_calibration", "0")
         self.sio.emit("bypass_calibration", "1")
-        self.sio.emit("register_manipulator", "2")
-        self.sio.emit("bypass_calibration", "2")
+        # self.sio.emit("register_manipulator", "2")
+        # self.sio.emit("bypass_calibration", "2")
         self.sio.emit(
             "set_can_write", {"manipulator_id": "0", "can_write": True, "hours": 1}
         )
         self.sio.emit(
             "set_can_write", {"manipulator_id": "1", "can_write": True, "hours": 1}
         )
-        self.sio.emit(
-            "set_can_write", {"manipulator_id": "2", "can_write": True, "hours": 1}
-        )
+        # self.sio.emit(
+        #     "set_can_write", {"manipulator_id": "2", "can_write": True, "hours": 1}
+        # )
 
         self.sio.emit(
             "goto_pos",
@@ -117,7 +117,7 @@ class MoveTest(TestCase):
             "goto_pos",
             {
                 "manipulator_id": "1",
-                "pos": [10000, 10000, 10000, 10000],
+                "pos": [10, 10, 10, 10],
                 "speed": self.DRIVE_SPEED,
             },
             callback=self.mock,
