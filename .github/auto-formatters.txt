@@ -3,6 +3,6 @@ eradicate==2.2.0
 mypy==1.1.1
 pylama==8.4.1
 pylint==2.17.1
-radon==5.1.0
+radon==6.0.1
 toml==0.10.2
 vulture==2.7
