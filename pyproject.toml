@@ -26,7 +26,7 @@ dependencies = [
     "pyserial ~= 3.5",
     "python-socketio ~= 5.7",
     "pythonnet ~= 3.0",
-    "sensapex == 1.22.7",
+    "sensapex ~= 1.22",
 ]
 
 [project.urls]
