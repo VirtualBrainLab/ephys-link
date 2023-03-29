@@ -83,7 +83,7 @@ class MoveTest(TestCase):
         # )
 
         while self.mock.call_count != 4:
-            print(self.mock.call_count)
+            pass
 
     def test_move_with_asserts(self):
         """Test movement with asserts"""

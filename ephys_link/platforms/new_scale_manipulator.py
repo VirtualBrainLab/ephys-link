@@ -18,6 +18,7 @@ import socketio
 
 # Constants
 ACCELERATION_MULTIPLIER = 5
+AT_TARGET_FLAG = 0x040000
 
 
 class NewScaleManipulator:
@@ -124,35 +125,23 @@ class NewScaleManipulator:
                 self._axes[i].SetCL_Speed(target_speed, target_speed * ACCELERATION_MULTIPLIER, 0.005 * target_speed)
                 self._axes[i].MoveAbsolute(target_position[i])
 
-            def check_done(axis: NstCtrlAxis, target: float, event: threading.Event):
-                """Check if the axis has reached the target position
+            done_event = threading.Event()
 
-                :param axis: The axis to check
-                :type axis: :class:`NstMotorCtrl.NstCtrlAxis`
-                :param target: The target position
-                :type target: float
-                :param event: The event to set when the axis has reached the target position
-                :type event: :class:`threading.Event`
-                """
-                axis.QueryPosStatus()
-                pos = axis.CurPosition
-                while not abs(pos - target) < 1:
-                    time.sleep(0.1)
+            def check_done():
+                """Check if the axis has reached the target position"""
+                for axis in self._axes:
                     axis.QueryPosStatus()
-                    pos = axis.CurPosition
-                event.set()
+                while not self._x.CurStatus & AT_TARGET_FLAG and not self._y.CurStatus & AT_TARGET_FLAG and not self._z.CurStatus & AT_TARGET_FLAG:
+                    time.sleep(0.1)
+                    for axis in self._axes:
+                        axis.QueryPosStatus()
+                done_event.set()
 
             # Start completion checkers
-            done_events = [threading.Event() for _ in range(3)]
-            threading.Thread(target=check_done, args=(self._x, target_position[0], done_events[0])).start()
-            threading.Thread(target=check_done, args=(self._y, target_position[1], done_events[1])).start()
-            threading.Thread(target=check_done, args=(self._z, target_position[2], done_events[2])).start()
-            # for i in range(3):
-            #     threading.Thread(target=check_done, args=(self._axes[i], target_position[i], done_events[i])).start()
+            threading.Thread(target=check_done).start()
 
-            # Wait for them to finish
-            for i in range(3):
-                done_events[i].wait()
+            # Wait for completion
+            done_event.wait()
 
             # Get position
             manipulator_final_position = self.get_pos()["position"]

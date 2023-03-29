@@ -21,35 +21,41 @@ ctrl.Ports = "USB1,USB2"
 print(ctrl.Initialize())
 
 x = ctrl.GetAxis(0)
+y = ctrl.GetAxis(1)
 
-# Start motion
+# Setup motion
 x.SetCL_Enable(True)
-x.QueryPosStatus()
-print(x.CurPosition)
 x.SetCL_Speed(4000, 5000, 5)
+y.SetCL_Enable(True)
+y.SetCL_Speed(4000, 5000, 5)
 
 target_pos = random.randint(0, 15000)
 x.MoveAbsolute(target_pos)
+y.MoveAbsolute(target_pos)
 print("Target:", target_pos)
 
-
-def check_done(target, event):
-    x.QueryPosStatus()
-    pos = x.CurPosition
-    while not math.isclose(pos, target, abs_tol=1):
-        time.sleep(0.1)
-        x.QueryPosStatus()
-        pos = x.CurPosition
-    event.set()
-
+AT_TARGET_FLAG = 0x040000
 
 done_event = threading.Event()
-thread = threading.Thread(target=check_done, args=(target_pos, done_event))
-thread.start()
+
+
+def check_done():
+    x.QueryPosStatus()
+    y.QueryPosStatus()
+    while not x.CurStatus & AT_TARGET_FLAG and not y.CurStatus & AT_TARGET_FLAG:
+        time.sleep(0.1)
+        x.QueryPosStatus()
+        y.QueryPosStatus()
+    done_event.set()
+
+
+threading.Thread(target=check_done).start()
 
 done_event.wait()
 
 x.QueryPosStatus()
-print("Current pos:", x.CurPosition)
+y.QueryPosStatus()
+print("Current pos x:", x.CurPosition)
+print("Current pos y:", y.CurPosition)
 
 ctrl.Disconnect()
