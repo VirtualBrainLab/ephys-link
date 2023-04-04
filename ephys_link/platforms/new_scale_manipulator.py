@@ -116,7 +116,9 @@ class NewScaleManipulator:
 
             # Check and wait for completion
             self.query_all_axes()
-            while not self._x.CurStatus & AT_TARGET_FLAG and not self._y.CurStatus & AT_TARGET_FLAG and not self._z.CurStatus & AT_TARGET_FLAG:
+            while not (self._x.CurStatus & AT_TARGET_FLAG) or \
+                    not (self._y.CurStatus & AT_TARGET_FLAG) or \
+                    not (self._z.CurStatus & AT_TARGET_FLAG):
                 await asyncio.sleep(0.1)
                 self.query_all_axes()
 

@@ -34,15 +34,15 @@ class NewScaleHandler(PlatformHandler):
         self.ctrl.Initialize()
 
     def _get_manipulators(self) -> list:
-        return list(range(self.ctrl.PortCount))
+        return list(map(str, range(self.ctrl.PortCount)))
 
     def _register_manipulator(self, manipulator_id: str) -> None:
         # Check if ID is numeric
-        if not type(manipulator_id) == int and not manipulator_id.isnumeric():
+        if not manipulator_id.isnumeric():
             raise ValueError("Manipulator ID must be numeric")
 
         # Check if ID is connected
-        if int(manipulator_id) not in self._get_manipulators():
+        if manipulator_id not in self._get_manipulators():
             raise ValueError(f"Manipulator {manipulator_id} not connected")
 
         # Check if there are enough axes

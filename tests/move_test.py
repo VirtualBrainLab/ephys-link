@@ -11,7 +11,7 @@ from ephys_link.common import PositionalOutputData
 class MoveTest(TestCase):
     """Tests movement event"""
 
-    DRIVE_SPEED = 8000
+    DRIVE_SPEED = 2000
 
     def setUp(self) -> None:
         """Setup test case"""
@@ -149,6 +149,40 @@ class MoveTest(TestCase):
         self.mock.assert_called_with(
             PositionalOutputData([], "Cannot write to manipulator")
         )
+
+    def test_move_sequence(self):
+        """Test insertion driving sequence"""
+        self.sio.emit("register_manipulator", "1")
+        self.sio.emit("bypass_calibration", "1")
+        self.sio.emit(
+            "set_can_write", {"manipulator_id": "1", "can_write": True, "hours": 1}
+        )
+
+        # Send chain
+        self.sio.emit(
+            "goto_pos",
+            {"manipulator_id": "1", "pos": [0, 0, 0, 0], "speed": self.DRIVE_SPEED},
+            callback=self.mock,
+        )
+        self.sio.emit(
+            "goto_pos",
+            {"manipulator_id": "1", "pos": [7.5, 0, 0, 0], "speed": self.DRIVE_SPEED},
+            callback=self.mock,
+        )
+        self.sio.emit(
+            "goto_pos",
+            {"manipulator_id": "1", "pos": [7.5, 7.5, 0, 0], "speed": self.DRIVE_SPEED},
+            callback=self.mock,
+        )
+        self.sio.emit(
+            "goto_pos",
+            {"manipulator_id": "1", "pos": [7.5, 7.5, 7.5, 0], "speed": self.DRIVE_SPEED},
+            callback=self.mock,
+        )
+
+        while self.mock.call_count != 4:
+            pass
+
 
     def tearDown(self) -> None:
         """Cleanup test case"""
