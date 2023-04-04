@@ -228,3 +228,12 @@ class NewScaleManipulator:
         """
         self._can_write = False
         asyncio.run(sio.emit("write_disabled", self._id))
+
+    def set_inside_brain(self, inside: bool) -> None:
+        """Set if the manipulator is inside the brain
+
+        :param inside: True if the manipulator is inside the brain, False otherwise
+        :type inside: bool
+        :return: None
+        """
+        self._inside_brain = inside
