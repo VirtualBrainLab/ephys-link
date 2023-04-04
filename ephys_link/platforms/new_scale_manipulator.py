@@ -6,6 +6,8 @@ appropriate callback parameters like in :mod:`ephys_link.new_scale_handler`.
 """
 
 import asyncio
+from copy import deepcopy
+
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlAxis
 import ephys_link.common as com
@@ -136,7 +138,31 @@ class NewScaleManipulator:
             print(f"{e}\n")
             return com.PositionalOutputData([], "Error moving " "manipulator")
 
-    # Calibration
+    async def drive_to_depth(self, depth: float, speed: int) -> com.DriveToDepthOutputData:
+        """Drive the manipulator to a certain depth
+
+        :param depth: The depth to drive to
+        :type depth: float
+        :param speed: The speed to drive at
+        :type speed: int
+        :return: Callback parameters (depth (or 0 on error), error message)
+        :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
+        """
+        # Get position before this movement
+        target_pos = self.get_pos()["position"]
+        if len(self._move_queue) > 0:
+            target_pos = deepcopy(self._move_queue[0].position)
+
+        target_pos[3] = depth
+        movement_result = await self.goto_pos(target_pos, speed)
+
+        if movement_result["error"] == "":
+            # Return depth on success
+            return com.DriveToDepthOutputData(movement_result["position"][3], "")
+        else:
+            # Return 0 and error message on failure
+            return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
+
     def calibrate(self) -> bool:
         """Calibrate the manipulator
 

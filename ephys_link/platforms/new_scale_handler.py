@@ -70,12 +70,17 @@ class NewScaleHandler(PlatformHandler):
     async def _drive_to_depth(
             self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
-        pass
+        return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
 
     def _set_inside_brain(
             self, manipulator_id: str, inside: bool
     ) -> com.StateOutputData:
-        pass
+        self.manipulators[manipulator_id].set_inside_brain(inside)
+        com.dprint(
+            f"[SUCCESS]\t Set inside brain state for manipulator:"
+            f" {manipulator_id}\n"
+        )
+        return com.StateOutputData(inside, "")
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         return "" if self.manipulators[manipulator_id].calibrate() else "Error calling calibrate"
