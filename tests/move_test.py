@@ -176,13 +176,16 @@ class MoveTest(TestCase):
         )
         self.sio.emit(
             "goto_pos",
-            {"manipulator_id": "1", "pos": [7.5, 7.5, 7.5, 0], "speed": self.DRIVE_SPEED},
+            {
+                "manipulator_id": "1",
+                "pos": [7.5, 7.5, 7.5, 0],
+                "speed": self.DRIVE_SPEED,
+            },
             callback=self.mock,
         )
 
         while self.mock.call_count != 4:
             pass
-
 
     def tearDown(self) -> None:
         """Cleanup test case"""

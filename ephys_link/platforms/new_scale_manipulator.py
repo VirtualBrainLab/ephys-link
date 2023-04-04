@@ -6,17 +6,18 @@ appropriate callback parameters like in :mod:`ephys_link.new_scale_handler`.
 """
 
 import asyncio
-from copy import deepcopy
-
-# noinspection PyUnresolvedReferences
-from NstMotorCtrl import NstCtrlAxis
-import ephys_link.common as com
-from collections import deque
 import threading
 import time
+from collections import deque
+from copy import deepcopy
 
 # noinspection PyPackageRequirements
 import socketio
+
+# noinspection PyUnresolvedReferences
+from NstMotorCtrl import NstCtrlAxis
+
+import ephys_link.common as com
 
 # Constants
 ACCELERATION_MULTIPLIER = 5
@@ -24,7 +25,13 @@ AT_TARGET_FLAG = 0x040000
 
 
 class NewScaleManipulator:
-    def __init__(self, manipulator_id: str, x_axis: NstCtrlAxis, y_axis: NstCtrlAxis, z_axis: NstCtrlAxis) -> None:
+    def __init__(
+        self,
+        manipulator_id: str,
+        x_axis: NstCtrlAxis,
+        y_axis: NstCtrlAxis,
+        z_axis: NstCtrlAxis,
+    ) -> None:
         """Construct a new Manipulator object
 
         :param manipulator_id: Manipulator ID
@@ -65,7 +72,12 @@ class NewScaleManipulator:
 
         # Get position data
         try:
-            position = [self._x.CurPosition / 1000, self._y.CurPosition / 1000, self._z.CurPosition / 1000, 0]
+            position = [
+                self._x.CurPosition / 1000,
+                self._y.CurPosition / 1000,
+                self._z.CurPosition / 1000,
+                0,
+            ]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
         except Exception as e:
@@ -74,7 +86,7 @@ class NewScaleManipulator:
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(
-            self, position: list[float], speed: float
+        self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
@@ -111,14 +123,18 @@ class NewScaleManipulator:
 
             # Send move command
             for i in range(3):
-                self._axes[i].SetCL_Speed(speed, speed * ACCELERATION_MULTIPLIER, 0.005 * speed)
+                self._axes[i].SetCL_Speed(
+                    speed, speed * ACCELERATION_MULTIPLIER, 0.005 * speed
+                )
                 self._axes[i].MoveAbsolute(target_position[i])
 
             # Check and wait for completion
             self.query_all_axes()
-            while not (self._x.CurStatus & AT_TARGET_FLAG) or \
-                    not (self._y.CurStatus & AT_TARGET_FLAG) or \
-                    not (self._z.CurStatus & AT_TARGET_FLAG):
+            while (
+                not (self._x.CurStatus & AT_TARGET_FLAG)
+                or not (self._y.CurStatus & AT_TARGET_FLAG)
+                or not (self._z.CurStatus & AT_TARGET_FLAG)
+            ):
                 await asyncio.sleep(0.1)
                 self.query_all_axes()
 
@@ -134,13 +150,13 @@ class NewScaleManipulator:
             )
             return com.PositionalOutputData(manipulator_final_position, "")
         except Exception as e:
-            print(
-                f"[ERROR]\t\t Moving manipulator {self._id} to position {position}"
-            )
+            print(f"[ERROR]\t\t Moving manipulator {self._id} to position {position}")
             print(f"{e}\n")
             return com.PositionalOutputData([], "Error moving " "manipulator")
 
-    async def drive_to_depth(self, depth: float, speed: int) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(
+        self, depth: float, speed: int
+    ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
         :param depth: The depth to drive to
@@ -187,9 +203,7 @@ class NewScaleManipulator:
             )
             return com.DriveToDepthOutputData(manipulator_final_position[3], "")
         except Exception as e:
-            print(
-                f"[ERROR]\t\t Moving manipulator {self._id} to depth {depth}"
-            )
+            print(f"[ERROR]\t\t Moving manipulator {self._id} to depth {depth}")
             print(f"{e}\n")
             # Return 0 and error message on failure
             return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
@@ -199,7 +213,11 @@ class NewScaleManipulator:
 
         :return: None
         """
-        return self._x.CalibrateFrequency() and self._y.CalibrateFrequency() and self._z.CalibrateFrequency()
+        return (
+            self._x.CalibrateFrequency()
+            and self._y.CalibrateFrequency()
+            and self._z.CalibrateFrequency()
+        )
 
     def get_calibrated(self) -> bool:
         """Return the calibration state of the manipulator.
@@ -217,7 +235,7 @@ class NewScaleManipulator:
         self._calibrated = True
 
     def set_can_write(
-            self, can_write: bool, hours: float, sio: socketio.AsyncServer
+        self, can_write: bool, hours: float, sio: socketio.AsyncServer
     ) -> None:
         """Set if the manipulator can move
 

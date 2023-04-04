@@ -25,9 +25,9 @@ from aiohttp import web
 from aiohttp.web_runner import GracefulExit
 from gui import GUI
 from platform_handler import PlatformHandler
+from pythonnet import load
 from serial import Serial
 from serial.tools.list_ports import comports
-from pythonnet import load
 
 # Setup server
 load("netfx")

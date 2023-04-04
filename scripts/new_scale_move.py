@@ -6,10 +6,10 @@ import clr
 
 clr.AddReference("../ephys_link/resources/NstMotorCtrl")
 
-import random
-import time
 import math
+import random
 import threading
+import time
 
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlHostIntf
