@@ -135,7 +135,7 @@ class NewScaleManipulator:
             return com.PositionalOutputData(manipulator_final_position, "")
         except Exception as e:
             print(
-                f"[ERROR]\t\t Moving manipulator {self._id} to position" f" {position}"
+                f"[ERROR]\t\t Moving manipulator {self._id} to position {position}"
             )
             print(f"{e}\n")
             return com.PositionalOutputData([], "Error moving " "manipulator")
@@ -150,18 +150,47 @@ class NewScaleManipulator:
         :return: Callback parameters (depth (or 0 on error), error message)
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
-        # Get position before this movement
-        target_pos = self.get_pos()["position"]
-        if len(self._move_queue) > 0:
-            target_pos = deepcopy(self._move_queue[0].position)
+        # Check if able to write
+        if not self._can_write:
+            print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
+            return com.PositionalOutputData([], "Manipulator " "movement canceled")
 
-        target_pos[3] = depth
-        movement_result = await self.goto_pos(target_pos, speed)
+        # Add movement to queue
+        self._move_queue.appendleft(asyncio.Event())
 
-        if movement_result["error"] == "":
-            # Return depth on success
-            return com.DriveToDepthOutputData(movement_result["position"][3], "")
-        else:
+        # Wait for preceding movement to finish
+        if len(self._move_queue) > 1:
+            await self._move_queue[1].wait()
+
+        try:
+            target_depth = depth * 1000
+
+            # Send move command to just z axis
+            self._z.SetCL_Speed(speed, speed * ACCELERATION_MULTIPLIER, 0.005 * speed)
+            self._z.MoveAbsolute(target_depth)
+
+            # Check and wait for completion
+            self._z.QueryPosStatus()
+            while not (self._z.CurStatus & AT_TARGET_FLAG):
+                await asyncio.sleep(0.1)
+                self._z.QueryPosStatus()
+
+            # Get position
+            manipulator_final_position = self.get_pos()["position"]
+
+            # Remove event from queue and mark as completed
+            self._move_queue.pop().set()
+
+            com.dprint(
+                f"[SUCCESS]\t Moved manipulator {self._id} to position"
+                f" {manipulator_final_position}\n"
+            )
+            return com.DriveToDepthOutputData(manipulator_final_position[3], "")
+        except Exception as e:
+            print(
+                f"[ERROR]\t\t Moving manipulator {self._id} to depth {depth}"
+            )
+            print(f"{e}\n")
             # Return 0 and error message on failure
             return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
 
