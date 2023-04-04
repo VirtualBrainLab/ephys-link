@@ -47,20 +47,10 @@ class NewScaleManipulator:
         self._y.SetCL_Enable(True)
         self._z.SetCL_Enable(True)
 
-    class Movement:
-        """Movement data struct
-
-        :param event: An asyncio event which fires upon completion of movement
-        :type event: :class: `asyncio.Event`
-        :param position: A tuple of floats (x, y, z, w) representing the position to
-            move to in µm
-        :type position: list[float]
-        """
-
-        def __init__(self, event: asyncio.Event, position: list[float]) -> None:
-            """Construct a new Movement object"""
-            self.event = event
-            self.position = position
+    def query_all_axes(self):
+        """Query all axes for their position and status"""
+        for axis in self._axes:
+            axis.QueryPosStatus()
 
     def get_pos(self) -> com.PositionalOutputData:
         """Get the current position of the manipulator and convert it into mm
@@ -69,10 +59,7 @@ class NewScaleManipulator:
             error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        # Query position data
-        self._x.QueryPosStatus()
-        self._y.QueryPosStatus()
-        self._z.QueryPosStatus()
+        self.query_all_axes()
 
         # Get position data
         try:
@@ -97,23 +84,23 @@ class NewScaleManipulator:
             error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        # Convert position to µm
-        position_um = [axis * 1000 for axis in position]
-
-        # Add movement to queue
-        self._move_queue.appendleft(self.Movement(asyncio.Event(), position_um))
-
-        # Wait for preceding movement to finish
-        if len(self._move_queue) > 1:
-            await self._move_queue[1].event.wait()
-
+        # Check if able to write
         if not self._can_write:
             print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
             return com.PositionalOutputData([], "Manipulator " "movement canceled")
 
+        # Convert position to µm
+        position_um = [axis * 1000 for axis in position]
+
+        # Add movement to queue
+        self._move_queue.appendleft(asyncio.Event())
+
+        # Wait for preceding movement to finish
+        if len(self._move_queue) > 1:
+            await self._move_queue[1].wait()
+
         try:
             target_position = position_um
-            target_speed = speed
 
             # Alter target position if inside brain
             if self._inside_brain:
@@ -122,32 +109,20 @@ class NewScaleManipulator:
 
             # Send move command
             for i in range(3):
-                self._axes[i].SetCL_Speed(target_speed, target_speed * ACCELERATION_MULTIPLIER, 0.005 * target_speed)
+                self._axes[i].SetCL_Speed(speed, speed * ACCELERATION_MULTIPLIER, 0.005 * speed)
                 self._axes[i].MoveAbsolute(target_position[i])
 
-            done_event = threading.Event()
-
-            def check_done():
-                """Check if the axis has reached the target position"""
-                for axis in self._axes:
-                    axis.QueryPosStatus()
-                while not self._x.CurStatus & AT_TARGET_FLAG and not self._y.CurStatus & AT_TARGET_FLAG and not self._z.CurStatus & AT_TARGET_FLAG:
-                    time.sleep(0.1)
-                    for axis in self._axes:
-                        axis.QueryPosStatus()
-                done_event.set()
-
-            # Start completion checkers
-            threading.Thread(target=check_done).start()
-
-            # Wait for completion
-            done_event.wait()
+            # Check and wait for completion
+            self.query_all_axes()
+            while not self._x.CurStatus & AT_TARGET_FLAG and not self._y.CurStatus & AT_TARGET_FLAG and not self._z.CurStatus & AT_TARGET_FLAG:
+                await asyncio.sleep(0.1)
+                self.query_all_axes()
 
             # Get position
             manipulator_final_position = self.get_pos()["position"]
 
             # Remove event from queue and mark as completed
-            self._move_queue.pop().event.set()
+            self._move_queue.pop().set()
 
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
