@@ -459,7 +459,7 @@ def launch_server(platform_type: str, server_port: int) -> None:
     web.run_app(app, port=server_port)
 
 
-def close_server() -> None:
+def close_server(_, __) -> None:
     """Close the server"""
     print("[INFO]\t\t Closing server")
 
@@ -470,28 +470,11 @@ def close_server() -> None:
     raise GracefulExit()
 
 
-def close_serial() -> None:
+def close_serial(_, __) -> None:
     """Close the serial connection"""
     print("[INFO]\t\t Closing serial")
     kill_serial_event.set()
     poll_serial_thread.join()
-
-
-def end(_, __) -> None:
-    """Stops everything
-
-    :param _: Signal number (unused)
-    :type _: int
-    :param __: Frame (unused)
-    :type __: Any
-    :returns None
-    """
-
-    # Close serial
-    close_serial()
-
-    # Close server
-    close_server()
 
 
 def start() -> None:
@@ -501,10 +484,6 @@ def start() -> None:
     args = parser.parse_args()
     com.set_debug(args.debug)
 
-    # Register exit
-    signal.signal(signal.SIGTERM, end)
-    signal.signal(signal.SIGINT, end)
-
     if args.gui:
         # Start GUI (doesn't launch server yet)
         root = Tk()
@@ -512,17 +491,26 @@ def start() -> None:
         root.mainloop()
 
     else:
-        # Start emergency stop system
-        global poll_serial_thread
-        poll_serial_thread = Thread(
-            target=poll_serial,
-            args=(
-                kill_serial_event,
-                args.serial,
-            ),
-            daemon=True,
-        )
-        poll_serial_thread.start()
+        if args.serial != "no-e-stop":
+            # Register serial exit
+            signal.signal(signal.SIGTERM, close_serial)
+            signal.signal(signal.SIGINT, close_serial)
+
+            # Start emergency stop system if serial is provided
+            global poll_serial_thread
+            poll_serial_thread = Thread(
+                target=poll_serial,
+                args=(
+                    kill_serial_event,
+                    args.serial,
+                ),
+                daemon=True,
+            )
+            poll_serial_thread.start()
+
+        # Register server exit
+        signal.signal(signal.SIGTERM, close_server)
+        signal.signal(signal.SIGINT, close_server)
 
         # Launch with parsed arguments on main thread
         launch_server(args.type, args.port)
