@@ -94,7 +94,8 @@ class SensapexManipulator:
             movement = self._device.goto_pos(target_position, speed)
 
             # Wait for movement to finish
-            movement.finished_event.wait()
+            while not movement.finished:
+                await asyncio.sleep(0.1)
 
             # Get position
             manipulator_final_position = self._device.get_pos()
