@@ -1,10 +1,9 @@
+import threading
 from unittest import TestCase
 from unittest.mock import Mock
 
 # noinspection PyPackageRequirements
 import socketio
-
-import threading
 
 from ephys_link.common import PositionalOutputData
 
