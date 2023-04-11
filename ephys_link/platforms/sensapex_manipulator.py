@@ -1,4 +1,4 @@
-"""Sensapex manipulator API calls
+"""Sensapex Manipulator class
 
 Handles logic for calling Sensapex API functions. Also includes extra logic for safe
 function calls, error handling, managing per-manipulator attributes, and returning the
@@ -25,7 +25,10 @@ class SensapexManipulator:
     """
 
     def __init__(self, device: SensapexDevice) -> None:
-        """Construct a new Manipulator object"""
+        """Construct a new Manipulator object
+
+        :param device: A Sensapex device
+        """
         self._device = device
         self._id = device.dev_id
         self._calibrated = False
@@ -33,21 +36,6 @@ class SensapexManipulator:
         self._can_write = False
         self._reset_timer = None
         self._move_queue = deque()
-
-    class Movement:
-        """Movement data struct
-
-        :param event: An asyncio event which fires upon completion of movement
-        :type event: :class: `asyncio.Event`
-        :param position: A tuple of floats (x, y, z, w) representing the position to
-            move to in µm
-        :type position: list[float]
-        """
-
-        def __init__(self, event: asyncio.Event, position: list[float]) -> None:
-            """Construct a new Movement object"""
-            self.event = event
-            self.position = position
 
     # Device functions
     def get_pos(self) -> com.PositionalOutputData:
@@ -79,41 +67,40 @@ class SensapexManipulator:
             error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        # Convert position to µm
-        position = [axis * 1000 for axis in position]
-
-        # Add movement to queue
-        self._move_queue.appendleft(self.Movement(asyncio.Event(), position))
-
-        # Wait for preceding movement to finish
-        if len(self._move_queue) > 1:
-            await self._move_queue[1].event.wait()
-
+        # Check if able to write
         if not self._can_write:
             print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
             return com.PositionalOutputData([], "Manipulator " "movement canceled")
 
-        try:
-            target_position = position
-            target_speed = speed
+        # Convert position to µm
+        position_um = [axis * 1000 for axis in position]
 
-            # Alter target position if inside brain
+        # Push movement intent to queue
+        self._move_queue.appendleft(asyncio.Event())
+
+        # Wait for preceding movement to finish
+        if len(self._move_queue) > 1:
+            await self._move_queue[1].wait()
+
+        try:
+            target_position = position_um
+
+            # Restrict target position to just depth-axis if inside brain
             if self._inside_brain:
                 target_position = self._device.get_pos()
-                target_position[3] = position[3]
+                target_position[3] = position_um[3]
 
-            # Move manipulator
-            movement = self._device.goto_pos(target_position, target_speed)
+            # Send move command
+            movement = self._device.goto_pos(target_position, speed)
 
             # Wait for movement to finish
-            while not movement.finished:
-                await asyncio.sleep(0.1)
+            movement.finished_event.wait()
 
             # Get position
             manipulator_final_position = self._device.get_pos()
 
             # Remove event from queue and mark as completed
-            self._move_queue.pop().event.set()
+            self._move_queue.pop().set()
 
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
