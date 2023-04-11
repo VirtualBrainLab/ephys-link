@@ -1,3 +1,4 @@
+# pylama:ignore=E402
 from pythonnet import load
 
 load("netfx")
@@ -6,7 +7,6 @@ import clr
 
 clr.AddReference("../ephys_link/resources/NstMotorCtrl")
 
-import math
 import random
 import threading
 import time
