@@ -74,7 +74,7 @@ class NewScaleManipulator:
                 self._x.CurPosition / 1000,
                 self._y.CurPosition / 1000,
                 self._z.CurPosition / 1000,
-                0,
+                self._z.CurPosition / 1000,
             ]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
@@ -117,7 +117,7 @@ class NewScaleManipulator:
             # Alter target position if inside brain
             if self._inside_brain:
                 target_position = self.get_pos()["position"]
-                target_position[3] = position_um[3]
+                target_position[2] = position_um[2]
 
             # Send move command
             for i in range(3):
