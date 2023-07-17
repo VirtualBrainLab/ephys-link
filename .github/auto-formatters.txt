@@ -1,4 +1,4 @@
-black==23.3.0
+black==23.7.0
 eradicate==2.3.0
 mypy==1.4.1
 pylama==8.4.1
