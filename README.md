@@ -1,5 +1,9 @@
 # Electrophysiology Manipulator Link
 
+[![Autoformat and Lint](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/autoformat-and-lint.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/autoformat-and-lint.yml)
+[![CodeQL](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/codeql-analysis.yml)
+[![Dependency Review](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/dependency-review.yml)
+
 The Electrophysiology Manipulator Link (or Ephys Link for short) is a Python
 WebSocket server that allows any WebSocket-compliant application (such
 as [Pinpoint (electrophysiology planning tool)][Pinpoint])
@@ -29,8 +33,7 @@ added in the future.
 ## Installation
 
 1. Ensure Python 3.10+ and pip are installed
-2. `pip install ephys-link --use-pep517`
-    1. PEP 517 is needed to allow the Sensapex Manipulator API to be installed
+2. `pip install ephys-link`
 3. Run `python -m ephys_link` to start the server
     1. To view available command-line arguments,
        run `python -m ephys_link --help`
