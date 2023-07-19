@@ -446,6 +446,10 @@ def launch_server(platform_type: str, server_port: int) -> None:
             platform = importlib.import_module(
                 "platforms.new_scale_handler"
             ).NewScaleHandler()
+        case "new_scale_pathway":
+            platform = importlib.import_module(
+                "platforms.new_scale_pathway_handler"
+            ).NewScalePathwayHandler()
         case unknown_type:
             exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
