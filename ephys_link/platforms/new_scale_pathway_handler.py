@@ -5,7 +5,6 @@ Implements New Scale specific API calls.
 This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 """
 
-import time
 from json import loads
 from urllib import request
 
