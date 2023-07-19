@@ -45,14 +45,14 @@ parser = argparse.ArgumentParser(
     " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
-parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
+# parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
 parser.add_argument(
     "-t",
     "--type",
     type=str,
     dest="type",
     default="sensapex",
-    help='Manipulator type (i.e. "sensapex" or "new_scale"). Default: "sensapex"',
+    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathway"). Default: "sensapex"',
 )
 parser.add_argument(
     "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
@@ -64,6 +64,13 @@ parser.add_argument(
     default=8081,
     dest="port",
     help="Port to serve on. Default: 8081 (avoids conflict with other HTTP servers)",
+)
+parser.add_argument(
+    "--pathway_port",
+    type=int,
+    default=8080,
+    dest="pathway_port",
+    help="Port New Scale Pathway's server is on. Default: 8080"
 )
 parser.add_argument(
     "-s",
@@ -425,13 +432,15 @@ async def catch_all(_, __, data: Any) -> None:
 # Handle server start and end
 
 
-def launch_server(platform_type: str, server_port: int) -> None:
+def launch_server(platform_type: str, server_port: int, pathway_port: int) -> None:
     """Launch the server
 
     :param platform_type: Parsed argument for platform type
     :type platform_type: str
     :param server_port: HTTP port to serve the server
     :type server_port: int
+    :param pathway_port: Port New Scale Pathway's server is on
+    :type pathway_port: int
     :return: None
     """
 
@@ -449,7 +458,7 @@ def launch_server(platform_type: str, server_port: int) -> None:
         case "new_scale_pathway":
             platform = importlib.import_module(
                 "platforms.new_scale_pathway_handler"
-            ).NewScalePathwayHandler()
+            ).NewScalePathwayHandler(pathway_port)
         case unknown_type:
             exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
 
@@ -490,6 +499,7 @@ def start() -> None:
 
     if args.gui:
         # Start GUI (doesn't launch server yet)
+        # Will not run, option is removed
         root = Tk()
         GUI(root, launch_server, stop, poll_serial, args)
         root.mainloop()
@@ -517,7 +527,7 @@ def start() -> None:
         signal.signal(signal.SIGINT, close_server)
 
         # Launch with parsed arguments on main thread
-        launch_server(args.type, args.port)
+        launch_server(args.type, args.port, args.pathway_port)
 
 
 if __name__ == "__main__":

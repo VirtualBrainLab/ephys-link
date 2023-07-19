@@ -63,7 +63,13 @@ class NewScalePathwayHandler(PlatformHandler):
         "AN",
     }
 
-    def __init__(self, port: int = 8080):
+    def __init__(self, port: int = 8080) -> None:
+        """
+        Initialize New Scale via Pathway handler
+
+        :param port: Port of New Scale Pathway HTTP server
+        :type port: int
+        """
         super().__init__()
 
         self.type = "new_scale_mpm"
