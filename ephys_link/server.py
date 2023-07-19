@@ -52,7 +52,8 @@ parser.add_argument(
     type=str,
     dest="type",
     default="sensapex",
-    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathway"). Default: "sensapex"',
+    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathway").'
+    ' Default: "sensapex"',
 )
 parser.add_argument(
     "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
