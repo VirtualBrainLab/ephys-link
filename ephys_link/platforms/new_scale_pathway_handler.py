@@ -168,17 +168,17 @@ class NewScalePathwayHandler(PlatformHandler):
         )
 
     async def _goto_pos(
-            self, manipulator_id: str, position: list[float], speed: int
+        self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
         pass
 
     async def _drive_to_depth(
-            self, manipulator_id: str, depth: float, speed: int
+        self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         pass
 
     def _set_inside_brain(
-            self, manipulator_id: str, inside: bool
+        self, manipulator_id: str, inside: bool
     ) -> com.StateOutputData:
         pass
 
@@ -189,10 +189,10 @@ class NewScalePathwayHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-            self,
-            manipulator_id: str,
-            can_write: bool,
-            hours: float,
-            sio: socketio.AsyncServer,
+        self,
+        manipulator_id: str,
+        can_write: bool,
+        hours: float,
+        sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         pass

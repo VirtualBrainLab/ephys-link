@@ -70,7 +70,7 @@ parser.add_argument(
     type=int,
     default=8080,
     dest="pathway_port",
-    help="Port New Scale Pathway's server is on. Default: 8080"
+    help="Port New Scale Pathway's server is on. Default: 8080",
 )
 parser.add_argument(
     "-s",
