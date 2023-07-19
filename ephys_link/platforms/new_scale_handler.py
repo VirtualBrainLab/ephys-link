@@ -24,7 +24,6 @@ class NewScaleHandler(PlatformHandler):
         """Initialize New Scale handler"""
         super().__init__()
 
-        # FIXME: Remove after #165
         self.type = "new_scale"
 
         # Load New Scale API
