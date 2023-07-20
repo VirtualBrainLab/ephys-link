@@ -71,7 +71,7 @@ class NewScalePathwayHandler(PlatformHandler):
         """
         super().__init__()
 
-        self.type = "new_scale_mpm"
+        self.type = "new_scale_pathway"
 
         self.port = port
 
