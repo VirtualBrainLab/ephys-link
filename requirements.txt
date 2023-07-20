@@ -1,4 +1,4 @@
-aiohttp==3.8.4
+aiohttp==3.8.5
 pyserial==3.5
 python-socketio==5.8.0
 pythonnet==3.0.1

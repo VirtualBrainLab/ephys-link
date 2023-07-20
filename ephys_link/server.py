@@ -496,12 +496,6 @@ def start() -> None:
     args = parser.parse_args()
     com.set_debug(args.debug)
 
-    # if args.gui:
-    #     # Start GUI (doesn't launch server yet)
-    #     root = Tk()
-    #     GUI(root, launch_server, stop, poll_serial, args)
-    #     root.mainloop()
-
     if args.serial != "no-e-stop":
         # Register serial exit
         signal.signal(signal.SIGTERM, close_serial)
