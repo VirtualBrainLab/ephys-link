@@ -14,7 +14,6 @@ import importlib
 import signal
 import time
 from threading import Event, Thread
-from tkinter import Tk
 from typing import Any
 
 import common as com
@@ -23,7 +22,6 @@ import common as com
 import socketio
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
-from gui import GUI
 from platform_handler import PlatformHandler
 from pythonnet import load
 from serial import Serial
@@ -498,37 +496,35 @@ def start() -> None:
     args = parser.parse_args()
     com.set_debug(args.debug)
 
-    if args.gui:
-        # Start GUI (doesn't launch server yet)
-        # Will not run, option is removed
-        root = Tk()
-        GUI(root, launch_server, stop, poll_serial, args)
-        root.mainloop()
+    # if args.gui:
+    #     # Start GUI (doesn't launch server yet)
+    #     root = Tk()
+    #     GUI(root, launch_server, stop, poll_serial, args)
+    #     root.mainloop()
 
-    else:
-        if args.serial != "no-e-stop":
-            # Register serial exit
-            signal.signal(signal.SIGTERM, close_serial)
-            signal.signal(signal.SIGINT, close_serial)
+    if args.serial != "no-e-stop":
+        # Register serial exit
+        signal.signal(signal.SIGTERM, close_serial)
+        signal.signal(signal.SIGINT, close_serial)
 
-            # Start emergency stop system if serial is provided
-            global poll_serial_thread
-            poll_serial_thread = Thread(
-                target=poll_serial,
-                args=(
-                    kill_serial_event,
-                    args.serial,
-                ),
-                daemon=True,
-            )
-            poll_serial_thread.start()
+        # Start emergency stop system if serial is provided
+        global poll_serial_thread
+        poll_serial_thread = Thread(
+            target=poll_serial,
+            args=(
+                kill_serial_event,
+                args.serial,
+            ),
+            daemon=True,
+        )
+        poll_serial_thread.start()
 
-        # Register server exit
-        signal.signal(signal.SIGTERM, close_server)
-        signal.signal(signal.SIGINT, close_server)
+    # Register server exit
+    signal.signal(signal.SIGTERM, close_server)
+    signal.signal(signal.SIGINT, close_server)
 
-        # Launch with parsed arguments on main thread
-        launch_server(args.type, args.port, args.pathway_port)
+    # Launch with parsed arguments on main thread
+    launch_server(args.type, args.port, args.pathway_port)
 
 
 if __name__ == "__main__":
