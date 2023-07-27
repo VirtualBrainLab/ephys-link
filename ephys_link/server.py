@@ -463,6 +463,8 @@ def launch_server(platform_type: str, server_port: int, pathway_port: int) -> No
     else:
         exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 
+    # Preamble
+    print(f"=== Ephys Link v{__version__} ===")
     # List available manipulators
     print("Available Manipulators:")
     print(platform.get_manipulators()["manipulators"])
