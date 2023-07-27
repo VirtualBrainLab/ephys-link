@@ -31,5 +31,5 @@ dependencies = [
 
 [project.urls]
 "GitHub" = "https://github.com/VirtualBrainLab/ephys-link"
-Documentation = "https://virtualbrainlab.org/05_misc/03_ephys_link.html"
+Documentation = "https://virtualbrainlab.org/ephys_link/installation_and_use.html"
 "Issue Tracker" = "https://github.com/VirtualBrainLab/ephys-link/issues"
