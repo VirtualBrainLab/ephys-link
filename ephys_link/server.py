@@ -445,21 +445,20 @@ def launch_server(platform_type: str, server_port: int, pathway_port: int) -> No
 
     # Import correct manipulator handler
     global platform
-    match platform_type:
-        case "sensapex":
-            platform = importlib.import_module(
-                "platforms.sensapex_handler"
-            ).SensapexHandler()
-        case "new_scale":
-            platform = importlib.import_module(
-                "platforms.new_scale_handler"
-            ).NewScaleHandler()
-        case "new_scale_pathway":
-            platform = importlib.import_module(
-                "platforms.new_scale_pathway_handler"
-            ).NewScalePathwayHandler(pathway_port)
-        case unknown_type:
-            exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
+    if platform_type == "sensapex":
+        platform = importlib.import_module(
+            "platforms.sensapex_handler"
+        ).SensapexHandler()
+    elif platform_type == "new_scale":
+        platform = importlib.import_module(
+            "platforms.new_scale_handler"
+        ).NewScaleHandler()
+    elif platform_type == "new_scale_pathway":
+        platform = importlib.import_module(
+            "platforms.new_scale_pathway_handler"
+        ).NewScalePathwayHandler(pathway_port)
+    else:
+        exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 
     # List available manipulators
     print("Available Manipulators:")
