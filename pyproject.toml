@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ephys-link"
-version = "0.9.3"
+version = "0.9.5"
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 description = "A Python WebSocket server that allows any WebSocket compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 keywords = ["websocket", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "vbl", "brain"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -31,5 +31,5 @@ dependencies = [
 
 [project.urls]
 "GitHub" = "https://github.com/VirtualBrainLab/ephys-link"
-Documentation = "https://virtualbrainlab.org/05_misc/03_ephys_link.html"
+Documentation = "https://virtualbrainlab.org/ephys_link/installation_and_use.html"
 "Issue Tracker" = "https://github.com/VirtualBrainLab/ephys-link/issues"

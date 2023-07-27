@@ -10,23 +10,24 @@ WebSocket-compliant application (such
 as [Pinpoint](https://github.com/VirtualBrainLab/Pinpoint))
 to communicate with manipulators used in electrophysiology experiments.
 
-Currently, Ephys Link only supports Sensapex uMp Micromanipulators and New Scale
+Currently, Ephys Link only supports Sensapex uMp-4 Micromanipulators and New Scale 3-axis
 manipulators. However, this platform is designed to be extensible to other
-manipulators and more may be
-added in the future.
+manipulators and more may be added in the future.
 
-For more information regarding the server's implementation and how the code is
-organized, see
-the [package's API reference](https://virtualbrainlab.org/api_reference_ephys_link.html)
+For more information regarding the server's implementation and how the code is organized, see
+the [package's development documentation](https://virtualbrainlab.org/ephys_link/development.html).
+
+For detailed descriptions of the server's API, see
+the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 
 ## Installation
 
 ### Prerequisites
 
-1. [Python 3.10+](https://www.python.org/downloads/) and pip.
+1. [Python 3.8+](https://www.python.org/downloads/) and pip.
 2. An **x86 Windows PC is required** to run the server.
 3. For Sensapex devices, the controller unit must be connected via an ethernet
-   cable. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
+   cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
    the controller unit must be connected via USB and be powered by a 6V power
    supply.
 4. To use the emergency stop feature, ensure an Arduino with
