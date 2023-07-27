@@ -18,6 +18,8 @@ from typing import Any
 
 import common as com
 
+from __version__ import __version__
+
 # noinspection PyPackageRequirements
 import socketio
 from aiohttp import web
@@ -81,9 +83,10 @@ parser.add_argument(
     help="Emergency stop serial port (i.e. COM3). Default: disables emergency stop",
 )
 parser.add_argument(
+    "-v",
     "--version",
     action="version",
-    version="Electrophysiology Manipulator Link v0.1",
+    version=f"Electrophysiology Manipulator Link v{__version__}",
     help="Print version and exit",
 )
 
