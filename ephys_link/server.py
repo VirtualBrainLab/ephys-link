@@ -177,7 +177,7 @@ async def disconnect(sid) -> None:
 # Events
 
 @sio.event
-async def get_version_number(_) -> str:
+async def get_version(_) -> str:
     """Get the version number of the server
 
     :param _: Socket session ID (unused)
