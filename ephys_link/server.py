@@ -20,6 +20,7 @@ import common as com
 
 # noinspection PyPackageRequirements
 import socketio
+from __version__ import __version__
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
 from platform_handler import PlatformHandler
@@ -81,9 +82,10 @@ parser.add_argument(
     help="Emergency stop serial port (i.e. COM3). Default: disables emergency stop",
 )
 parser.add_argument(
+    "-v",
     "--version",
     action="version",
-    version="Electrophysiology Manipulator Link v0.1",
+    version=f"Electrophysiology Manipulator Link v{__version__}",
     help="Print version and exit",
 )
 
@@ -172,6 +174,20 @@ async def disconnect(sid) -> None:
 
 
 # Events
+
+
+@sio.event
+async def get_version(_) -> str:
+    """Get the version number of the server
+
+    :param _: Socket session ID (unused)
+    :type _: str
+    :return: Version number as defined in __version__
+    :rtype: str
+    """
+    return __version__
+
+
 @sio.event
 async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     """Get the list of discoverable manipulators
@@ -459,6 +475,9 @@ def launch_server(platform_type: str, server_port: int, pathway_port: int) -> No
         ).NewScalePathwayHandler(pathway_port)
     else:
         exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
+
+    # Preamble
+    print(f"=== Ephys Link v{__version__} ===")
 
     # List available manipulators
     print("Available Manipulators:")
