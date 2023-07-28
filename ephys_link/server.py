@@ -42,7 +42,7 @@ platform: PlatformHandler
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-    " manipulators in electrophysiology experiments",
+                " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
 # parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
@@ -53,7 +53,7 @@ parser.add_argument(
     dest="type",
     default="sensapex",
     help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathway").'
-    ' Default: "sensapex"',
+         ' Default: "sensapex"',
 )
 parser.add_argument(
     "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
@@ -175,6 +175,19 @@ async def disconnect(sid) -> None:
 
 
 # Events
+
+@sio.event
+async def get_version_number(_) -> str:
+    """Get the version number of the server
+
+    :param _: Socket session ID (unused)
+    :type _: str
+    :return: Version number as defined in __version__
+    :rtype: str
+    """
+    return __version__
+
+
 @sio.event
 async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     """Get the list of discoverable manipulators
@@ -240,7 +253,7 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
 
 @sio.event
 async def goto_pos(
-    _, data: com.GotoPositionInputDataFormat
+        _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -273,7 +286,7 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-    _, data: com.DriveToDepthInputDataFormat
+        _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -306,7 +319,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-    _, data: com.InsideBrainInputDataFormat
+        _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
@@ -465,6 +478,7 @@ def launch_server(platform_type: str, server_port: int, pathway_port: int) -> No
 
     # Preamble
     print(f"=== Ephys Link v{__version__} ===")
+
     # List available manipulators
     print("Available Manipulators:")
     print(platform.get_manipulators()["manipulators"])
