@@ -18,10 +18,9 @@ from typing import Any
 
 import common as com
 
-from __version__ import __version__
-
 # noinspection PyPackageRequirements
 import socketio
+from __version__ import __version__
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
 from platform_handler import PlatformHandler
@@ -42,7 +41,7 @@ platform: PlatformHandler
 # Setup argument parser
 parser = argparse.ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
-                " manipulators in electrophysiology experiments",
+    " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
 # parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
@@ -53,7 +52,7 @@ parser.add_argument(
     dest="type",
     default="sensapex",
     help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathway").'
-         ' Default: "sensapex"',
+    ' Default: "sensapex"',
 )
 parser.add_argument(
     "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
@@ -176,6 +175,7 @@ async def disconnect(sid) -> None:
 
 # Events
 
+
 @sio.event
 async def get_version(_) -> str:
     """Get the version number of the server
@@ -253,7 +253,7 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
 
 @sio.event
 async def goto_pos(
-        _, data: com.GotoPositionInputDataFormat
+    _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:
     """Move manipulator to position
 
@@ -286,7 +286,7 @@ async def goto_pos(
 
 @sio.event
 async def drive_to_depth(
-        _, data: com.DriveToDepthInputDataFormat
+    _, data: com.DriveToDepthInputDataFormat
 ) -> com.DriveToDepthOutputData:
     """Drive to depth
 
@@ -319,7 +319,7 @@ async def drive_to_depth(
 
 @sio.event
 async def set_inside_brain(
-        _, data: com.InsideBrainInputDataFormat
+    _, data: com.InsideBrainInputDataFormat
 ) -> com.StateOutputData:
     """Set the inside brain state
 
