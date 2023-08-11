@@ -282,3 +282,13 @@ class NewScaleManipulator:
         :return: None
         """
         self._inside_brain = inside
+
+    def stop(self) -> None:
+        """Stop all axes on manipulator
+
+        :returns None
+        """
+        for axis in self._axes:
+            axis.Stop()
+        self._can_write = False
+        com.dprint(f"[SUCCESS]\t Stopped manipulator {self._id}\n")
