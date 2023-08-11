@@ -224,7 +224,7 @@ class SensapexManipulator:
         :return: None
         """
         while self._move_queue:
-            self._move_queue.pop().event.set()
+            self._move_queue.pop().set()
         self._can_write = False
         self._device.stop()
         com.dprint(f"[SUCCESS]\t Stopped manipulator {self._id}")
