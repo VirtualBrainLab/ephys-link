@@ -7,7 +7,6 @@ appropriate callback parameters like in :mod:`ephys_link.new_scale_handler`.
 
 import asyncio
 import threading
-from collections import deque
 
 # noinspection PyPackageRequirements
 import socketio

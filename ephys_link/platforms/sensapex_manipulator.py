@@ -7,7 +7,6 @@ appropriate callback parameters like in :mod:`ephys_link.sensapex_handler`.
 
 import asyncio
 import threading
-from collections import deque
 from copy import deepcopy
 
 # noinspection PyPackageRequirements
