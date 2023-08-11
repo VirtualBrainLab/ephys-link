@@ -24,7 +24,13 @@ AT_TARGET_FLAG = 0x040000
 
 
 class NewScaleManipulator(PlatformManipulator):
-    def __init__(self, manipulator_id: str, x_axis: NstCtrlAxis, y_axis: NstCtrlAxis, z_axis: NstCtrlAxis) -> None:
+    def __init__(
+        self,
+        manipulator_id: str,
+        x_axis: NstCtrlAxis,
+        y_axis: NstCtrlAxis,
+        z_axis: NstCtrlAxis,
+    ) -> None:
         """Construct a new Manipulator object
 
         :param manipulator_id: Manipulator ID
