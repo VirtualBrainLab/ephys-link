@@ -51,7 +51,7 @@ parser.add_argument(
     type=str,
     dest="type",
     default="sensapex",
-    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathway").'
+    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathfinder").'
     ' Default: "sensapex"',
 )
 parser.add_argument(
@@ -66,11 +66,11 @@ parser.add_argument(
     help="Port to serve on. Default: 8081 (avoids conflict with other HTTP servers)",
 )
 parser.add_argument(
-    "--pathway_port",
+    "--pathfinder_port",
     type=int,
     default=8080,
-    dest="pathway_port",
-    help="Port New Scale Pathway's server is on. Default: 8080",
+    dest="pathfinder_port",
+    help="Port New Scale Pathfinder's server is on. Default: 8080",
 )
 parser.add_argument(
     "-s",
@@ -447,15 +447,15 @@ async def catch_all(_, __, data: Any) -> None:
 # Handle server start and end
 
 
-def launch_server(platform_type: str, server_port: int, pathway_port: int) -> None:
+def launch_server(platform_type: str, server_port: int, pathfinder_port: int) -> None:
     """Launch the server
 
     :param platform_type: Parsed argument for platform type
     :type platform_type: str
     :param server_port: HTTP port to serve the server
     :type server_port: int
-    :param pathway_port: Port New Scale Pathway's server is on
-    :type pathway_port: int
+    :param pathfinder_port: Port New Scale Pathfinder's server is on
+    :type pathfinder_port: int
     :return: None
     """
 
@@ -469,10 +469,10 @@ def launch_server(platform_type: str, server_port: int, pathway_port: int) -> No
         platform = importlib.import_module(
             "platforms.new_scale_handler"
         ).NewScaleHandler()
-    elif platform_type == "new_scale_pathway":
+    elif platform_type == "new_scale_pathfinder":
         platform = importlib.import_module(
-            "platforms.new_scale_pathway_handler"
-        ).NewScalePathwayHandler(pathway_port)
+            "platforms.new_scale_pathfinder_handler"
+        ).NewScalePathfinderHandler(pathfinder_port)
     else:
         exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 
@@ -536,7 +536,7 @@ def start() -> None:
     signal.signal(signal.SIGINT, close_server)
 
     # Launch with parsed arguments on main thread
-    launch_server(args.type, args.port, args.pathway_port)
+    launch_server(args.type, args.port, args.pathfinder_port)
 
 
 if __name__ == "__main__":

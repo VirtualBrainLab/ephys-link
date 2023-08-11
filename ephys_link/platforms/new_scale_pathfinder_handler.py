@@ -1,4 +1,4 @@
-"""Handle communications with New Scale API
+"""Handle communications with New Scale's HTTP server
 
 Implements New Scale specific API calls.
 
@@ -15,8 +15,8 @@ from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
 
 
-class NewScalePathwayHandler(PlatformHandler):
-    """Handler for New Scale platform"""
+class NewScalePathfinderHandler(PlatformHandler):
+    """Handler for New Scale HTTP server"""
 
     # Valid New Scale manipulator IDs
     VALID_MANIPULATOR_IDS = {
@@ -64,14 +64,14 @@ class NewScalePathwayHandler(PlatformHandler):
 
     def __init__(self, port: int = 8080) -> None:
         """
-        Initialize New Scale via Pathway handler
+        Initialize New Scale via Pathfinder handler
 
-        :param port: Port of New Scale Pathway HTTP server
+        :param port: Port of New Scale Pathfinder HTTP server
         :type port: int
         """
         super().__init__()
 
-        self.type = "new_scale_pathway"
+        self.type = "new_scale_pathfinder"
 
         self.port = port
 
