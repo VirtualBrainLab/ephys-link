@@ -7,7 +7,6 @@ appropriate callback parameters like in :mod:`ephys_link.new_scale_handler`.
 
 import asyncio
 import threading
-from collections import deque
 
 # noinspection PyPackageRequirements
 import socketio
@@ -16,13 +15,14 @@ import socketio
 from NstMotorCtrl import NstCtrlAxis
 
 import ephys_link.common as com
+from ephys_link.platform_manipulator import PlatformManipulator
 
 # Constants
 ACCELERATION_MULTIPLIER = 5
 AT_TARGET_FLAG = 0x040000
 
 
-class NewScaleManipulator:
+class NewScaleManipulator(PlatformManipulator):
     def __init__(
         self,
         manipulator_id: str,
@@ -38,16 +38,12 @@ class NewScaleManipulator:
         :param z_axis: Z axis object
         """
 
+        super().__init__()
         self._id = manipulator_id
         self._x = x_axis
         self._y = y_axis
         self._z = z_axis
         self._axes = [self._x, self._y, self._z]
-        self._calibrated = False
-        self._inside_brain = False
-        self._can_write = False
-        self._reset_timer = None
-        self._move_queue = deque()
 
         # Set to CL control
         self._x.SetCL_Enable(True)
