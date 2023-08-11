@@ -3,7 +3,7 @@
 Most functionality will be implemented on the platform handler side. This is mostly
 for enforcing implementation of the stop method and hold common properties.
 """
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections import deque
 
 
@@ -19,3 +19,11 @@ class PlatformManipulator(ABC):
         self._can_write = False
         self._reset_timer = None
         self._move_queue = deque()
+
+    @abstractmethod
+    def stop(self) -> None:
+        """Stop all axes on manipulator
+
+        :returns None
+        """
+        raise NotImplementedError
