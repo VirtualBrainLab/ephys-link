@@ -288,6 +288,8 @@ class NewScaleManipulator:
 
         :returns None
         """
+        while self._move_queue:
+            self._move_queue.pop().set()
         for axis in self._axes:
             axis.Stop()
         self._can_write = False

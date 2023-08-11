@@ -246,7 +246,7 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
         array on error), error message)
     :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
-    com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
+    # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
     return platform.get_pos(manipulator_id)
 
