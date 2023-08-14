@@ -7,7 +7,6 @@ appropriate callback parameters like in :mod:`ephys_link.sensapex_handler`.
 
 import asyncio
 import threading
-from collections import deque
 from copy import deepcopy
 
 # noinspection PyPackageRequirements
@@ -15,9 +14,10 @@ import socketio
 from sensapex import SensapexDevice
 
 import ephys_link.common as com
+from ephys_link.platform_manipulator import PlatformManipulator
 
 
-class SensapexManipulator:
+class SensapexManipulator(PlatformManipulator):
     """Representation of a single Sensapex manipulator
 
     :param device: A Sensapex device
@@ -29,13 +29,9 @@ class SensapexManipulator:
 
         :param device: A Sensapex device
         """
+        super().__init__()
         self._device = device
         self._id = device.dev_id
-        self._calibrated = False
-        self._inside_brain = False
-        self._can_write = False
-        self._reset_timer = None
-        self._move_queue = deque()
 
     # Device functions
     def get_pos(self) -> com.PositionalOutputData:
@@ -224,7 +220,7 @@ class SensapexManipulator:
         :return: None
         """
         while self._move_queue:
-            self._move_queue.pop().event.set()
+            self._move_queue.pop().set()
         self._can_write = False
         self._device.stop()
         com.dprint(f"[SUCCESS]\t Stopped manipulator {self._id}")

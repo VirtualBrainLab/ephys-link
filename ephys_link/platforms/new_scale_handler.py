@@ -24,6 +24,8 @@ class NewScaleHandler(PlatformHandler):
         """Initialize New Scale handler"""
         super().__init__()
 
+        self.type = "new_scale"
+
         # Load New Scale API
         clr.AddReference("../resources/NstMotorCtrl")
         # noinspection PyUnresolvedReferences

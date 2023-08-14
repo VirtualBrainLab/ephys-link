@@ -29,6 +29,7 @@ class PlatformHandler(ABC):
         # Registered manipulators are stored as a dictionary of IDs (string) to
         # manipulator objects
         self.manipulators = {}
+        self.type = "sensapex"  # Remove this after #165
 
     # Platform Handler Methods
 
@@ -72,7 +73,7 @@ class PlatformHandler(ABC):
         except Exception as e:
             print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
         finally:
-            return com.GetManipulatorsOutputData(devices, error)
+            return com.GetManipulatorsOutputData(devices, self.type, error)
 
     def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator

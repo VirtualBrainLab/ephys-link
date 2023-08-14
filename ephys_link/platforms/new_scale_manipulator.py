@@ -7,7 +7,6 @@ appropriate callback parameters like in :mod:`ephys_link.new_scale_handler`.
 
 import asyncio
 import threading
-from collections import deque
 
 # noinspection PyPackageRequirements
 import socketio
@@ -16,13 +15,14 @@ import socketio
 from NstMotorCtrl import NstCtrlAxis
 
 import ephys_link.common as com
+from ephys_link.platform_manipulator import PlatformManipulator
 
 # Constants
 ACCELERATION_MULTIPLIER = 5
 AT_TARGET_FLAG = 0x040000
 
 
-class NewScaleManipulator:
+class NewScaleManipulator(PlatformManipulator):
     def __init__(
         self,
         manipulator_id: str,
@@ -38,16 +38,12 @@ class NewScaleManipulator:
         :param z_axis: Z axis object
         """
 
+        super().__init__()
         self._id = manipulator_id
         self._x = x_axis
         self._y = y_axis
         self._z = z_axis
         self._axes = [self._x, self._y, self._z]
-        self._calibrated = False
-        self._inside_brain = False
-        self._can_write = False
-        self._reset_timer = None
-        self._move_queue = deque()
 
         # Set to CL control
         self._x.SetCL_Enable(True)
@@ -74,7 +70,7 @@ class NewScaleManipulator:
                 self._x.CurPosition / 1000,
                 self._y.CurPosition / 1000,
                 self._z.CurPosition / 1000,
-                0,
+                self._z.CurPosition / 1000,
             ]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
@@ -117,7 +113,7 @@ class NewScaleManipulator:
             # Alter target position if inside brain
             if self._inside_brain:
                 target_position = self.get_pos()["position"]
-                target_position[3] = position_um[3]
+                target_position[2] = position_um[2]
 
             # Send move command
             for i in range(3):
@@ -282,3 +278,15 @@ class NewScaleManipulator:
         :return: None
         """
         self._inside_brain = inside
+
+    def stop(self) -> None:
+        """Stop all axes on manipulator
+
+        :returns None
+        """
+        while self._move_queue:
+            self._move_queue.pop().set()
+        for axis in self._axes:
+            axis.Stop()
+        self._can_write = False
+        com.dprint(f"[SUCCESS]\t Stopped manipulator {self._id}\n")

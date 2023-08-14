@@ -14,16 +14,15 @@ import importlib
 import signal
 import time
 from threading import Event, Thread
-from tkinter import Tk
 from typing import Any
 
 import common as com
 
 # noinspection PyPackageRequirements
 import socketio
+from __version__ import __version__
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
-from gui import GUI
 from platform_handler import PlatformHandler
 from pythonnet import load
 from serial import Serial
@@ -45,14 +44,15 @@ parser = argparse.ArgumentParser(
     " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
-parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
+# parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
 parser.add_argument(
     "-t",
     "--type",
     type=str,
     dest="type",
     default="sensapex",
-    help='Manipulator type (i.e. "sensapex" or "new_scale"). Default: "sensapex"',
+    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathfinder").'
+    ' Default: "sensapex"',
 )
 parser.add_argument(
     "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
@@ -66,6 +66,13 @@ parser.add_argument(
     help="Port to serve on. Default: 8081 (avoids conflict with other HTTP servers)",
 )
 parser.add_argument(
+    "--pathfinder_port",
+    type=int,
+    default=8080,
+    dest="pathfinder_port",
+    help="Port New Scale Pathfinder's server is on. Default: 8080",
+)
+parser.add_argument(
     "-s",
     "--serial",
     type=str,
@@ -75,9 +82,10 @@ parser.add_argument(
     help="Emergency stop serial port (i.e. COM3). Default: disables emergency stop",
 )
 parser.add_argument(
+    "-v",
     "--version",
     action="version",
-    version="Electrophysiology Manipulator Link v0.1",
+    version=f"Electrophysiology Manipulator Link v{__version__}",
     help="Print version and exit",
 )
 
@@ -166,6 +174,20 @@ async def disconnect(sid) -> None:
 
 
 # Events
+
+
+@sio.event
+async def get_version(_) -> str:
+    """Get the version number of the server
+
+    :param _: Socket session ID (unused)
+    :type _: str
+    :return: Version number as defined in __version__
+    :rtype: str
+    """
+    return __version__
+
+
 @sio.event
 async def get_manipulators(_) -> com.GetManipulatorsOutputData:
     """Get the list of discoverable manipulators
@@ -224,7 +246,7 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
         array on error), error message)
     :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
-    com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
+    # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
     return platform.get_pos(manipulator_id)
 
@@ -425,29 +447,37 @@ async def catch_all(_, __, data: Any) -> None:
 # Handle server start and end
 
 
-def launch_server(platform_type: str, server_port: int) -> None:
+def launch_server(platform_type: str, server_port: int, pathfinder_port: int) -> None:
     """Launch the server
 
     :param platform_type: Parsed argument for platform type
     :type platform_type: str
     :param server_port: HTTP port to serve the server
     :type server_port: int
+    :param pathfinder_port: Port New Scale Pathfinder's server is on
+    :type pathfinder_port: int
     :return: None
     """
 
     # Import correct manipulator handler
     global platform
-    match platform_type:
-        case "sensapex":
-            platform = importlib.import_module(
-                "platforms.sensapex_handler"
-            ).SensapexHandler()
-        case "new_scale":
-            platform = importlib.import_module(
-                "platforms.new_scale_handler"
-            ).NewScaleHandler()
-        case unknown_type:
-            exit(f"[ERROR]\t\t Invalid manipulator type: {unknown_type}")
+    if platform_type == "sensapex":
+        platform = importlib.import_module(
+            "platforms.sensapex_handler"
+        ).SensapexHandler()
+    elif platform_type == "new_scale":
+        platform = importlib.import_module(
+            "platforms.new_scale_handler"
+        ).NewScaleHandler()
+    elif platform_type == "new_scale_pathfinder":
+        platform = importlib.import_module(
+            "platforms.new_scale_pathfinder_handler"
+        ).NewScalePathfinderHandler(pathfinder_port)
+    else:
+        exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
+
+    # Preamble
+    print(f"=== Ephys Link v{__version__} ===")
 
     # List available manipulators
     print("Available Manipulators:")
@@ -484,36 +514,29 @@ def start() -> None:
     args = parser.parse_args()
     com.set_debug(args.debug)
 
-    if args.gui:
-        # Start GUI (doesn't launch server yet)
-        root = Tk()
-        GUI(root, launch_server, stop, poll_serial, args)
-        root.mainloop()
+    if args.serial != "no-e-stop":
+        # Register serial exit
+        signal.signal(signal.SIGTERM, close_serial)
+        signal.signal(signal.SIGINT, close_serial)
 
-    else:
-        if args.serial != "no-e-stop":
-            # Register serial exit
-            signal.signal(signal.SIGTERM, close_serial)
-            signal.signal(signal.SIGINT, close_serial)
+        # Start emergency stop system if serial is provided
+        global poll_serial_thread
+        poll_serial_thread = Thread(
+            target=poll_serial,
+            args=(
+                kill_serial_event,
+                args.serial,
+            ),
+            daemon=True,
+        )
+        poll_serial_thread.start()
 
-            # Start emergency stop system if serial is provided
-            global poll_serial_thread
-            poll_serial_thread = Thread(
-                target=poll_serial,
-                args=(
-                    kill_serial_event,
-                    args.serial,
-                ),
-                daemon=True,
-            )
-            poll_serial_thread.start()
+    # Register server exit
+    signal.signal(signal.SIGTERM, close_server)
+    signal.signal(signal.SIGINT, close_server)
 
-        # Register server exit
-        signal.signal(signal.SIGTERM, close_server)
-        signal.signal(signal.SIGINT, close_server)
-
-        # Launch with parsed arguments on main thread
-        launch_server(args.type, args.port)
+    # Launch with parsed arguments on main thread
+    launch_server(args.type, args.port, args.pathfinder_port)
 
 
 if __name__ == "__main__":
