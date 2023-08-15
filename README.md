@@ -1,6 +1,6 @@
 # Electrophysiology Manipulator Link
 
-[![Autoformat and Lint](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/autoformat-and-lint.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/autoformat-and-lint.yml)
+[![PyPI version](https://badge.fury.io/py/ephys-link.svg)](https://badge.fury.io/py/ephys-link)
 [![CodeQL](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/codeql-analysis.yml)
 [![Dependency Review](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/dependency-review.yml)
 
