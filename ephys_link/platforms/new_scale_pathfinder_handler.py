@@ -158,10 +158,22 @@ class NewScalePathfinderHandler(PlatformHandler):
 
         return com.PositionalOutputData(
             [
-                manipulator_data["Stage_X"],
-                manipulator_data["Stage_Y"],
-                manipulator_data["Stage_Z"],
-                manipulator_data["Stage_Z"],
+                manipulator_data["Tip_X_ML"],
+                manipulator_data["Tip_Y_AP"],
+                manipulator_data["Tip_Z_DV"],
+                0,
+            ],
+            "",
+        )
+
+    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+        manipulator_data = self.query_manipulator_data(manipulator_id)
+
+        return com.AngularOutputData(
+            [
+                manipulator_data["Polar"],
+                manipulator_data["Pitch"],
+                manipulator_data["Roll"],
             ],
             "",
         )

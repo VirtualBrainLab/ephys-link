@@ -48,6 +48,9 @@ class SensapexHandler(PlatformHandler):
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
         return self.manipulators[manipulator_id].get_pos()
 
+    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+        pass
+
     async def _goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:

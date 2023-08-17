@@ -89,7 +89,7 @@ class GetManipulatorsOutputData(dict):
 class PositionalOutputData(dict):
     """Output format for (position, error)
 
-    :param position: Position in mm (as a tuple, can be empty tuple)
+    :param position: Position in mm (as a tuple, can be empty) in X, Y, Z, W order
     :type position: list
     :param error: Error message
     :type error: str
@@ -101,6 +101,20 @@ class PositionalOutputData(dict):
     def __init__(self, position: list, error: str) -> None:
         """Constructor"""
         super(PositionalOutputData, self).__init__(position=position, error=error)
+
+
+class AngularOutputData(dict):
+    """Output format for (angles, error)
+
+    :param angles: Angles in degrees (as a tuple, can be empty) in yaw, pitch, roll order
+    :type angles: list
+    :param error: Error message
+    :type error: str
+    """
+
+    def __init__(self, angles: list, error: str) -> None:
+        """Constructor"""
+        super(AngularOutputData, self).__init__(angles=angles, error=error)
 
 
 class DriveToDepthOutputData(dict):

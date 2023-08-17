@@ -155,6 +155,32 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
             return com.PositionalOutputData([], "Manipulator not registered")
 
+    def get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+        """Get the current position of a manipulator
+
+        :param manipulator_id: The ID of the manipulator to get the position of.
+        :type manipulator_id: str
+        :return: Callback parameters (manipulator ID, angles in (yaw, pitch, roll) (or an
+            empty array on error), error message)
+        :rtype: :class:`ephys_link.common.AngularOutputData`
+        """
+        try:
+            # Check calibration status
+            if (
+                hasattr(self.manipulators[manipulator_id], "get_calibrated")
+                and not self.manipulators[manipulator_id].get_calibrated()
+            ):
+                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
+                return com.AngularOutputData([], "Manipulator not calibrated")
+
+            # Get position
+            return self._get_angles(manipulator_id)
+
+        except KeyError:
+            # Manipulator not found in registered manipulators
+            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
+            return com.AngularOutputData([], "Manipulator not registered")
+
     async def goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
@@ -379,6 +405,18 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
             empty array on error), error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
+        """
+        pass
+
+    @abstractmethod
+    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+        """Get the current angles of a manipulator
+
+        :param manipulator_id: The ID of the manipulator to get the position of.
+        :type manipulator_id: int
+        :return: Callback parameters (manipulator ID, position in (yaw, pitch, roll) (or an
+            empty array on error), error message)
+        :rtype: :class:`ephys_link.common.AngularOutputData`
         """
         pass
 
