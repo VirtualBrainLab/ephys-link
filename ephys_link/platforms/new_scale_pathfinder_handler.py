@@ -161,7 +161,7 @@ class NewScalePathfinderHandler(PlatformHandler):
                 manipulator_data["Tip_X_ML"],
                 manipulator_data["Tip_Y_AP"],
                 manipulator_data["Tip_Z_DV"],
-                manipulator_data["Tip_Z_DV"],
+                0,
             ],
             "",
         )
