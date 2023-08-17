@@ -11,10 +11,10 @@ from pathlib import Path
 # noinspection PyPackageRequirements
 import socketio
 from sensapex import UMP, UMError
-from sensapex_manipulator import SensapexManipulator
 
 import ephys_link.common as com
 from ephys_link.platform_handler import PlatformHandler
+from sensapex_manipulator import SensapexManipulator
 
 
 class SensapexHandler(PlatformHandler):
@@ -24,9 +24,7 @@ class SensapexHandler(PlatformHandler):
         super().__init__()
 
         # Establish connection to Sensapex API (exit if connection fails)
-        UMP.set_library_path(
-            str(Path(__file__).parent.parent.absolute()) + "/resources/"
-        )
+        UMP.set_library_path(str(Path(__file__).parent.parent.absolute()) + "/resources/")
         self.ump = UMP.get_ump()
         if self.ump is None:
             raise ValueError("Unable to connect to uMp")
@@ -38,9 +36,7 @@ class SensapexHandler(PlatformHandler):
         if not manipulator_id.isnumeric():
             raise ValueError("Manipulator ID must be numeric")
 
-        self.manipulators[manipulator_id] = SensapexManipulator(
-            self.ump.get_device(int(manipulator_id))
-        )
+        self.manipulators[manipulator_id] = SensapexManipulator(self.ump.get_device(int(manipulator_id)))
 
     def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
@@ -48,32 +44,25 @@ class SensapexHandler(PlatformHandler):
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
         return self.manipulators[manipulator_id].get_pos()
 
-    async def _goto_pos(
-        self, manipulator_id: str, position: list[float], speed: int
-    ) -> com.PositionalOutputData:
+    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+        pass
+
+    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
         return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
-    async def _drive_to_depth(
-        self, manipulator_id: str, depth: float, speed: int
-    ) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
         return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
 
-    def _set_inside_brain(
-        self, manipulator_id: str, inside: bool
-    ) -> com.StateOutputData:
+    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_inside_brain(inside)
-        com.dprint(
-            f"[SUCCESS]\t Set inside brain state for manipulator:"
-            f" {manipulator_id}\n"
-        )
+        com.dprint(f"[SUCCESS]\t Set inside brain state for manipulator:"
+                   f" {manipulator_id}\n")
         return com.StateOutputData(inside, "")
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         try:
             # Move manipulator to max position
-            await self.manipulators[manipulator_id].goto_pos(
-                [20000, 20000, 20000, 20000], 2000
-            )
+            await self.manipulators[manipulator_id].goto_pos([20000, 20000, 20000, 20000], 2000)
 
             # Call calibrate
             self.manipulators[manipulator_id].call_calibrate()
@@ -105,20 +94,11 @@ class SensapexHandler(PlatformHandler):
 
     def _bypass_calibration(self, manipulator_id: str) -> str:
         self.manipulators[manipulator_id].set_calibrated()
-        com.dprint(
-            f"[SUCCESS]\t Bypassed calibration for manipulator" f" {manipulator_id}\n"
-        )
+        com.dprint(f"[SUCCESS]\t Bypassed calibration for manipulator" f" {manipulator_id}\n")
         return ""
 
-    def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
+    def _set_can_write(self, manipulator_id: str, can_write: bool, hours: float,
+                       sio: socketio.AsyncServer, ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
-        com.dprint(
-            f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n"
-        )
+        com.dprint(f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n")
         return com.StateOutputData(can_write, "")

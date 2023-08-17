@@ -128,6 +128,7 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _get_manipulators(self) -> list:
         return [probe["Id"] for probe in self.query_data()["ProbeArray"]]
 
+
     def _register_manipulator(self, manipulator_id: str) -> None:
         # Check if ID is a valid New Scale manipulator ID
         if manipulator_id not in self.VALID_MANIPULATOR_IDS:
@@ -162,6 +163,18 @@ class NewScalePathfinderHandler(PlatformHandler):
                 manipulator_data["Tip_Y_AP"],
                 manipulator_data["Tip_Z_DV"],
                 0,
+            ],
+            "",
+        )
+
+    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+        manipulator_data = self.query_manipulator_data(manipulator_id)
+
+        return com.AngularOutputData(
+            [
+                manipulator_data["Polar"],
+                manipulator_data["Pitch"],
+                manipulator_data["Roll"],
             ],
             "",
         )

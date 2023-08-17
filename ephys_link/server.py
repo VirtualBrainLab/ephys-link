@@ -250,6 +250,20 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
 
     return platform.get_pos(manipulator_id)
 
+@sio.event
+async def get_angles(_, manipulator_id: str) -> com.AngularOutputData:
+    """Angles of manipulator request
+
+    :param _: Socket session ID (unused)
+    :type _: str
+    :param manipulator_id: ID of manipulator to pull angles from
+    :type manipulator_id: str
+    :return: Callback parameters (manipulator ID, angles in (yaw, pitch, roll) (or an empty
+        array on error), error message)
+    :rtype: :class:`ephys_link.common.AngularOutputData`
+    """
+
+    return platform.get_angles(manipulator_id)
 
 @sio.event
 async def goto_pos(
