@@ -158,10 +158,10 @@ class NewScalePathfinderHandler(PlatformHandler):
 
         return com.PositionalOutputData(
             [
-                manipulator_data["Stage_X"],
-                manipulator_data["Stage_Y"],
-                manipulator_data["Stage_Z"],
-                manipulator_data["Stage_Z"],
+                manipulator_data["Tip_X_ML"],
+                manipulator_data["Tip_Y_AP"],
+                manipulator_data["Tip_Z_DV"],
+                manipulator_data["Tip_Z_DV"],
             ],
             "",
         )
