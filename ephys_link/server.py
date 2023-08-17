@@ -250,6 +250,7 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
 
     return platform.get_pos(manipulator_id)
 
+
 @sio.event
 async def get_angles(_, manipulator_id: str) -> com.AngularOutputData:
     """Angles of manipulator request
@@ -264,6 +265,7 @@ async def get_angles(_, manipulator_id: str) -> com.AngularOutputData:
     """
 
     return platform.get_angles(manipulator_id)
+
 
 @sio.event
 async def goto_pos(

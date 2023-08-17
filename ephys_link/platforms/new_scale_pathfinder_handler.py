@@ -128,7 +128,6 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _get_manipulators(self) -> list:
         return [probe["Id"] for probe in self.query_data()["ProbeArray"]]
 
-
     def _register_manipulator(self, manipulator_id: str) -> None:
         # Check if ID is a valid New Scale manipulator ID
         if manipulator_id not in self.VALID_MANIPULATOR_IDS:

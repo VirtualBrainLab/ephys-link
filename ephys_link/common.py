@@ -81,7 +81,9 @@ class GetManipulatorsOutputData(dict):
 
     def __init__(self, manipulators: list, type: str, error: str) -> None:
         """Constructor"""
-        super(GetManipulatorsOutputData, self).__init__(manipulators=manipulators, type=type, error=error)
+        super(GetManipulatorsOutputData, self).__init__(
+            manipulators=manipulators, type=type, error=error
+        )
 
 
 class PositionalOutputData(dict):
