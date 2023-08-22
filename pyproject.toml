@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ephys-link"
-version = "0.9.9"
+version = "0.9.10"
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 description = "A Python WebSocket server that allows any WebSocket compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"

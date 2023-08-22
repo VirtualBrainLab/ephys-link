@@ -49,7 +49,7 @@ class SensapexHandler(PlatformHandler):
         return self.manipulators[manipulator_id].get_pos()
 
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
-        pass
+        raise NotImplementedError
 
     async def _goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
