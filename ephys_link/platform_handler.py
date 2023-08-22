@@ -261,7 +261,10 @@ class PlatformHandler(ABC):
         """
         try:
             # Check calibration status
-            if not self.manipulators[manipulator_id].get_calibrated():
+            if (
+                    hasattr(self.manipulators[manipulator_id], "get_calibrated")
+                    and not self.manipulators[manipulator_id].get_calibrated()
+            ):
                 print("[ERROR]\t\t Calibration not complete\n")
                 return com.StateOutputData(False, "Manipulator not calibrated")
 
