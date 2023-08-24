@@ -5,7 +5,6 @@ Implements Sensapex uMp specific API calls including coordinating the usage of t
 
 This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 """
-
 from pathlib import Path
 
 # noinspection PyPackageRequirements
