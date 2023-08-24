@@ -5,16 +5,16 @@ Implements Sensapex uMp specific API calls including coordinating the usage of t
 
 This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 """
-
+from ctypes import c_int
 from pathlib import Path
 
 # noinspection PyPackageRequirements
 import socketio
 from sensapex import UMP, UMError
-from sensapex_manipulator import SensapexManipulator
 
 import ephys_link.common as com
 from ephys_link.platform_handler import PlatformHandler
+from sensapex_manipulator import SensapexManipulator
 
 
 class SensapexHandler(PlatformHandler):
