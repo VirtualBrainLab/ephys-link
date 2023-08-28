@@ -499,6 +499,8 @@ def launch_server(platform_type: str, server_port: int, pathfinder_port: int) ->
     print("Available Manipulators:")
     print(platform.get_manipulators()["manipulators"])
 
+    print("\n(Shutdown server with Ctrl+Pause/Break)\n")
+
     # Mark that server is running
     global is_running
     is_running = True
