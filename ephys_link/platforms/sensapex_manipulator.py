@@ -94,7 +94,7 @@ class SensapexManipulator(PlatformManipulator):
                 await asyncio.sleep(0.1)
 
             # Get position
-            manipulator_final_position = self._device.get_pos()
+            manipulator_final_position = self.get_pos()["position"]
 
             # Remove event from queue and mark as completed
             self._move_queue.pop().set()
@@ -124,7 +124,7 @@ class SensapexManipulator(PlatformManipulator):
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
         # Get position before this movement
-        target_pos = self._device.get_pos()
+        target_pos = self.get_pos()["position"]
         if len(self._move_queue) > 0:
             target_pos = deepcopy(self._move_queue[0].position)
 
