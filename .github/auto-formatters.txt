@@ -5,4 +5,4 @@ pylama==8.4.1
 pylint==2.17.5
 radon==6.0.1
 toml==0.10.2
-vulture==2.9
+vulture==2.9.1
