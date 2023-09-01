@@ -3,8 +3,10 @@ from pythonnet import load
 
 load("netfx")
 
+# noinspection PyPackageRequirements
 import clr
 
+# noinspection PyUnresolvedReferences
 clr.AddReference("../ephys_link/resources/NstMotorCtrl")
 
 import random
