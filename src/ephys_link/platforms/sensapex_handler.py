@@ -1,68 +1,44 @@
-"""Handle communications with New Scale API
+"""Handle communications with Sensapex uMp API
 
-Implements New Scale specific API calls.
+Implements Sensapex uMp specific API calls including coordinating the usage of the
+:class:`ephys_link.platforms.sensapex_manipulator.SensapexManipulator` class.
 
 This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 """
-
-import importlib
-
-# noinspection PyPackageRequirements
-import clr
+from pathlib import Path
 
 # noinspection PyPackageRequirements
 import socketio
+from sensapex import UMP, UMError
+from sensapex_manipulator import SensapexManipulator
 
-from ephys_link import common as com
-from ephys_link.platform_handler import PlatformHandler
+import src.ephys_link.common as com
+from src.ephys_link.platform_handler import PlatformHandler
 
 
-class NewScaleHandler(PlatformHandler):
-    """Handler for New Scale platform"""
+class SensapexHandler(PlatformHandler):
+    """Handler for Sensapex platform"""
 
-    def __init__(self) -> None:
-        """Initialize New Scale handler"""
+    def __init__(self):
         super().__init__()
 
-        self.type = "new_scale"
-
-        # Load New Scale API
-        # noinspection PyUnresolvedReferences
-        clr.AddReference("../resources/NstMotorCtrl")
-        # noinspection PyUnresolvedReferences
-        from NstMotorCtrl import NstCtrlHostIntf
-
-        self.ctrl = NstCtrlHostIntf()
-
-        # Connect manipulators and initialize
-        self.ctrl.ShowProperties()
-        self.ctrl.Initialize()
+        # Establish connection to Sensapex API (exit if connection fails)
+        UMP.set_library_path(
+            str(Path(__file__).parent.parent.absolute()) + "/resources/"
+        )
+        self.ump = UMP.get_ump()
+        if self.ump is None:
+            raise ValueError("Unable to connect to uMp")
 
     def _get_manipulators(self) -> list:
-        return list(map(str, range(self.ctrl.PortCount)))
+        return list(map(str, self.ump.list_devices()))
 
     def _register_manipulator(self, manipulator_id: str) -> None:
-        # Check if ID is numeric
         if not manipulator_id.isnumeric():
             raise ValueError("Manipulator ID must be numeric")
 
-        # Check if ID is connected
-        if manipulator_id not in self._get_manipulators():
-            raise ValueError(f"Manipulator {manipulator_id} not connected")
-
-        # Check if there are enough axes
-        if int(manipulator_id) * 3 + 2 >= self.ctrl.AxisCount:
-            raise ValueError(f"Manipulator {manipulator_id} has no axes")
-
-        # Register manipulator
-        first_axis_index = int(manipulator_id) * 3
-        self.manipulators[manipulator_id] = importlib.import_module(
-            "new_scale_manipulator"
-        ).NewScaleManipulator(
-            manipulator_id,
-            self.ctrl.GetAxis(first_axis_index),
-            self.ctrl.GetAxis(first_axis_index + 1),
-            self.ctrl.GetAxis(first_axis_index + 2),
+        self.manipulators[manipulator_id] = SensapexManipulator(
+            self.ump.get_device(int(manipulator_id))
         )
 
     def _unregister_manipulator(self, manipulator_id: str) -> None:
@@ -95,11 +71,39 @@ class NewScaleHandler(PlatformHandler):
         return com.StateOutputData(inside, "")
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
-        return (
-            ""
-            if self.manipulators[manipulator_id].calibrate()
-            else "Error calling calibrate"
-        )
+        try:
+            # Move manipulator to max position
+            await self.manipulators[manipulator_id].goto_pos(
+                [20000, 20000, 20000, 20000], 2000
+            )
+
+            # Call calibrate
+            self.manipulators[manipulator_id].call_calibrate()
+
+            # Wait for calibration to complete
+            still_working = True
+            while still_working:
+                cur_pos = self.manipulators[manipulator_id].get_pos()["position"]
+
+                # Check difference between current and target position
+                for prev, cur in zip([10000, 10000, 10000, 10000], cur_pos):
+                    if abs(prev - cur) > 1:
+                        still_working = True
+                        break
+                    still_working = False
+
+                # Sleep for a bit
+                await sio.sleep(0.5)
+
+            # Calibration complete
+            self.manipulators[manipulator_id].set_calibrated()
+            com.dprint(f"[SUCCESS]\t Calibrated manipulator {manipulator_id}\n")
+            return ""
+        except UMError as e:
+            # SDK call error
+            print(f"[ERROR]\t\t Calling calibrate manipulator {manipulator_id}")
+            print(f"{e}\n")
+            return "Error calling calibrate"
 
     def _bypass_calibration(self, manipulator_id: str) -> str:
         self.manipulators[manipulator_id].set_calibrated()

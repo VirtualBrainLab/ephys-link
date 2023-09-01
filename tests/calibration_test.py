@@ -4,7 +4,7 @@ from unittest.mock import Mock
 # noinspection PyPackageRequirements
 import socketio
 
-from ephys_link.common import PositionalOutputData
+from src.ephys_link import PositionalOutputData
 
 
 class CalibrationTestCase(TestCase):

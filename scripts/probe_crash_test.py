@@ -6,7 +6,7 @@ import time
 # noinspection PyPackageRequirements
 import socketio
 
-from ephys_link.common import PositionalOutputData
+from src.ephys_link import PositionalOutputData
 
 # Parameters
 MANIPULATOR_ID = 2

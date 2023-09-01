@@ -1,15 +1,16 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "ephys-link"
 version = "0.9.12"
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
+maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 description = "A Python WebSocket server that allows any WebSocket compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
 requires-python = ">=3.8"
-keywords = ["websocket", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "vbl", "brain"]
+keywords = ["websocket", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "vbl", "brain", "new-scale"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -17,17 +18,16 @@ classifiers = [
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: Healthcare Industry",
     "Intended Audience :: Science/Research",
-    "Programming Language :: Python :: 3 :: Only",
     "Topic :: Internet :: WWW/HTTP :: WSGI :: Server",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
 dependencies = [
-    "aiohttp ~= 3.8",
-    "pyserial ~= 3.5",
-    "python-socketio ~= 5.7",
-    "pythonnet ~= 3.0",
-    "wheel ~= 0.41",
-    "sensapex ~= 1.22",
+    "aiohttp==3.8.5",
+    "pyserial==3.5",
+    "python-socketio==5.8.0",
+    "pythonnet==3.0.1",
+    "wheel==0.41.2",
+    "sensapex==1.400.0",
 ]
 
 [project.urls]

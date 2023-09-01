@@ -13,8 +13,8 @@ from copy import deepcopy
 import socketio
 from sensapex import SensapexDevice
 
-import ephys_link.common as com
-from ephys_link.platform_manipulator import PlatformManipulator
+import src.ephys_link.common as com
+from src.ephys_link.platform_manipulator import PlatformManipulator
 
 
 class SensapexManipulator(PlatformManipulator):
