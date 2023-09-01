@@ -163,7 +163,7 @@ class NewScaleManipulator(PlatformManipulator):
         # Check if able to write
         if not self._can_write:
             print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
-            return com.PositionalOutputData([], "Manipulator " "movement canceled")
+            return com.DriveToDepthOutputData(0, "Manipulator movement canceled")
 
         # Add movement to queue
         self._move_queue.appendleft(asyncio.Event())

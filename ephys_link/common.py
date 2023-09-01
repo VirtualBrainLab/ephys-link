@@ -70,8 +70,8 @@ class GetManipulatorsOutputData(dict):
 
     :param manipulators: Tuple of manipulator IDs (as strings)
     :type manipulators: list
-    :param type: Type of the output data (temporary solution until #165 is implemented)
-    :type type: str
+    :param manipulator_type: Type of the output data (temporary solution until #165 is implemented)
+    :type manipulator_type: str
     :param error: Error message
     :type error: str
 
@@ -79,10 +79,10 @@ class GetManipulatorsOutputData(dict):
         :code:`{"manipulators": ["1", "2"], "error": ""}`
     """
 
-    def __init__(self, manipulators: list, type: str, error: str) -> None:
+    def __init__(self, manipulators: list, manipulator_type: str, error: str) -> None:
         """Constructor"""
         super(GetManipulatorsOutputData, self).__init__(
-            manipulators=manipulators, type=type, error=error
+            manipulators=manipulators, type=manipulator_type, error=error
         )
 
 

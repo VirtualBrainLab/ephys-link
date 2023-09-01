@@ -5,7 +5,7 @@ process.
 
 ## What are good things to contribute?
 
-Since this project is still in it's early stages, we recommend all contributors report bugs and problems they may
+Since this project is still in its early stages, we recommend all contributors report bugs and problems they may
 find. Later, we will consider letting contributors suggest new features and add them.
 
 ## Steps to contribute

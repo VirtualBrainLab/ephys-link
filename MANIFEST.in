@@ -3,5 +3,6 @@ graft scripts
 graft tests
 
 include libum.dll
-include libum.lib
-include libum.so
+include CP210xManufacturing.dll
+include NstMotorCtrl.dll
+include SiUSBXp.dll
