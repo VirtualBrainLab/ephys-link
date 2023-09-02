@@ -5,11 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ephys-link"
 version = "0.9.12"
+
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
+
 description = "A Python WebSocket server that allows any WebSocket compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
-requires-python = ">=3.8"
+
 keywords = ["websocket", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "vbl", "brain", "new-scale"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -21,6 +23,8 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: WSGI :: Server",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
+
+requires-python = ">=3.8"
 dependencies = [
     "aiohttp==3.8.5",
     "pyserial==3.5",
@@ -34,3 +38,6 @@ dependencies = [
 "GitHub" = "https://github.com/VirtualBrainLab/ephys-link"
 Documentation = "https://virtualbrainlab.org/ephys_link/installation_and_use.html"
 "Issue Tracker" = "https://github.com/VirtualBrainLab/ephys-link/issues"
+
+[project.scripts]
+ephys-link = "ephys_link.__main__:main"
