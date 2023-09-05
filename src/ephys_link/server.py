@@ -20,13 +20,13 @@ import common as com
 
 # noinspection PyPackageRequirements
 import socketio
-from __version__ import __version__
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
 from platform_handler import PlatformHandler
 from pythonnet import load
 from serial import Serial
 from serial.tools.list_ports import comports
+from importlib import metadata
 
 # Setup server
 load("netfx")
@@ -85,7 +85,7 @@ parser.add_argument(
     "-v",
     "--version",
     action="version",
-    version=f"Electrophysiology Manipulator Link v{__version__}",
+    version=f"Electrophysiology Manipulator Link v{metadata.version('ephys_link')}",
     help="Print version and exit",
 )
 
@@ -185,7 +185,7 @@ async def get_version(_) -> str:
     :return: Version number as defined in __version__
     :rtype: str
     """
-    return __version__
+    return metadata.version('ephys_link')
 
 
 @sio.event
@@ -493,7 +493,7 @@ def launch_server(platform_type: str, server_port: int, pathfinder_port: int) ->
         exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 
     # Preamble
-    print(f"=== Ephys Link v{__version__} ===")
+    print(f"=== Ephys Link v{metadata.version('ephys_link')} ===")
 
     # List available manipulators
     print("Available Manipulators:")
