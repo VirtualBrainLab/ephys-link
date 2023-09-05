@@ -1,6 +1,6 @@
 aiohttp==3.8.5
 pyserial==3.5
-python-socketio==5.8.0
+python-socketio==5.9.0
 pythonnet==3.0.1
 wheel==0.41.2
 sensapex==1.400.0
