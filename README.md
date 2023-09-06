@@ -3,10 +3,11 @@
 [![PyPI version](https://badge.fury.io/py/ephys-link.svg)](https://badge.fury.io/py/ephys-link)
 [![CodeQL](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/codeql-analysis.yml)
 [![Dependency Review](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/dependency-review.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 The [Electrophysiology Manipulator Link](https://github.com/VirtualBrainLab/ephys-link)
-(or Ephys Link for short) is a Python WebSocket server that allows any
-WebSocket-compliant application (such
+(or Ephys Link for short) is a Python [Socket.IO](https://socket.io/docs/v4/#what-socketio-is) server that allows any
+Socket.IO-compliant application (such
 as [Pinpoint](https://github.com/VirtualBrainLab/Pinpoint))
 to communicate with manipulators used in electrophysiology experiments.
 
@@ -20,9 +21,9 @@ the [package's development documentation](https://virtualbrainlab.org/ephys_link
 For detailed descriptions of the server's API, see
 the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 
-## Installation
+# Installation
 
-### Prerequisites
+## Prerequisites
 
 1. [Python 3.8+](https://www.python.org/downloads/) and pip.
 2. An **x86 Windows PC is required** to run the server.
@@ -35,21 +36,20 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
    connected to the computer. Follow the instructions on that repo for how to
    set up the Arduino.
 
+> ### Using a Python virtual environment is encouraged.
+>
+> Create a virtual environment by running `python -m venv ephys_link`
+>
+> Activate the environment by running `.\ephys_link\scripts\activate`
+>
+> A virtual environment helps to isolate installed packages from other packages on your computer and ensures a clean
+> installation of Ephys Link
+
 **NOTE:** Ephys Link is an HTTP server without cross-origin support. The server
 is currently designed to interface with local/desktop instances of Pinpoint. It
 will not work with the web browser versions of Pinpoint at this time.
 
-### Install
-
-
->Using a Python virtual environment is encouraged.
->
->Create a virtual environment by running `python -m venv ephys_link`
->
->Activate the environment by running `.\ephys_link\scripts\activate`
->
->A virtual environment helps to isolate installed packages from other packages on your computer and ensures a clean installation of Ephys Link
-
+## Install for use
 
 Run the following command to install the server:
 
@@ -57,10 +57,46 @@ Run the following command to install the server:
 pip install ephys-link
 ```
 
-# Usage and more
+Update the server like any other Python package:
+
+```bash
+pip install --upgrade ephys-link
+```
+
+## Install for development
+
+1. Clone the repository.
+2. Run the following command in the root directory of the repository to install the package along with development
+   tools:
+
+   ```bash
+   pip install -e .[dev]
+   ```
+
+# Usage
+
+Run the following commands in a terminal to start the server for the desired manipulator platform:
+
+| Manipulator Platform                 | Command                              |
+|--------------------------------------|--------------------------------------|
+| Sensapex                             | `ephys-link`                         |
+| New Scale                            | `ephys-link -t new_scale`            |
+| New Scale via Pathfinder HTTP server | `ephys-link -t new_scale_pathfinder` |
+
+There are a couple additional aliases for the Ephys Link executable: `ephys_link` and `el`.
+
+By default, the server will broadcast with its local IP address on port 8081.
+**Copy this information into Pinpoint to connect**.
+
+For example, if the server is running on the same computer that Pinpoint is, use
+
+- Server: `localhost`
+- Port: `8081`
+
+# Documentation and More Information
 
 Complete documentation including API usage and development installation can be
-found on the [Virtual Brain Lab Documentation page][docs] for this server.
+found on the [Virtual Brain Lab Documentation page][docs] for Ephys Link.
 
 # Citing
 
