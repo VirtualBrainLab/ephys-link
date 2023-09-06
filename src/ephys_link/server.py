@@ -34,6 +34,7 @@ platform: PlatformHandler
 # Is the server running
 is_running = False
 
+
 # Handle connection events
 
 
@@ -146,7 +147,7 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
     :param manipulator_id: ID of manipulator to pull position from
     :type manipulator_id: str
     :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
-        array on error), error message)
+        array on error) in mm, error message)
     :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
     # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
@@ -163,7 +164,7 @@ async def get_angles(_, manipulator_id: str) -> com.AngularOutputData:
     :param manipulator_id: ID of manipulator to pull angles from
     :type manipulator_id: str
     :return: Callback parameters (manipulator ID, angles in (yaw, pitch, roll) (or an empty
-        array on error), error message)
+        array on error) in degrees, error message)
     :rtype: :class:`ephys_link.common.AngularOutputData`
     """
 
@@ -178,10 +179,10 @@ async def goto_pos(
 
     :param _: Socket session ID (unused)
     :type _: str
-    :param data: Data containing manipulator ID, position, and speed
+    :param data: Data containing manipulator ID, position in mm, and speed in mm/s
     :type data: :class:`ephys_link.common.GotoPositionInputDataFormat`
     :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
-        tuple on error), error message)
+        tuple on error) in mm, error message)
     :rtype: :class:`ephys_link.common.PositionalOutputData`
     """
     try:
@@ -211,9 +212,9 @@ async def drive_to_depth(
 
     :param _: Socket session ID (unused)
     :type _: str
-    :param data: Data containing manipulator ID, depth, and speed
+    :param data: Data containing manipulator ID, depth in mm, and speed in mm/s
     :type data: :class:`ephys_link.common.DriveToDepthInputDataFormat`
-    :return: Callback parameters (manipulator ID, depth (or -1 on error), error message
+    :return: Callback parameters (manipulator ID, depth (or -1 on error) in mm, error message
         )
     :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
     """

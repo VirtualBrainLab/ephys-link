@@ -154,6 +154,12 @@ class NewScalePathfinderHandler(PlatformHandler):
         del self.manipulators[manipulator_id]
 
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+        """Get the current position of the manipulator in mm
+
+        :param manipulator_id: manipulator ID
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on
+            error) in mm, error message)
+        """
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
         return com.PositionalOutputData(
@@ -167,6 +173,12 @@ class NewScalePathfinderHandler(PlatformHandler):
         )
 
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+        """Get the current angles of the manipulator in degrees
+
+        :param manipulator_id: manipulator ID
+        :return: Callback parameters (angles in (yaw, pitch, roll) (or an empty array on
+            error) in degrees, error message)
+        """
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
         return com.AngularOutputData(

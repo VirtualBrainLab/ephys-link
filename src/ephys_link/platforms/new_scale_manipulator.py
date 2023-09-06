@@ -15,10 +15,16 @@ import socketio
 from NstMotorCtrl import NstCtrlAxis
 
 import ephys_link.common as com
-from ephys_link.platform_manipulator import PlatformManipulator
+from ephys_link.platform_manipulator import (
+    HOURS_TO_SECONDS,
+    MM_TO_UM,
+    POSITION_POLL_DELAY,
+    PlatformManipulator,
+)
 
 # Constants
 ACCELERATION_MULTIPLIER = 5
+CUTOFF_MULTIPLIER = 0.005
 AT_TARGET_FLAG = 0x040000
 
 
@@ -59,18 +65,18 @@ class NewScaleManipulator(PlatformManipulator):
         """Get the current position of the manipulator and convert it into mm
 
         :return: Callback parameters (position in (x, y, z, 0) (or an empty array on
-            error), error message)
+            error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         self.query_all_axes()
 
-        # Get position data
+        # Get position data and convert from µm to mm
         try:
             position = [
-                self._x.CurPosition / 1000,
-                self._y.CurPosition / 1000,
-                self._z.CurPosition / 1000,
-                self._z.CurPosition / 1000,
+                self._x.CurPosition / MM_TO_UM,
+                self._y.CurPosition / MM_TO_UM,
+                self._z.CurPosition / MM_TO_UM,
+                self._z.CurPosition / MM_TO_UM,
             ]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
@@ -84,9 +90,9 @@ class NewScaleManipulator(PlatformManipulator):
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
-        :param position: The position to move to
+        :param position: The position to move to in mm
         :type position: list[float]
-        :param speed: The speed to move at (in µm/s)
+        :param speed: The speed to move at (in mm/s)
         :type speed: float
         :return: Callback parameters (position in (x, y, z, w) (or an empty array on
             error), error message)
@@ -97,9 +103,6 @@ class NewScaleManipulator(PlatformManipulator):
             print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
             return com.PositionalOutputData([], "Manipulator " "movement canceled")
 
-        # Convert position to µm
-        position_um = [axis * 1000 for axis in position]
-
         # Stop current movement
         if self._is_moving:
             for axis in self._axes:
@@ -107,22 +110,26 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_position = position_um
+            target_position_um = [axis * MM_TO_UM for axis in position]
 
             # Restrict target position to just z-axis if inside brain
             if self._inside_brain:
-                target_position = self.get_pos()["position"]
-                target_position[2] = position_um[2]
+                z_axis = target_position_um[2]
+                target_position_um = self.get_pos()["position"]
+                target_position_um[2] = z_axis
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command
+            speed_um = speed * MM_TO_UM
             for i in range(3):
                 self._axes[i].SetCL_Speed(
-                    speed, speed * ACCELERATION_MULTIPLIER, 0.005 * speed
+                    speed_um,
+                    speed_um * ACCELERATION_MULTIPLIER,
+                    speed_um * CUTOFF_MULTIPLIER,
                 )
-                self._axes[i].MoveAbsolute(target_position[i])
+                self._axes[i].MoveAbsolute(target_position_um[i])
 
             # Check and wait for completion
             self.query_all_axes()
@@ -131,7 +138,7 @@ class NewScaleManipulator(PlatformManipulator):
                 or not (self._y.CurStatus & AT_TARGET_FLAG)
                 or not (self._z.CurStatus & AT_TARGET_FLAG)
             ):
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(POSITION_POLL_DELAY)
                 self.query_all_axes()
 
             # Get position
@@ -148,16 +155,16 @@ class NewScaleManipulator(PlatformManipulator):
         except Exception as e:
             print(f"[ERROR]\t\t Moving manipulator {self._id} to position {position}")
             print(f"{e}\n")
-            return com.PositionalOutputData([], "Error moving " "manipulator")
+            return com.PositionalOutputData([], "Error moving manipulator")
 
     async def drive_to_depth(
         self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
-        :param depth: The depth to drive to
+        :param depth: The depth to drive to in mm
         :type depth: float
-        :param speed: The speed to drive at
+        :param speed: The speed to drive at in mm/s
         :type speed: int
         :return: Callback parameters (depth (or 0 on error), error message)
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
@@ -174,14 +181,19 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_depth = depth * 1000
+            target_depth_um = depth * MM_TO_UM
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command to just z axis
-            self._z.SetCL_Speed(speed, speed * ACCELERATION_MULTIPLIER, 0.005 * speed)
-            self._z.MoveAbsolute(target_depth)
+            speed_um = speed * MM_TO_UM
+            self._z.SetCL_Speed(
+                speed_um,
+                speed_um * ACCELERATION_MULTIPLIER,
+                speed_um * CUTOFF_MULTIPLIER,
+            )
+            self._z.MoveAbsolute(target_depth_um)
 
             # Check and wait for completion
             self._z.QueryPosStatus()
@@ -252,7 +264,7 @@ class NewScaleManipulator(PlatformManipulator):
             if self._reset_timer:
                 self._reset_timer.cancel()
             self._reset_timer = threading.Timer(
-                hours * 3600, self.reset_can_write, [sio]
+                hours * HOURS_TO_SECONDS, self.reset_can_write, [sio]
             )
             self._reset_timer.start()
 

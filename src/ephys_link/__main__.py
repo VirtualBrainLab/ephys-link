@@ -10,7 +10,7 @@ import serial.tools.list_ports as ports
 from ephys_link import common as com
 from ephys_link import server
 
-# Setup Arduino serial port
+# Setup Arduino serial port (emergency stop)
 poll_rate = 0.05
 kill_serial_event = Event()
 poll_serial_thread: Thread
@@ -109,10 +109,13 @@ parser.add_argument(
 
 
 def main() -> None:
+    """Main function"""
+
     # Parse arguments
     args = parser.parse_args()
     com.set_debug(args.debug)
 
+    # Setup serial port
     if args.serial != "no-e-stop":
         # Register serial exit
         signal.signal(signal.SIGTERM, close_serial)
