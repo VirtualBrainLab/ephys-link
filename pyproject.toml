@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ephys-link"
 version = "0.9.12"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
@@ -33,6 +33,15 @@ dependencies = [
     "pythonnet==3.0.1",
     "wheel==0.41.2",
     "sensapex==1.400.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "build",
+    "isort",
+    "pylama[all]",
+    "twine",
 ]
 
 [project.urls]

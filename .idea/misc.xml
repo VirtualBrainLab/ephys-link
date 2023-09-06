@@ -4,5 +4,5 @@
     <option name="enabledOnReformat" value="true" />
     <option name="sdkUUID" value="678ec640-44a0-4a4c-958e-97fe0b68e3b0" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (ephys-link)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.8 (ephys-link)" project-jdk-type="Python SDK" />
 </project>

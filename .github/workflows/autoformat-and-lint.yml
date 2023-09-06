@@ -32,7 +32,7 @@ jobs:
           cache: 'pip'
 
       - name: 📦 Install dependencies
-        run: pip install -r .github/auto-formatters.txt
+        run: pip install .[dev]
 
       - name: 🔃 Sort Imports
         run: isort .
