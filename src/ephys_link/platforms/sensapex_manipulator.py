@@ -7,7 +7,6 @@ appropriate callback parameters like in :mod:`ephys_link.sensapex_handler`.
 
 import asyncio
 import threading
-from copy import deepcopy
 
 # noinspection PyPackageRequirements
 import socketio
@@ -51,7 +50,7 @@ class SensapexManipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(
-        self, position: list[float], speed: float
+            self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
@@ -71,12 +70,10 @@ class SensapexManipulator(PlatformManipulator):
         # Convert position to µm
         position_um = [axis * 1000 for axis in position]
 
-        # Push movement intent to queue
-        self._move_queue.appendleft(asyncio.Event())
-
-        # Wait for preceding movement to finish
-        if len(self._move_queue) > 1:
-            await self._move_queue[1].wait()
+        # Stop current movement
+        if self._is_moving:
+            self._device.stop()
+            self._is_moving = False
 
         try:
             target_position = position_um
@@ -85,6 +82,9 @@ class SensapexManipulator(PlatformManipulator):
             if self._inside_brain:
                 target_position = self._device.get_pos()
                 target_position[3] = position_um[3]
+
+            # Mark movement as started
+            self._is_moving = True
 
             # Send move command
             movement = self._device.goto_pos(target_position, speed)
@@ -96,8 +96,8 @@ class SensapexManipulator(PlatformManipulator):
             # Get position
             manipulator_final_position = self.get_pos()["position"]
 
-            # Remove event from queue and mark as completed
-            self._move_queue.pop().set()
+            # Mark movement as finished
+            self._is_moving = False
 
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
@@ -109,10 +109,10 @@ class SensapexManipulator(PlatformManipulator):
                 f"[ERROR]\t\t Moving manipulator {self._id} to position" f" {position}"
             )
             print(f"{e}\n")
-            return com.PositionalOutputData([], "Error moving " "manipulator")
+            return com.PositionalOutputData([], "Error moving manipulator")
 
     async def drive_to_depth(
-        self, depth: float, speed: int
+            self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
@@ -125,8 +125,6 @@ class SensapexManipulator(PlatformManipulator):
         """
         # Get position before this movement
         target_pos = self.get_pos()["position"]
-        if len(self._move_queue) > 0:
-            target_pos = deepcopy(self._move_queue[0].position)
 
         target_pos[3] = depth
         movement_result = await self.goto_pos(target_pos, speed)
@@ -158,7 +156,7 @@ class SensapexManipulator(PlatformManipulator):
         return self._can_write
 
     def set_can_write(
-        self, can_write: bool, hours: float, sio: socketio.AsyncServer
+            self, can_write: bool, hours: float, sio: socketio.AsyncServer
     ) -> None:
         """Set if the manipulator can move
 
@@ -219,8 +217,6 @@ class SensapexManipulator(PlatformManipulator):
 
         :return: None
         """
-        while self._move_queue:
-            self._move_queue.pop().set()
         self._can_write = False
         self._device.stop()
         com.dprint(f"[SUCCESS]\t Stopped manipulator {self._id}")

@@ -10,7 +10,7 @@ from pathlib import Path
 # noinspection PyPackageRequirements
 import socketio
 from sensapex import UMP, UMError
-from sensapex_manipulator import SensapexManipulator
+from ephys_link.platforms.sensapex_manipulator import SensapexManipulator
 
 import ephys_link.common as com
 from ephys_link.platform_handler import PlatformHandler
