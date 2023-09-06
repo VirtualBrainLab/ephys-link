@@ -50,7 +50,7 @@ class SensapexManipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(
-            self, position: list[float], speed: float
+        self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
@@ -112,7 +112,7 @@ class SensapexManipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error moving manipulator")
 
     async def drive_to_depth(
-            self, depth: float, speed: int
+        self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
@@ -156,7 +156,7 @@ class SensapexManipulator(PlatformManipulator):
         return self._can_write
 
     def set_can_write(
-            self, can_write: bool, hours: float, sio: socketio.AsyncServer
+        self, can_write: bool, hours: float, sio: socketio.AsyncServer
     ) -> None:
         """Set if the manipulator can move
 
