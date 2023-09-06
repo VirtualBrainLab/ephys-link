@@ -14,8 +14,8 @@ import socketio
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlAxis
 
-import src.ephys_link.common as com
-from src.ephys_link.platform_manipulator import PlatformManipulator
+import ephys_link.common as com
+from ephys_link.platform_manipulator import PlatformManipulator
 
 # Constants
 ACCELERATION_MULTIPLIER = 5

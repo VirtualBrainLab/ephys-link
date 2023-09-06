@@ -42,3 +42,5 @@ Documentation = "https://virtualbrainlab.org/ephys_link/installation_and_use.htm
 
 [project.scripts]
 ephys-link = "ephys_link.__main__:main"
+ephys_link = "ephys_link.__main__:main"
+el = "ephys_link.__main__:main"

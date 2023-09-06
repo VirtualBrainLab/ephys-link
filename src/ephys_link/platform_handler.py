@@ -14,7 +14,7 @@ server receives an event from a client. In general, each function does the follo
 
 from abc import ABC, abstractmethod
 
-import common as com
+from ephys_link import common as com
 
 # noinspection PyPackageRequirements
 import socketio

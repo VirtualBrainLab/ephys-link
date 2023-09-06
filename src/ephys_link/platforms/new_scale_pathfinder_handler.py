@@ -11,8 +11,8 @@ from urllib import request
 # noinspection PyPackageRequirements
 import socketio
 
-from src.ephys_link import common as com
-from src.ephys_link.platform_handler import PlatformHandler
+from ephys_link import common as com
+from ephys_link.platform_handler import PlatformHandler
 
 
 class NewScalePathfinderHandler(PlatformHandler):
