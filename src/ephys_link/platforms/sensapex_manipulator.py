@@ -13,7 +13,7 @@ import socketio
 from sensapex import SensapexDevice
 
 import ephys_link.common as com
-from ephys_link.platform_manipulator import PlatformManipulator
+from ephys_link.platform_manipulator import PlatformManipulator, MM_TO_UM, HOURS_TO_SECONDS, POSITION_POLL_DELAY
 
 
 class SensapexManipulator(PlatformManipulator):
@@ -41,7 +41,7 @@ class SensapexManipulator(PlatformManipulator):
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
-            position = [axis / com.MM_TO_UM for axis in self._device.get_pos(1)]
+            position = [axis / MM_TO_UM for axis in self._device.get_pos(1)]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
         except Exception as e:
@@ -73,7 +73,7 @@ class SensapexManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_position_um = [axis * com.MM_TO_UM for axis in position]
+            target_position_um = [axis * MM_TO_UM for axis in position]
 
             # Restrict target position to just depth-axis if inside brain
             if self._inside_brain:
@@ -85,11 +85,11 @@ class SensapexManipulator(PlatformManipulator):
             self._is_moving = True
 
             # Send move command
-            movement = self._device.goto_pos(target_position_um, speed * com.MM_TO_UM)
+            movement = self._device.goto_pos(target_position_um, speed * MM_TO_UM)
 
             # Wait for movement to finish
             while not movement.finished:
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(POSITION_POLL_DELAY)
 
             # Get position
             manipulator_final_position = self.get_pos()["position"]
@@ -173,7 +173,7 @@ class SensapexManipulator(PlatformManipulator):
             if self._reset_timer:
                 self._reset_timer.cancel()
             self._reset_timer = threading.Timer(
-                hours * com.HOURS_TO_SECONDS, self.reset_can_write, [sio]
+                hours * HOURS_TO_SECONDS, self.reset_can_write, [sio]
             )
             self._reset_timer.start()
 

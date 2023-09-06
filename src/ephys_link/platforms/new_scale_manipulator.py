@@ -14,7 +14,7 @@ import socketio
 from NstMotorCtrl import NstCtrlAxis
 
 import ephys_link.common as com
-from ephys_link.platform_manipulator import PlatformManipulator
+from ephys_link.platform_manipulator import PlatformManipulator, MM_TO_UM, HOURS_TO_SECONDS, POSITION_POLL_DELAY
 
 # Constants
 ACCELERATION_MULTIPLIER = 5
@@ -67,10 +67,10 @@ class NewScaleManipulator(PlatformManipulator):
         # Get position data and convert from µm to mm
         try:
             position = [
-                self._x.CurPosition / com.MM_TO_UM,
-                self._y.CurPosition / com.MM_TO_UM,
-                self._z.CurPosition / com.MM_TO_UM,
-                self._z.CurPosition / com.MM_TO_UM,
+                self._x.CurPosition / MM_TO_UM,
+                self._y.CurPosition / MM_TO_UM,
+                self._z.CurPosition / MM_TO_UM,
+                self._z.CurPosition / MM_TO_UM,
             ]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
@@ -104,7 +104,7 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_position_um = [axis * com.MM_TO_UM for axis in position]
+            target_position_um = [axis * MM_TO_UM for axis in position]
 
             # Restrict target position to just z-axis if inside brain
             if self._inside_brain:
@@ -116,7 +116,7 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = True
 
             # Send move command
-            speed_um = speed * com.MM_TO_UM
+            speed_um = speed * MM_TO_UM
             for i in range(3):
                 self._axes[i].SetCL_Speed(
                     speed_um, speed_um * ACCELERATION_MULTIPLIER, speed_um * CUTOFF_MULTIPLIER
@@ -130,7 +130,7 @@ class NewScaleManipulator(PlatformManipulator):
                     or not (self._y.CurStatus & AT_TARGET_FLAG)
                     or not (self._z.CurStatus & AT_TARGET_FLAG)
             ):
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(POSITION_POLL_DELAY)
                 self.query_all_axes()
 
             # Get position
@@ -173,13 +173,13 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_depth_um = depth * com.MM_TO_UM
+            target_depth_um = depth * MM_TO_UM
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command to just z axis
-            speed_um = speed * com.MM_TO_UM
+            speed_um = speed * MM_TO_UM
             self._z.SetCL_Speed(speed_um, speed_um * ACCELERATION_MULTIPLIER, speed_um * CUTOFF_MULTIPLIER)
             self._z.MoveAbsolute(target_depth_um)
 
@@ -252,7 +252,7 @@ class NewScaleManipulator(PlatformManipulator):
             if self._reset_timer:
                 self._reset_timer.cancel()
             self._reset_timer = threading.Timer(
-                hours * com.HOURS_TO_SECONDS, self.reset_can_write, [sio]
+                hours * HOURS_TO_SECONDS, self.reset_can_write, [sio]
             )
             self._reset_timer.start()
 
