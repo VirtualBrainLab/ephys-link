@@ -10,11 +10,17 @@ import threading
 
 # noinspection PyPackageRequirements
 import socketio
+
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlAxis
 
 import ephys_link.common as com
-from ephys_link.platform_manipulator import PlatformManipulator, MM_TO_UM, HOURS_TO_SECONDS, POSITION_POLL_DELAY
+from ephys_link.platform_manipulator import (
+    HOURS_TO_SECONDS,
+    MM_TO_UM,
+    POSITION_POLL_DELAY,
+    PlatformManipulator,
+)
 
 # Constants
 ACCELERATION_MULTIPLIER = 5
@@ -24,11 +30,11 @@ AT_TARGET_FLAG = 0x040000
 
 class NewScaleManipulator(PlatformManipulator):
     def __init__(
-            self,
-            manipulator_id: str,
-            x_axis: NstCtrlAxis,
-            y_axis: NstCtrlAxis,
-            z_axis: NstCtrlAxis,
+        self,
+        manipulator_id: str,
+        x_axis: NstCtrlAxis,
+        y_axis: NstCtrlAxis,
+        z_axis: NstCtrlAxis,
     ) -> None:
         """Construct a new Manipulator object
 
@@ -80,7 +86,7 @@ class NewScaleManipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(
-            self, position: list[float], speed: float
+        self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
@@ -119,16 +125,18 @@ class NewScaleManipulator(PlatformManipulator):
             speed_um = speed * MM_TO_UM
             for i in range(3):
                 self._axes[i].SetCL_Speed(
-                    speed_um, speed_um * ACCELERATION_MULTIPLIER, speed_um * CUTOFF_MULTIPLIER
+                    speed_um,
+                    speed_um * ACCELERATION_MULTIPLIER,
+                    speed_um * CUTOFF_MULTIPLIER,
                 )
                 self._axes[i].MoveAbsolute(target_position_um[i])
 
             # Check and wait for completion
             self.query_all_axes()
             while (
-                    not (self._x.CurStatus & AT_TARGET_FLAG)
-                    or not (self._y.CurStatus & AT_TARGET_FLAG)
-                    or not (self._z.CurStatus & AT_TARGET_FLAG)
+                not (self._x.CurStatus & AT_TARGET_FLAG)
+                or not (self._y.CurStatus & AT_TARGET_FLAG)
+                or not (self._z.CurStatus & AT_TARGET_FLAG)
             ):
                 await asyncio.sleep(POSITION_POLL_DELAY)
                 self.query_all_axes()
@@ -150,7 +158,7 @@ class NewScaleManipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error moving manipulator")
 
     async def drive_to_depth(
-            self, depth: float, speed: int
+        self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
@@ -180,7 +188,11 @@ class NewScaleManipulator(PlatformManipulator):
 
             # Send move command to just z axis
             speed_um = speed * MM_TO_UM
-            self._z.SetCL_Speed(speed_um, speed_um * ACCELERATION_MULTIPLIER, speed_um * CUTOFF_MULTIPLIER)
+            self._z.SetCL_Speed(
+                speed_um,
+                speed_um * ACCELERATION_MULTIPLIER,
+                speed_um * CUTOFF_MULTIPLIER,
+            )
             self._z.MoveAbsolute(target_depth_um)
 
             # Check and wait for completion
@@ -212,9 +224,9 @@ class NewScaleManipulator(PlatformManipulator):
         :return: None
         """
         return (
-                self._x.CalibrateFrequency()
-                and self._y.CalibrateFrequency()
-                and self._z.CalibrateFrequency()
+            self._x.CalibrateFrequency()
+            and self._y.CalibrateFrequency()
+            and self._z.CalibrateFrequency()
         )
 
     def get_calibrated(self) -> bool:
@@ -233,7 +245,7 @@ class NewScaleManipulator(PlatformManipulator):
         self._calibrated = True
 
     def set_can_write(
-            self, can_write: bool, hours: float, sio: socketio.AsyncServer
+        self, can_write: bool, hours: float, sio: socketio.AsyncServer
     ) -> None:
         """Set if the manipulator can move
 
