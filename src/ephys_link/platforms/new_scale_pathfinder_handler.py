@@ -154,6 +154,12 @@ class NewScalePathfinderHandler(PlatformHandler):
         del self.manipulators[manipulator_id]
 
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+        """Get the current position of the manipulator in mm
+
+        :param manipulator_id: manipulator ID
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on
+            error) in mm, error message)
+        """
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
         return com.PositionalOutputData(
@@ -167,6 +173,12 @@ class NewScalePathfinderHandler(PlatformHandler):
         )
 
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+        """Get the current angles of the manipulator in degrees
+
+        :param manipulator_id: manipulator ID
+        :return: Callback parameters (angles in (yaw, pitch, roll) (or an empty array on
+            error) in degrees, error message)
+        """
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
         return com.AngularOutputData(
@@ -179,17 +191,17 @@ class NewScalePathfinderHandler(PlatformHandler):
         )
 
     async def _goto_pos(
-        self, manipulator_id: str, position: list[float], speed: int
+            self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
         pass
 
     async def _drive_to_depth(
-        self, manipulator_id: str, depth: float, speed: int
+            self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         pass
 
     def _set_inside_brain(
-        self, manipulator_id: str, inside: bool
+            self, manipulator_id: str, inside: bool
     ) -> com.StateOutputData:
         pass
 
@@ -200,10 +212,10 @@ class NewScalePathfinderHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: str,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         pass
