@@ -6,6 +6,8 @@ for enforcing implementation of the stop method and hold common properties.
 from abc import ABC, abstractmethod
 
 
+MM_TO_UM = 1000
+
 class PlatformManipulator(ABC):
     """An abstract class that defines the interface for a manipulator."""
 

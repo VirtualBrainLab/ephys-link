@@ -37,11 +37,11 @@ class SensapexManipulator(PlatformManipulator):
         """Get the current position of the manipulator and convert it into mm
 
         :return: Callback parameters (position in (x, y, z, w) (or an empty array on
-            error), error message)
+            error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
-            position = [axis / 1000 for axis in self._device.get_pos(1)]
+            position = [axis / com.MM_TO_UM for axis in self._device.get_pos(1)]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
         except Exception as e:
@@ -50,13 +50,13 @@ class SensapexManipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(
-        self, position: list[float], speed: float
+            self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
-        :param position: The position to move to
+        :param position: The position to move to in mm
         :type position: list[float]
-        :param speed: The speed to move at (in µm/s)
+        :param speed: The speed to move at (in mm/s)
         :type speed: float
         :return: Callback parameters (position in (x, y, z, w) (or an empty array on
             error), error message)
@@ -67,27 +67,25 @@ class SensapexManipulator(PlatformManipulator):
             print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
             return com.PositionalOutputData([], "Manipulator " "movement canceled")
 
-        # Convert position to µm
-        position_um = [axis * 1000 for axis in position]
-
         # Stop current movement
         if self._is_moving:
             self._device.stop()
             self._is_moving = False
 
         try:
-            target_position = position_um
+            target_position_um = [axis * com.MM_TO_UM for axis in position]
 
             # Restrict target position to just depth-axis if inside brain
             if self._inside_brain:
-                target_position = self._device.get_pos()
-                target_position[3] = position_um[3]
+                d_axis = target_position_um[3]
+                target_position_um = self._device.get_pos()
+                target_position_um[3] = d_axis
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command
-            movement = self._device.goto_pos(target_position, speed)
+            movement = self._device.goto_pos(target_position_um, speed * com.MM_TO_UM)
 
             # Wait for movement to finish
             while not movement.finished:
@@ -112,13 +110,13 @@ class SensapexManipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error moving manipulator")
 
     async def drive_to_depth(
-        self, depth: float, speed: int
+            self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
-        :param depth: The depth to drive to
+        :param depth: The depth to drive to in mm
         :type depth: float
-        :param speed: The speed to drive at
+        :param speed: The speed to drive at in mm/s
         :type speed: int
         :return: Callback parameters (depth (or 0 on error), error message)
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
@@ -156,7 +154,7 @@ class SensapexManipulator(PlatformManipulator):
         return self._can_write
 
     def set_can_write(
-        self, can_write: bool, hours: float, sio: socketio.AsyncServer
+            self, can_write: bool, hours: float, sio: socketio.AsyncServer
     ) -> None:
         """Set if the manipulator can move
 
@@ -175,7 +173,7 @@ class SensapexManipulator(PlatformManipulator):
             if self._reset_timer:
                 self._reset_timer.cancel()
             self._reset_timer = threading.Timer(
-                hours * 3600, self.reset_can_write, [sio]
+                hours * com.HOURS_TO_SECONDS, self.reset_can_write, [sio]
             )
             self._reset_timer.start()
 

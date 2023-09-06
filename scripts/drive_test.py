@@ -5,7 +5,7 @@ import socketio
 sio = socketio.Client()
 sio.connect("http://localhost:8081")
 
-manipulator_id = "0"
+manipulator_id = "2"
 
 sio.emit("register_manipulator", manipulator_id)
 sio.emit("bypass_calibration", manipulator_id)

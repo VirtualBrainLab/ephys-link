@@ -9,6 +9,10 @@ from typing import TypedDict
 # Debugging flag
 DEBUG = False
 
+# MM to µm conversion
+MM_TO_UM = 1000
+HOURS_TO_SECONDS = 3600
+
 
 def set_debug(debug: bool) -> None:
     """Set debug flag

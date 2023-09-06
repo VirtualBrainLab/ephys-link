@@ -19,7 +19,6 @@ from ephys_link.platform_manipulator import PlatformManipulator
 # Constants
 ACCELERATION_MULTIPLIER = 5
 CUTOFF_MULTIPLIER = 0.005
-MM_TO_UM = 1000
 AT_TARGET_FLAG = 0x040000
 
 
@@ -60,7 +59,7 @@ class NewScaleManipulator(PlatformManipulator):
         """Get the current position of the manipulator and convert it into mm
 
         :return: Callback parameters (position in (x, y, z, 0) (or an empty array on
-            error), error message)
+            error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         self.query_all_axes()
@@ -68,10 +67,10 @@ class NewScaleManipulator(PlatformManipulator):
         # Get position data and convert from µm to mm
         try:
             position = [
-                self._x.CurPosition / 1000,
-                self._y.CurPosition / 1000,
-                self._z.CurPosition / 1000,
-                self._z.CurPosition / 1000,
+                self._x.CurPosition / com.MM_TO_UM,
+                self._y.CurPosition / com.MM_TO_UM,
+                self._z.CurPosition / com.MM_TO_UM,
+                self._z.CurPosition / com.MM_TO_UM,
             ]
             com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
@@ -105,7 +104,7 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_position_um = [axis * MM_TO_UM for axis in position]
+            target_position_um = [axis * com.MM_TO_UM for axis in position]
 
             # Restrict target position to just z-axis if inside brain
             if self._inside_brain:
@@ -117,7 +116,7 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = True
 
             # Send move command
-            speed_um = speed * MM_TO_UM
+            speed_um = speed * com.MM_TO_UM
             for i in range(3):
                 self._axes[i].SetCL_Speed(
                     speed_um, speed_um * ACCELERATION_MULTIPLIER, speed_um * CUTOFF_MULTIPLIER
@@ -174,13 +173,13 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_depth_um = depth * MM_TO_UM
+            target_depth_um = depth * com.MM_TO_UM
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command to just z axis
-            speed_um = speed * MM_TO_UM
+            speed_um = speed * com.MM_TO_UM
             self._z.SetCL_Speed(speed_um, speed_um * ACCELERATION_MULTIPLIER, speed_um * CUTOFF_MULTIPLIER)
             self._z.MoveAbsolute(target_depth_um)
 
@@ -253,7 +252,7 @@ class NewScaleManipulator(PlatformManipulator):
             if self._reset_timer:
                 self._reset_timer.cancel()
             self._reset_timer = threading.Timer(
-                hours * 3600, self.reset_can_write, [sio]
+                hours * com.HOURS_TO_SECONDS, self.reset_can_write, [sio]
             )
             self._reset_timer.start()
 
