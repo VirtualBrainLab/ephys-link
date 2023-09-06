@@ -16,11 +16,11 @@ sio.emit(
 
 sio.emit(
     "goto_pos",
-    {"manipulator_id": manipulator_id, "pos": [10, 10, 10, 10], "speed": 4000},
+    {"manipulator_id": manipulator_id, "pos": [10, 10, 10, 10], "speed": 4},
 )
 
 time.sleep(1)
 
 sio.emit(
-    "goto_pos", {"manipulator_id": manipulator_id, "pos": [0, 0, 0, 0], "speed": 4000}
+    "goto_pos", {"manipulator_id": manipulator_id, "pos": [0, 0, 0, 0], "speed": 4}
 )

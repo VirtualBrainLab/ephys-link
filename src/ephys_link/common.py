@@ -95,7 +95,7 @@ class PositionalOutputData(dict):
     :type error: str
 
     :example: Example generated dictionary
-        :code:`{"position": [10429, 12332, 2131, 12312], "error": ""}`
+        :code:`{"position": [10.429, 12.332, 2.131, 12.312], "error": ""}`
     """
 
     def __init__(self, position: list, error: str) -> None:
@@ -120,12 +120,12 @@ class AngularOutputData(dict):
 class DriveToDepthOutputData(dict):
     """Output format for depth driving (depth, error)
 
-    :param depth: Depth
+    :param depth: Depth in mm
     :type depth: float
     :param error: Error message
     :type error: str
 
-    :example: Example generated dictionary :code:`{"depth": 123, "error": ""}`
+    :example: Example generated dictionary :code:`{"depth": 0.123, "error": ""}`
     """
 
     def __init__(self, depth: float, error: str) -> None:

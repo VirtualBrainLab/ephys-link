@@ -135,7 +135,7 @@ class PlatformHandler(ABC):
         :param manipulator_id: The ID of the manipulator to get the position of.
         :type manipulator_id: str
         :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
-            empty array on error), error message)
+            empty array on error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
@@ -161,7 +161,7 @@ class PlatformHandler(ABC):
         :param manipulator_id: The ID of the manipulator to get the position of.
         :type manipulator_id: str
         :return: Callback parameters (manipulator ID, angles in (yaw, pitch, roll) (or an
-            empty array on error), error message)
+            empty array on error) in degrees, error message)
         :rtype: :class:`ephys_link.common.AngularOutputData`
         """
         try:
@@ -188,12 +188,12 @@ class PlatformHandler(ABC):
 
         :param manipulator_id: The ID of the manipulator to move
         :type manipulator_id: str
-        :param position: The position to move to
+        :param position: The position to move to in (x, y, z, w) in mm
         :type position: list[float]
-        :param speed: The speed to move at (in µm/s)
+        :param speed: The speed to move at (in mm/s)
         :type speed: int
         :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
-                 empty array on error), error message)
+                 empty array on error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
@@ -221,11 +221,11 @@ class PlatformHandler(ABC):
 
         :param manipulator_id: The ID of the manipulator to drive
         :type manipulator_id: str
-        :param depth: The depth to drive to
+        :param depth: The depth to drive to in mm
         :type depth: float
-        :param speed: The speed to drive at (in µm/s)
+        :param speed: The speed to drive at (in mm/s)
         :type speed: int
-        :return: Callback parameters (manipulator ID, depth (or 0 on error), error
+        :return: Callback parameters (manipulator ID, depth (or 0 on error) in mm, error
                  message)
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
@@ -406,7 +406,7 @@ class PlatformHandler(ABC):
         :param manipulator_id: The ID of the manipulator to get the position of.
         :type manipulator_id: int
         :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
-            empty array on error), error message)
+            empty array on error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         pass
@@ -418,7 +418,7 @@ class PlatformHandler(ABC):
         :param manipulator_id: The ID of the manipulator to get the position of.
         :type manipulator_id: int
         :return: Callback parameters (manipulator ID, position in (yaw, pitch, roll) (or an
-            empty array on error), error message)
+            empty array on error) in degrees, error message)
         :rtype: :class:`ephys_link.common.AngularOutputData`
         """
         pass
@@ -431,12 +431,12 @@ class PlatformHandler(ABC):
 
         :param manipulator_id: The ID of the manipulator to move
         :type manipulator_id: str
-        :param position: The position to move to
+        :param position: The position to move to in mm
         :type position: list[float]
-        :param speed: The speed to move at (in µm/s)
+        :param speed: The speed to move at (in mm/s)
         :type speed: int
         :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
-                 empty array on error), error message)
+                 empty array on error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         pass
@@ -449,9 +449,9 @@ class PlatformHandler(ABC):
 
         :param manipulator_id: The ID of the manipulator to drive
         :type manipulator_id: str
-        :param depth: The depth to drive to
+        :param depth: The depth to drive to in mm
         :type depth: float
-        :param speed: The speed to drive at (in µm/s)
+        :param speed: The speed to drive at (in mm/s)
         :type speed: int
         :return: Callback parameters (manipulator ID, depth (or 0 on error), error
                  message)
