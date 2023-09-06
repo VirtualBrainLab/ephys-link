@@ -9,24 +9,17 @@ every event, the server does the following:
 4. Relay the response from :mod:`ephys_link.sensapex_handler` to the callback function
 """
 
-import argparse
 import importlib
-import signal
-import time
-from threading import Event, Thread
+from importlib import metadata
 from typing import Any
 
-import common as com
-
-# noinspection PyPackageRequirements
 import socketio
-from __version__ import __version__
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
-from platform_handler import PlatformHandler
 from pythonnet import load
-from serial import Serial
-from serial.tools.list_ports import comports
+
+from ephys_link import common as com
+from ephys_link.platform_handler import PlatformHandler
 
 # Setup server
 load("netfx")
@@ -38,98 +31,8 @@ is_connected = False
 # Declare platform handler
 platform: PlatformHandler
 
-# Setup argument parser
-parser = argparse.ArgumentParser(
-    description="Electrophysiology Manipulator Link: a websocket interface for"
-    " manipulators in electrophysiology experiments",
-    prog="python -m ephys-link",
-)
-# parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
-parser.add_argument(
-    "-t",
-    "--type",
-    type=str,
-    dest="type",
-    default="sensapex",
-    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathfinder").'
-    ' Default: "sensapex"',
-)
-parser.add_argument(
-    "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
-)
-parser.add_argument(
-    "-p",
-    "--port",
-    type=int,
-    default=8081,
-    dest="port",
-    help="Port to serve on. Default: 8081 (avoids conflict with other HTTP servers)",
-)
-parser.add_argument(
-    "--pathfinder_port",
-    type=int,
-    default=8080,
-    dest="pathfinder_port",
-    help="Port New Scale Pathfinder's server is on. Default: 8080",
-)
-parser.add_argument(
-    "-s",
-    "--serial",
-    type=str,
-    default="no-e-stop",
-    dest="serial",
-    nargs="?",
-    help="Emergency stop serial port (i.e. COM3). Default: disables emergency stop",
-)
-parser.add_argument(
-    "-v",
-    "--version",
-    action="version",
-    version=f"Electrophysiology Manipulator Link v{__version__}",
-    help="Print version and exit",
-)
-
 # Is the server running
 is_running = False
-
-# Setup Arduino serial port
-poll_rate = 0.05
-kill_serial_event = Event()
-poll_serial_thread: Thread
-
-
-def poll_serial(kill_event: Event, serial_port: str) -> None:
-    """Continuously poll serial port for data
-
-    :param kill_event: Event to stop polling
-    :type kill_event: Event
-    :param serial_port: The serial port to poll
-    :type serial_port: str
-    :return: None
-    """
-    target_port = serial_port
-    if serial_port is None:
-        # Search for serial ports
-        for port, desc, _ in comports():
-            if "Arduino" in desc or "USB Serial Device" in desc:
-                target_port = port
-                break
-    elif serial_port == "no-e-stop":
-        # Stop polling if no-e-stop is specified
-        return None
-
-    ser = Serial(target_port, 9600, timeout=poll_rate)
-    while not kill_event.is_set():
-        if ser.in_waiting > 0:
-            ser.readline()
-            # Cause a break
-            com.dprint("[EMERGENCY STOP]\t\t Stopping all manipulators")
-            platform.stop()
-            ser.reset_input_buffer()
-        time.sleep(poll_rate)
-    print("Close poll")
-    ser.close()
-
 
 # Handle connection events
 
@@ -185,7 +88,7 @@ async def get_version(_) -> str:
     :return: Version number as defined in __version__
     :rtype: str
     """
-    return __version__
+    return metadata.version("ephys_link")
 
 
 @sio.event
@@ -479,21 +382,21 @@ def launch_server(platform_type: str, server_port: int, pathfinder_port: int) ->
     global platform
     if platform_type == "sensapex":
         platform = importlib.import_module(
-            "platforms.sensapex_handler"
+            "ephys_link.platforms.sensapex_handler"
         ).SensapexHandler()
     elif platform_type == "new_scale":
         platform = importlib.import_module(
-            "platforms.new_scale_handler"
+            "ephys_link.platforms.new_scale_handler"
         ).NewScaleHandler()
     elif platform_type == "new_scale_pathfinder":
         platform = importlib.import_module(
-            "platforms.new_scale_pathfinder_handler"
+            "ephys_link.platforms.new_scale_pathfinder_handler"
         ).NewScalePathfinderHandler(pathfinder_port)
     else:
         exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 
     # Preamble
-    print(f"=== Ephys Link v{__version__} ===")
+    print(f"=== Ephys Link v{metadata.version('ephys_link')} ===")
 
     # List available manipulators
     print("Available Manipulators:")
@@ -516,46 +419,3 @@ def close_server(_, __) -> None:
 
     # Exit
     raise GracefulExit()
-
-
-def close_serial(_, __) -> None:
-    """Close the serial connection"""
-    print("[INFO]\t\t Closing serial")
-    kill_serial_event.set()
-    poll_serial_thread.join()
-
-
-def start() -> None:
-    """Starts everything"""
-
-    # Parse arguments
-    args = parser.parse_args()
-    com.set_debug(args.debug)
-
-    if args.serial != "no-e-stop":
-        # Register serial exit
-        signal.signal(signal.SIGTERM, close_serial)
-        signal.signal(signal.SIGINT, close_serial)
-
-        # Start emergency stop system if serial is provided
-        global poll_serial_thread
-        poll_serial_thread = Thread(
-            target=poll_serial,
-            args=(
-                kill_serial_event,
-                args.serial,
-            ),
-            daemon=True,
-        )
-        poll_serial_thread.start()
-
-    # Register server exit
-    signal.signal(signal.SIGTERM, close_server)
-    signal.signal(signal.SIGINT, close_server)
-
-    # Launch with parsed arguments on main thread
-    launch_server(args.type, args.port, args.pathfinder_port)
-
-
-if __name__ == "__main__":
-    start()

@@ -14,10 +14,10 @@ server receives an event from a client. In general, each function does the follo
 
 from abc import ABC, abstractmethod
 
-import common as com
-
 # noinspection PyPackageRequirements
 import socketio
+
+from ephys_link import common as com
 
 
 class PlatformHandler(ABC):

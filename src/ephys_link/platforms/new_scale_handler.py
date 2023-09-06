@@ -28,7 +28,7 @@ class NewScaleHandler(PlatformHandler):
 
         # Load New Scale API
         # noinspection PyUnresolvedReferences
-        clr.AddReference("../resources/NstMotorCtrl")
+        clr.AddReference("ephys_link/resources/NstMotorCtrl")
         # noinspection PyUnresolvedReferences
         from NstMotorCtrl import NstCtrlHostIntf
 
