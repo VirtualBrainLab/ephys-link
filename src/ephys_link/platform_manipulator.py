@@ -4,7 +4,6 @@ Most functionality will be implemented on the platform handler side. This is mos
 for enforcing implementation of the stop method and hold common properties.
 """
 from abc import ABC, abstractmethod
-from collections import deque
 
 
 class PlatformManipulator(ABC):
@@ -18,7 +17,7 @@ class PlatformManipulator(ABC):
         self._inside_brain = False
         self._can_write = False
         self._reset_timer = None
-        self._move_queue = deque()
+        self._is_moving = False
 
     @abstractmethod
     def stop(self) -> None:

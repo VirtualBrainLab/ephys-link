@@ -57,7 +57,7 @@ class NewScaleHandler(PlatformHandler):
         # Register manipulator
         first_axis_index = int(manipulator_id) * 3
         self.manipulators[manipulator_id] = importlib.import_module(
-            "new_scale_manipulator"
+            "ephys_link.platforms.new_scale_manipulator"
         ).NewScaleManipulator(
             manipulator_id,
             self.ctrl.GetAxis(first_axis_index),

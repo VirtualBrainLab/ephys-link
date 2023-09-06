@@ -100,20 +100,22 @@ class NewScaleManipulator(PlatformManipulator):
         # Convert position to µm
         position_um = [axis * 1000 for axis in position]
 
-        # Add movement to queue
-        self._move_queue.appendleft(asyncio.Event())
-
-        # Wait for preceding movement to finish
-        if len(self._move_queue) > 1:
-            await self._move_queue[1].wait()
+        # Stop current movement
+        if self._is_moving:
+            for axis in self._axes:
+                axis.Stop()
+            self._is_moving = False
 
         try:
             target_position = position_um
 
-            # Alter target position if inside brain
+            # Restrict target position to just z-axis if inside brain
             if self._inside_brain:
                 target_position = self.get_pos()["position"]
                 target_position[2] = position_um[2]
+
+            # Mark movement as started
+            self._is_moving = True
 
             # Send move command
             for i in range(3):
@@ -135,8 +137,8 @@ class NewScaleManipulator(PlatformManipulator):
             # Get position
             manipulator_final_position = self.get_pos()["position"]
 
-            # Remove event from queue and mark as completed
-            self._move_queue.pop().set()
+            # Mark movement as finished
+            self._is_moving = False
 
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
@@ -165,15 +167,17 @@ class NewScaleManipulator(PlatformManipulator):
             print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
             return com.DriveToDepthOutputData(0, "Manipulator movement canceled")
 
-        # Add movement to queue
-        self._move_queue.appendleft(asyncio.Event())
-
-        # Wait for preceding movement to finish
-        if len(self._move_queue) > 1:
-            await self._move_queue[1].wait()
+        # Stop current movement
+        if self._is_moving:
+            for axis in self._axes:
+                axis.Stop()
+            self._is_moving = False
 
         try:
             target_depth = depth * 1000
+
+            # Mark movement as started
+            self._is_moving = True
 
             # Send move command to just z axis
             self._z.SetCL_Speed(speed, speed * ACCELERATION_MULTIPLIER, 0.005 * speed)
@@ -188,8 +192,8 @@ class NewScaleManipulator(PlatformManipulator):
             # Get position
             manipulator_final_position = self.get_pos()["position"]
 
-            # Remove event from queue and mark as completed
-            self._move_queue.pop().set()
+            # Mark movement as finished
+            self._is_moving = False
 
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
@@ -284,8 +288,6 @@ class NewScaleManipulator(PlatformManipulator):
 
         :returns None
         """
-        while self._move_queue:
-            self._move_queue.pop().set()
         for axis in self._axes:
             axis.Stop()
         self._can_write = False
