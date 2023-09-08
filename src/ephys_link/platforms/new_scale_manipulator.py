@@ -78,7 +78,7 @@ class NewScaleManipulator(PlatformManipulator):
                 self._z.CurPosition / MM_TO_UM,
                 self._z.CurPosition / MM_TO_UM,
             ]
-            com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
+            # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")

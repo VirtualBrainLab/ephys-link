@@ -47,7 +47,7 @@ class SensapexManipulator(PlatformManipulator):
         """
         try:
             position = [axis / MM_TO_UM for axis in self._device.get_pos(1)]
-            com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
+            # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
