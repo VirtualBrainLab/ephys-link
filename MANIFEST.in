@@ -1,8 +1,1 @@
-graft ephys_link
-graft scripts
-graft tests
-
-include libum.dll
-include CP210xManufacturing.dll
-include NstMotorCtrl.dll
-include SiUSBXp.dll
+graft src
