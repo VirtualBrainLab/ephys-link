@@ -16,7 +16,6 @@ from abc import ABC, abstractmethod
 
 # noinspection PyPackageRequirements
 import socketio
-
 from ephys_link import common as com
 
 
@@ -147,8 +146,12 @@ class PlatformHandler(ABC):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
                 return com.PositionalOutputData([], "Manipulator not calibrated")
 
-            # Get position
-            return self._get_pos(manipulator_id)
+            # Get position and convert to unified space
+            manipulator_pos = self._get_pos(manipulator_id)
+            return com.PositionalOutputData(
+                self._platform_space_to_unified_space(manipulator_pos["position"]),
+                manipulator_pos["error"],
+            )
 
         except KeyError:
             # Manipulator not found in registered manipulators
@@ -207,7 +210,14 @@ class PlatformHandler(ABC):
                 print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
                 return com.PositionalOutputData([], "Cannot write to manipulator")
 
-            return await self._goto_pos(manipulator_id, position, speed)
+            # Convert position to platform space, move, and convert end position back to unified space
+            end_position = await self._goto_pos(
+                manipulator_id, self._unified_space_to_platform_space(position), speed
+            )
+            return com.PositionalOutputData(
+                self._platform_space_to_unified_space(end_position["position"]),
+                end_position["error"],
+            )
 
         except KeyError:
             # Manipulator not found in registered manipulators
@@ -240,7 +250,15 @@ class PlatformHandler(ABC):
                 print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
                 return com.DriveToDepthOutputData(0, "Cannot write to manipulator")
 
-            return await self._drive_to_depth(manipulator_id, depth, speed)
+            end_depth = await self._drive_to_depth(
+                manipulator_id,
+                self._unified_space_to_platform_space([0, 0, 0, depth])[3],
+                speed,
+            )
+            return com.DriveToDepthOutputData(
+                self._platform_space_to_unified_space([0, 0, 0, end_depth["depth"]])[3],
+                end_depth["error"],
+            )
 
         except KeyError:
             # Manipulator not found in registered manipulators
@@ -518,5 +536,27 @@ class PlatformHandler(ABC):
         :type sio: :class:`socketio.AsyncServer`
         :return: Callback parameters (manipulator ID, can_write, error message)
         :rtype: :class:`ephys_link.common.StateOutputData`
+        """
+        pass
+
+    @abstractmethod
+    def _platform_space_to_unified_space(self, position: list[float]) -> list[float]:
+        """Convert position in platform space to position in unified manipulator space
+
+        :param position: Position in platform space (x, y, z, w) in mm
+        :type position: list[float]
+        :return: Position in unified manipulator space (x, y, z, w) in mm
+        :rtype: list[float]
+        """
+        pass
+
+    @abstractmethod
+    def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
+        """Convert position in unified manipulator space to position in platform space
+
+        :param position: Position in unified manipulator space (x, y, z, w) in mm
+        :type position: list[float]
+        :return: Position in platform space (x, y, z, w) in mm
+        :rtype: list[float]
         """
         pass
