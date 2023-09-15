@@ -28,7 +28,8 @@ class PlatformHandler(ABC):
         # Registered manipulators are stored as a dictionary of IDs (string) to
         # manipulator objects
         self.manipulators = {}
-        self.type = "sensapex"  # Remove this after #165
+        self.type = "sensapex"
+        self.dimensions = [20, 20, 20, 20]
 
     # Platform Handler Methods
 
@@ -395,7 +396,6 @@ class PlatformHandler(ABC):
         :return: List of manipulator IDs
         :rtype: list
         """
-        pass
 
     @abstractmethod
     def _register_manipulator(self, manipulator_id: str) -> None:
@@ -405,7 +405,6 @@ class PlatformHandler(ABC):
         :type manipulator_id: str
         :return: None
         """
-        pass
 
     @abstractmethod
     def _unregister_manipulator(self, manipulator_id: str) -> None:
@@ -415,7 +414,6 @@ class PlatformHandler(ABC):
         :type manipulator_id: str
         :return: None
         """
-        pass
 
     @abstractmethod
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
@@ -427,7 +425,6 @@ class PlatformHandler(ABC):
             empty array on error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        pass
 
     @abstractmethod
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
@@ -439,7 +436,6 @@ class PlatformHandler(ABC):
             empty array on error) in degrees, error message)
         :rtype: :class:`ephys_link.common.AngularOutputData`
         """
-        pass
 
     @abstractmethod
     async def _goto_pos(
@@ -457,7 +453,6 @@ class PlatformHandler(ABC):
                  empty array on error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        pass
 
     @abstractmethod
     async def _drive_to_depth(
@@ -475,7 +470,6 @@ class PlatformHandler(ABC):
                  message)
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
-        pass
 
     @abstractmethod
     def _set_inside_brain(
@@ -490,7 +484,6 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, inside, error message)
         :rtype: :class:`ephys_link.common.StateOutputData`
         """
-        pass
 
     @abstractmethod
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
@@ -503,7 +496,6 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, error message)
         :rtype: str
         """
-        pass
 
     @abstractmethod
     def _bypass_calibration(self, manipulator_id: str) -> str:
@@ -514,7 +506,6 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, error message)
         :rtype: str
         """
-        pass
 
     @abstractmethod
     def _set_can_write(
@@ -537,7 +528,6 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, can_write, error message)
         :rtype: :class:`ephys_link.common.StateOutputData`
         """
-        pass
 
     @abstractmethod
     def _platform_space_to_unified_space(self, position: list[float]) -> list[float]:
@@ -548,7 +538,6 @@ class PlatformHandler(ABC):
         :return: Position in unified manipulator space (x, y, z, w) in mm
         :rtype: list[float]
         """
-        pass
 
     @abstractmethod
     def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
@@ -559,4 +548,3 @@ class PlatformHandler(ABC):
         :return: Position in platform space (x, y, z, w) in mm
         :rtype: list[float]
         """
-        pass

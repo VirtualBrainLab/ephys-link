@@ -9,7 +9,6 @@ import importlib
 
 # noinspection PyPackageRequirements
 import clr
-
 # noinspection PyPackageRequirements
 import socketio
 
@@ -25,6 +24,7 @@ class NewScaleHandler(PlatformHandler):
         super().__init__()
 
         self.type = "new_scale"
+        self.dimensions = [15, 15, 15, 15]
 
         # Load New Scale API
         # noinspection PyUnresolvedReferences
@@ -120,3 +120,14 @@ class NewScaleHandler(PlatformHandler):
             f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n"
         )
         return com.StateOutputData(can_write, "")
+
+    def _platform_space_to_unified_space(self, position: list[float]) -> list[float]:
+        return [
+            position[0],
+            position[1],
+            self.dimensions[2] - position[2],
+            self.dimensions[3] - position[3],
+        ]
+
+    def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
+        pass
