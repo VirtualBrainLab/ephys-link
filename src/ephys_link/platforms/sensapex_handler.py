@@ -124,3 +124,17 @@ class SensapexHandler(PlatformHandler):
             f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n"
         )
         return com.StateOutputData(can_write, "")
+
+    def _platform_space_to_unified_space(self, position: list[float]) -> list[float]:
+        # +x -> +z
+        # +y -> +x
+        # +z -> -y
+        # +d -> +d
+        return [position[2], position[0], -position[1], position[3]]
+
+    def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
+        # +x -> +y
+        # +y -> -z
+        # +z -> +x
+        # +d -> +d
+        return [position[1], -position[2], position[0], position[3]]
