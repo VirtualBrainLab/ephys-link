@@ -45,7 +45,13 @@ class SensapexHandler(PlatformHandler):
         del self.manipulators[manipulator_id]
 
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
-        return self.manipulators[manipulator_id].get_pos()
+        positional_data = self.manipulators[manipulator_id].get_pos()
+        if positional_data["error"] != "":
+            return positional_data
+        return com.PositionalOutputData(
+            self._platform_space_to_unified_space(positional_data["position"]),
+            positional_data["error"],
+        )
 
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
         raise NotImplementedError
@@ -53,12 +59,16 @@ class SensapexHandler(PlatformHandler):
     async def _goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
-        return await self.manipulators[manipulator_id].goto_pos(position, speed)
+        return await self.manipulators[manipulator_id].goto_pos(
+            self._unified_space_to_platform_space(position), speed
+        )
 
     async def _drive_to_depth(
         self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
-        return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
+        return await self.manipulators[manipulator_id].drive_to_depth(
+            self._unified_space_to_platform_space([0, 0, 0, depth])[3], speed
+        )
 
     def _set_inside_brain(
         self, manipulator_id: str, inside: bool

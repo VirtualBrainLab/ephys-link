@@ -69,8 +69,8 @@ class SensapexManipulator(PlatformManipulator):
         """
         # Check if able to write
         if not self._can_write:
-            print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
-            return com.PositionalOutputData([], "Manipulator " "movement canceled")
+            print(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
+            return com.PositionalOutputData([], "Manipulator movement canceled")
 
         # Stop current movement
         if self._is_moving:
