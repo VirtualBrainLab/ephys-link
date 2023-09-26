@@ -130,11 +130,11 @@ class SensapexHandler(PlatformHandler):
         # +y -> +x
         # +z -> -y
         # +d -> +d
-        return [position[2], position[0], -position[1], position[3]]
+        return [position[2], position[0], self.dimensions[1]-position[1], position[3]]
 
     def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
         # +x -> +y
         # +y -> -z
         # +z -> +x
         # +d -> +d
-        return [position[1], -position[2], position[0], position[3]]
+        return [position[1], self.dimensions[1]-position[2], position[0], position[3]]
