@@ -126,15 +126,29 @@ class SensapexHandler(PlatformHandler):
         return com.StateOutputData(can_write, "")
 
     def _platform_space_to_unified_space(self, position: list[float]) -> list[float]:
-        # +x -> +z
-        # +y -> +x
-        # +z -> -y
-        # +d -> +d
-        return [position[2], position[0], self.dimensions[1]-position[1], position[3]]
+        # unified   <-  platform
+        # +x        <-  +y
+        # +y        <-  -z
+        # +z        <-  +x
+        # +d        <-  +d
+
+        return [
+            position[1],
+            self.dimensions[1] - position[2],
+            position[0],
+            position[3],
+        ]
 
     def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
-        # +x -> +y
-        # +y -> -z
-        # +z -> +x
-        # +d -> +d
-        return [position[1], self.dimensions[1]-position[2], position[0], position[3]]
+        # platform  <-  unified
+        # +x        <-  +z
+        # +y        <-  +x
+        # +z        <-  -y
+        # +d        <-  +d
+
+        return [
+            position[2],
+            position[0],
+            self.dimensions[1] - position[1],
+            position[3],
+        ]

@@ -122,12 +122,29 @@ class NewScaleHandler(PlatformHandler):
         return com.StateOutputData(can_write, "")
 
     def _platform_space_to_unified_space(self, position: list[float]) -> list[float]:
+        # unified   <-  platform
+        # -x        <-  -x
+        # +y        <-  +z
+        # +z        <-  +y
+        # +d        <-  -d
+
         return [
-            position[0],
+            self.dimensions[0] - position[0],
+            position[2],
             position[1],
-            self.dimensions[2] - position[2],
             self.dimensions[3] - position[3],
         ]
 
     def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
-        pass
+        # platform  <-  unified
+        # +x        <-  -x
+        # +y        <-  +z
+        # +z        <-  +y
+        # +d        <-  -d
+
+        return [
+            self.dimensions[0] - position[0],
+            position[2],
+            position[1],
+            self.dimensions[3] - position[3],
+        ]
