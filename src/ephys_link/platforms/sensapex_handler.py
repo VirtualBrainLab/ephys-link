@@ -45,13 +45,7 @@ class SensapexHandler(PlatformHandler):
         del self.manipulators[manipulator_id]
 
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
-        positional_data = self.manipulators[manipulator_id].get_pos()
-        if positional_data["error"] != "":
-            return positional_data
-        return com.PositionalOutputData(
-            self._platform_space_to_unified_space(positional_data["position"]),
-            positional_data["error"],
-        )
+        return self.manipulators[manipulator_id].get_pos()
 
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
         raise NotImplementedError
@@ -59,16 +53,12 @@ class SensapexHandler(PlatformHandler):
     async def _goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
-        return await self.manipulators[manipulator_id].goto_pos(
-            self._unified_space_to_platform_space(position), speed
-        )
+        return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
     async def _drive_to_depth(
         self, manipulator_id: str, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
-        return await self.manipulators[manipulator_id].drive_to_depth(
-            self._unified_space_to_platform_space([0, 0, 0, depth])[3], speed
-        )
+        return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
 
     def _set_inside_brain(
         self, manipulator_id: str, inside: bool
@@ -135,7 +125,9 @@ class SensapexHandler(PlatformHandler):
         )
         return com.StateOutputData(can_write, "")
 
-    def _platform_space_to_unified_space(self, position: list[float]) -> list[float]:
+    def _platform_space_to_unified_space(
+        self, platform_position: list[float]
+    ) -> list[float]:
         # unified   <-  platform
         # +x        <-  +y
         # +y        <-  -z
@@ -143,13 +135,15 @@ class SensapexHandler(PlatformHandler):
         # +d        <-  +d
 
         return [
-            position[1],
-            self.dimensions[1] - position[2],
-            position[0],
-            position[3],
+            platform_position[1],
+            self.dimensions[2] - platform_position[2],
+            platform_position[0],
+            platform_position[3],
         ]
 
-    def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
+    def _unified_space_to_platform_space(
+        self, unified_position: list[float]
+    ) -> list[float]:
         # platform  <-  unified
         # +x        <-  +z
         # +y        <-  +x
@@ -157,8 +151,8 @@ class SensapexHandler(PlatformHandler):
         # +d        <-  +d
 
         return [
-            position[2],
-            position[0],
-            self.dimensions[1] - position[1],
-            position[3],
+            unified_position[2],
+            unified_position[0],
+            self.dimensions[2] - unified_position[1],
+            unified_position[3],
         ]

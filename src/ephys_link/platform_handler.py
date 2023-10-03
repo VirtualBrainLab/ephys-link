@@ -30,6 +30,8 @@ class PlatformHandler(ABC):
         # manipulator objects
         self.manipulators = {}
         self.type = "sensapex"
+
+        # Platform axes dimensions in mm
         self.dimensions = [20, 20, 20, 20]
 
     # Platform Handler Methods
@@ -150,9 +152,10 @@ class PlatformHandler(ABC):
 
             # Get position and convert to unified space
             manipulator_pos = self._get_pos(manipulator_id)
+            if manipulator_pos["error"] != "":
+                return manipulator_pos
             return com.PositionalOutputData(
-                self._platform_space_to_unified_space(manipulator_pos["position"]),
-                manipulator_pos["error"],
+                self._platform_space_to_unified_space(manipulator_pos["position"]), ""
             )
 
         except KeyError:
@@ -216,9 +219,10 @@ class PlatformHandler(ABC):
             end_position = await self._goto_pos(
                 manipulator_id, self._unified_space_to_platform_space(position), speed
             )
+            if end_position["error"] != "":
+                return end_position
             return com.PositionalOutputData(
-                self._platform_space_to_unified_space(end_position["position"]),
-                end_position["error"],
+                self._platform_space_to_unified_space(end_position["position"]), ""
             )
 
         except KeyError:
@@ -257,9 +261,11 @@ class PlatformHandler(ABC):
                 self._unified_space_to_platform_space([0, 0, 0, depth])[3],
                 speed,
             )
+            if end_depth["error"] != "":
+                return end_depth
             return com.DriveToDepthOutputData(
                 self._platform_space_to_unified_space([0, 0, 0, end_depth["depth"]])[3],
-                end_depth["error"],
+                "",
             )
 
         except KeyError:
@@ -531,21 +537,25 @@ class PlatformHandler(ABC):
         """
 
     @abstractmethod
-    def _platform_space_to_unified_space(self, position: list[float]) -> list[float]:
+    def _platform_space_to_unified_space(
+        self, platform_position: list[float]
+    ) -> list[float]:
         """Convert position in platform space to position in unified manipulator space
 
-        :param position: Position in platform space (x, y, z, w) in mm
-        :type position: list[float]
+        :param platform_position: Position in platform space (x, y, z, w) in mm
+        :type platform_position: list[float]
         :return: Position in unified manipulator space (x, y, z, w) in mm
         :rtype: list[float]
         """
 
     @abstractmethod
-    def _unified_space_to_platform_space(self, position: list[float]) -> list[float]:
+    def _unified_space_to_platform_space(
+        self, unified_position: list[float]
+    ) -> list[float]:
         """Convert position in unified manipulator space to position in platform space
 
-        :param position: Position in unified manipulator space (x, y, z, w) in mm
-        :type position: list[float]
+        :param unified_position: Position in unified manipulator space (x, y, z, w) in mm
+        :type unified_position: list[float]
         :return: Position in platform space (x, y, z, w) in mm
         :rtype: list[float]
         """
