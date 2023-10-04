@@ -10,6 +10,7 @@ import threading
 
 # noinspection PyPackageRequirements
 import socketio
+
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlAxis
 
@@ -50,9 +51,6 @@ class NewScaleManipulator(PlatformManipulator):
         self._z = z_axis
         self._axes = [self._x, self._y, self._z]
 
-        # Virtual 4th axis (depth) value in mm
-        self._depth = 7.5
-
         # Set to CL control
         self._x.SetCL_Enable(True)
         self._y.SetCL_Enable(True)
@@ -72,13 +70,13 @@ class NewScaleManipulator(PlatformManipulator):
         """
         self.query_all_axes()
 
-        # Get position data, convert from µm to mm, tack on virtual depth axis for reference
+        # Get position data and convert from µm to mm
         try:
             position = [
                 self._x.CurPosition / MM_TO_UM,
                 self._y.CurPosition / MM_TO_UM,
                 self._z.CurPosition / MM_TO_UM,
-                self._depth,
+                self._z.CurPosition / MM_TO_UM,
             ]
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
@@ -114,10 +112,7 @@ class NewScaleManipulator(PlatformManipulator):
         try:
             target_position_um = [axis * MM_TO_UM for axis in position]
 
-            # Combine virtual depth axis into Z axis
-            target_position_um[2] -= target_position_um[3]
-
-            # Restrict target position to just z-axis and d-axis if inside brain
+            # Restrict target position to just z-axis if inside brain
             if self._inside_brain:
                 z_axis = target_position_um[2]
                 target_position_um = self.get_pos()["position"]
@@ -152,9 +147,6 @@ class NewScaleManipulator(PlatformManipulator):
             # Mark movement as finished
             self._is_moving = False
 
-            # Update virtual depth axis
-            self._depth = position[3]
-
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
                 f" {manipulator_final_position}\n"
@@ -188,12 +180,9 @@ class NewScaleManipulator(PlatformManipulator):
                 axis.Stop()
             self._is_moving = False
 
-        # Compute final position
-        movement_delta = depth - self._depth
-        self._z.QueryPosStatus()
-        target_depth_um = self._z.CurPosition - movement_delta * MM_TO_UM
-
         try:
+            target_depth_um = depth * MM_TO_UM
+
             # Mark movement as started
             self._is_moving = True
 
@@ -217,9 +206,6 @@ class NewScaleManipulator(PlatformManipulator):
 
             # Mark movement as finished
             self._is_moving = False
-
-            # Update virtual depth axis
-            self._depth = depth
 
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
