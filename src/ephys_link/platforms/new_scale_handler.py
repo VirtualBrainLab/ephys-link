@@ -124,7 +124,7 @@ class NewScaleHandler(PlatformHandler):
 
     def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
         # unified   <-  platform
-        # -x        <-  -x
+        # +x        <-  -x
         # +y        <-  +z
         # +z        <-  +y
         # +d        <-  -d
