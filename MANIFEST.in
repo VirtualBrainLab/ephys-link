@@ -1,1 +1,1 @@
-graft src
+global-exclude */__pycache__/* */ephys_link.egg-info/*
