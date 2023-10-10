@@ -72,8 +72,8 @@ class GetManipulatorsOutputData(dict):
     :type manipulators: list
     :param num_axes: Number of axes this manipulator has
     :type num_axes: int
-    :param dimension: Size of the movement space in mm (should have the same length as num_axes)
-    :type dimension: list
+    :param dimensions: Size of the movement space in mm (should have the same length as num_axes)
+    :type dimensions: list
     :param error: Error message
     :type error: str
 
@@ -81,10 +81,10 @@ class GetManipulatorsOutputData(dict):
         :code:`{"manipulators": ["1", "2"], "error": ""}`
     """
 
-    def __init__(self, manipulators: list, num_axes: int, dimension: list, error: str) -> None:
+    def __init__(self, manipulators: list, num_axes: int, dimensions: list, error: str) -> None:
         """Constructor"""
         super(GetManipulatorsOutputData, self).__init__(
-            manipulators=manipulators, num_axes=num_axes, dimension=dimension, error=error
+            manipulators=manipulators, num_axes=num_axes, dimensions=dimensions, error=error
         )
 
 
