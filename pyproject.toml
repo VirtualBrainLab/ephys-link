@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ephys-link"
-version = "0.9.14"
+version = "0.9.15"
 license = { file = "LICENSE" }
 
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
@@ -24,7 +24,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
 
-requires-python = ">=3.8"
+requires-python = ">=3.8, <3.12"
 dependencies = [
     "aiohttp==3.8.6",
     "pyserial==3.5",

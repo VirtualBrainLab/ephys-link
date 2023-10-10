@@ -29,7 +29,10 @@ class PlatformHandler(ABC):
         # Registered manipulators are stored as a dictionary of IDs (string) to
         # manipulator objects
         self.manipulators = {}
-        self.type = "sensapex"  # Remove this after #165
+        self.num_axes = 4
+
+        # Platform axes dimensions in mm
+        self.dimensions = [20, 20, 20, 20]
 
     # Platform Handler Methods
 
@@ -73,7 +76,9 @@ class PlatformHandler(ABC):
         except Exception as e:
             print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
         finally:
-            return com.GetManipulatorsOutputData(devices, self.type, error)
+            return com.GetManipulatorsOutputData(
+                devices, self.num_axes, self.dimensions, error
+            )
 
     def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator
@@ -147,8 +152,13 @@ class PlatformHandler(ABC):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
                 return com.PositionalOutputData([], "Manipulator not calibrated")
 
-            # Get position
-            return self._get_pos(manipulator_id)
+            # Get position and convert to unified space
+            manipulator_pos = self._get_pos(manipulator_id)
+            if manipulator_pos["error"] != "":
+                return manipulator_pos
+            return com.PositionalOutputData(
+                self._platform_space_to_unified_space(manipulator_pos["position"]), ""
+            )
 
         except KeyError:
             # Manipulator not found in registered manipulators
@@ -207,7 +217,16 @@ class PlatformHandler(ABC):
                 print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
                 return com.PositionalOutputData([], "Cannot write to manipulator")
 
-            return await self._goto_pos(manipulator_id, position, speed)
+            # Convert position to platform space, move, and convert final position back to
+            # unified space
+            end_position = await self._goto_pos(
+                manipulator_id, self._unified_space_to_platform_space(position), speed
+            )
+            if end_position["error"] != "":
+                return end_position
+            return com.PositionalOutputData(
+                self._platform_space_to_unified_space(end_position["position"]), ""
+            )
 
         except KeyError:
             # Manipulator not found in registered manipulators
@@ -240,7 +259,17 @@ class PlatformHandler(ABC):
                 print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
                 return com.DriveToDepthOutputData(0, "Cannot write to manipulator")
 
-            return await self._drive_to_depth(manipulator_id, depth, speed)
+            end_depth = await self._drive_to_depth(
+                manipulator_id,
+                self._unified_space_to_platform_space([0, 0, 0, depth])[3],
+                speed,
+            )
+            if end_depth["error"] != "":
+                return end_depth
+            return com.DriveToDepthOutputData(
+                self._platform_space_to_unified_space([0, 0, 0, end_depth["depth"]])[3],
+                "",
+            )
 
         except KeyError:
             # Manipulator not found in registered manipulators
@@ -377,7 +406,6 @@ class PlatformHandler(ABC):
         :return: List of manipulator IDs
         :rtype: list
         """
-        pass
 
     @abstractmethod
     def _register_manipulator(self, manipulator_id: str) -> None:
@@ -387,7 +415,6 @@ class PlatformHandler(ABC):
         :type manipulator_id: str
         :return: None
         """
-        pass
 
     @abstractmethod
     def _unregister_manipulator(self, manipulator_id: str) -> None:
@@ -397,7 +424,6 @@ class PlatformHandler(ABC):
         :type manipulator_id: str
         :return: None
         """
-        pass
 
     @abstractmethod
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
@@ -409,7 +435,6 @@ class PlatformHandler(ABC):
             empty array on error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        pass
 
     @abstractmethod
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
@@ -421,7 +446,6 @@ class PlatformHandler(ABC):
             empty array on error) in degrees, error message)
         :rtype: :class:`ephys_link.common.AngularOutputData`
         """
-        pass
 
     @abstractmethod
     async def _goto_pos(
@@ -439,7 +463,6 @@ class PlatformHandler(ABC):
                  empty array on error) in mm, error message)
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
-        pass
 
     @abstractmethod
     async def _drive_to_depth(
@@ -457,7 +480,6 @@ class PlatformHandler(ABC):
                  message)
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
-        pass
 
     @abstractmethod
     def _set_inside_brain(
@@ -472,7 +494,6 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, inside, error message)
         :rtype: :class:`ephys_link.common.StateOutputData`
         """
-        pass
 
     @abstractmethod
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
@@ -485,7 +506,6 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, error message)
         :rtype: str
         """
-        pass
 
     @abstractmethod
     def _bypass_calibration(self, manipulator_id: str) -> str:
@@ -496,7 +516,6 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, error message)
         :rtype: str
         """
-        pass
 
     @abstractmethod
     def _set_can_write(
@@ -519,4 +538,27 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, can_write, error message)
         :rtype: :class:`ephys_link.common.StateOutputData`
         """
-        pass
+
+    @abstractmethod
+    def _platform_space_to_unified_space(
+        self, platform_position: list[float]
+    ) -> list[float]:
+        """Convert position in platform space to position in unified manipulator space
+
+        :param platform_position: Position in platform space (x, y, z, w) in mm
+        :type platform_position: list[float]
+        :return: Position in unified manipulator space (x, y, z, w) in mm
+        :rtype: list[float]
+        """
+
+    @abstractmethod
+    def _unified_space_to_platform_space(
+        self, unified_position: list[float]
+    ) -> list[float]:
+        """Convert position in unified manipulator space to position in platform space
+
+        :param unified_position: Position in unified manipulator space (x, y, z, w) in mm
+        :type unified_position: list[float]
+        :return: Position in platform space (x, y, z, w) in mm
+        :rtype: list[float]
+        """
