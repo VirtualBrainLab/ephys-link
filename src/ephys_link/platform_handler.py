@@ -76,7 +76,9 @@ class PlatformHandler(ABC):
         except Exception as e:
             print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
         finally:
-            return com.GetManipulatorsOutputData(devices, self.num_axes, self.dimensions, error)
+            return com.GetManipulatorsOutputData(
+                devices, self.num_axes, self.dimensions, error
+            )
 
     def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator

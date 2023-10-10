@@ -81,10 +81,15 @@ class GetManipulatorsOutputData(dict):
         :code:`{"manipulators": ["1", "2"], "error": ""}`
     """
 
-    def __init__(self, manipulators: list, num_axes: int, dimensions: list, error: str) -> None:
+    def __init__(
+        self, manipulators: list, num_axes: int, dimensions: list, error: str
+    ) -> None:
         """Constructor"""
         super(GetManipulatorsOutputData, self).__init__(
-            manipulators=manipulators, num_axes=num_axes, dimensions=dimensions, error=error
+            manipulators=manipulators,
+            num_axes=num_axes,
+            dimensions=dimensions,
+            error=error,
         )
 
 

@@ -71,7 +71,7 @@ class NewScalePathfinderHandler(PlatformHandler):
         """
         super().__init__()
 
-        self.type = "new_scale_pathfinder"
+        self.num_axes = -1
 
         self.port = port
 
@@ -218,4 +218,14 @@ class NewScalePathfinderHandler(PlatformHandler):
         hours: float,
         sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
+        pass
+
+    def _unified_space_to_platform_space(
+        self, unified_position: list[float]
+    ) -> list[float]:
+        pass
+
+    def _platform_space_to_unified_space(
+        self, platform_position: list[float]
+    ) -> list[float]:
         pass
