@@ -217,7 +217,8 @@ class PlatformHandler(ABC):
                 print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
                 return com.PositionalOutputData([], "Cannot write to manipulator")
 
-            # Convert position to platform space, move, and convert end position back to unified space
+            # Convert position to platform space, move, and convert final position back to
+            # unified space
             end_position = await self._goto_pos(
                 manipulator_id, self._unified_space_to_platform_space(position), speed
             )
