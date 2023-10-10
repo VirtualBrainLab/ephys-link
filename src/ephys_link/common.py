@@ -72,7 +72,7 @@ class GetManipulatorsOutputData(dict):
     :type manipulators: list
     :param num_axes: Number of axes this manipulator has
     :type num_axes: int
-    :param dimensions: Size of the movement space in mm (should have the same length as num_axes)
+    :param dimensions: Size of the movement space in mm (first 3 axes)
     :type dimensions: list
     :param error: Error message
     :type error: str
