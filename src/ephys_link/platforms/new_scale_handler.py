@@ -24,8 +24,8 @@ class NewScaleHandler(PlatformHandler):
         """Initialize New Scale handler"""
         super().__init__()
 
-        self.type = "new_scale"
-        self.dimensions = [15, 15, 15, 15]
+        self.num_axes = 3
+        self.dimensions = [15, 15, 15]
 
         # Load New Scale API
         # noinspection PyUnresolvedReferences
