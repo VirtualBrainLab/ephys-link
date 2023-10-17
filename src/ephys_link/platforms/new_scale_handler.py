@@ -135,7 +135,7 @@ class NewScaleHandler(PlatformHandler):
             self.dimensions[0] - platform_position[0],
             platform_position[2],
             platform_position[1],
-            self.dimensions[3] - platform_position[3],
+            self.dimensions[2] - platform_position[3],
         ]
 
     def _unified_space_to_platform_space(
@@ -151,5 +151,5 @@ class NewScaleHandler(PlatformHandler):
             self.dimensions[0] - unified_position[0],
             unified_position[2],
             unified_position[1],
-            self.dimensions[3] - unified_position[3],
+            self.dimensions[2] - unified_position[3],
         ]
