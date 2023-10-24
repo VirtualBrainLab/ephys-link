@@ -100,8 +100,8 @@ class NewScaleManipulator(PlatformManipulator):
         """
         # Check if able to write
         if not self._can_write:
-            print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
-            return com.PositionalOutputData([], "Manipulator " "movement canceled")
+            print(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
+            return com.PositionalOutputData([], "Manipulator movement canceled")
 
         # Stop current movement
         if self._is_moving:
@@ -146,6 +146,10 @@ class NewScaleManipulator(PlatformManipulator):
 
             # Mark movement as finished
             self._is_moving = False
+
+            # Return success unless write was disabled during movement (meaning a stop occurred)
+            if not self._can_write:
+                return com.PositionalOutputData([], "Manipulator movement canceled")
 
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
@@ -206,6 +210,10 @@ class NewScaleManipulator(PlatformManipulator):
 
             # Mark movement as finished
             self._is_moving = False
+
+            # Return success unless write was disabled during movement (meaning a stop occurred)
+            if not self._can_write:
+                return com.DriveToDepthOutputData(0, "Manipulator movement canceled")
 
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"

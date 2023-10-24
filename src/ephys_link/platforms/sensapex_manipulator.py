@@ -102,6 +102,10 @@ class SensapexManipulator(PlatformManipulator):
             # Mark movement as finished
             self._is_moving = False
 
+            # Return success unless write was disabled during movement (meaning a stop occurred)
+            if not self._can_write:
+                return com.PositionalOutputData([], "Manipulator movement canceled")
+
             com.dprint(
                 f"[SUCCESS]\t Moved manipulator {self._id} to position"
                 f" {manipulator_final_position}\n"
