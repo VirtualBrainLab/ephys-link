@@ -28,8 +28,8 @@ requires-python = ">=3.8, <3.12"
 dependencies = [
     "aiohttp==3.8.6",
     "pyserial==3.5",
-    "python-socketio==5.9.0",
-    "pythonnet==3.0.2",
+    "python-socketio==5.10.0",
+    "pythonnet==3.0.3",
     "wheel==0.41.2",
     "sensapex==1.400.0",
 ]
