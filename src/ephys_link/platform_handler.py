@@ -154,6 +154,12 @@ class PlatformHandler(ABC):
 
             # Get position and convert to unified space
             manipulator_pos = self._get_pos(manipulator_id)
+
+            # Shortcut return for Pathfinder
+            if self.num_axes == -1:
+                return manipulator_pos
+
+            # Error check and convert position to unified space
             if manipulator_pos["error"] != "":
                 return manipulator_pos
             return com.PositionalOutputData(

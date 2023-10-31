@@ -72,6 +72,7 @@ class NewScalePathfinderHandler(PlatformHandler):
         super().__init__()
 
         self.num_axes = -1
+        self.dimensions = [15, 15, 15]
 
         self.port = port
 
