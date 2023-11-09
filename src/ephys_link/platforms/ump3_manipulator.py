@@ -47,6 +47,10 @@ class UMP3Manipulator(PlatformManipulator):
         """
         try:
             position = [axis / MM_TO_UM for axis in self._device.get_pos(1)]
+
+            # Duplicate x-axis for depth axis
+            position.append(position[0])
+
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return com.PositionalOutputData(position, "")
         except Exception as e:
@@ -55,7 +59,7 @@ class UMP3Manipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(
-            self, position: list[float], speed: float
+        self, position: list[float], speed: float
     ) -> com.PositionalOutputData:
         """Move manipulator to position
 
@@ -119,7 +123,7 @@ class UMP3Manipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error moving manipulator")
 
     async def drive_to_depth(
-            self, depth: float, speed: int
+        self, depth: float, speed: int
     ) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
@@ -163,7 +167,7 @@ class UMP3Manipulator(PlatformManipulator):
         return self._can_write
 
     def set_can_write(
-            self, can_write: bool, hours: float, sio: socketio.AsyncServer
+        self, can_write: bool, hours: float, sio: socketio.AsyncServer
     ) -> None:
         """Set if the manipulator can move
 
