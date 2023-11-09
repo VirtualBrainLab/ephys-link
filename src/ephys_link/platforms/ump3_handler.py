@@ -131,7 +131,7 @@ class UMP3Handler(PlatformHandler):
             platform_position[1],
             self.dimensions[0] - platform_position[0],
             self.dimensions[2] - platform_position[2],
-            platform_position[0],
+            platform_position[3],
         ]
 
     def _unified_space_to_platform_space(
@@ -147,5 +147,5 @@ class UMP3Handler(PlatformHandler):
             self.dimensions[1] - unified_position[1],
             unified_position[0],
             self.dimensions[2] - unified_position[2],
-            unified_position[0],
+            unified_position[3],
         ]

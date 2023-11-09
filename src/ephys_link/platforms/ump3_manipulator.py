@@ -78,7 +78,7 @@ class UMP3Manipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_position_um = [axis * MM_TO_UM for axis in position]
+            target_position_um = [axis * MM_TO_UM for axis in position[:3]]
 
             # Restrict target position to just depth-axis if inside brain
             if self._inside_brain:

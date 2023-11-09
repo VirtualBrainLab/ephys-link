@@ -385,6 +385,8 @@ def launch_server(platform_type: str, server_port: int, pathfinder_port: int) ->
         platform = importlib.import_module(
             "ephys_link.platforms.sensapex_handler"
         ).SensapexHandler()
+    elif platform_type == "ump3":
+        platform = importlib.import_module("ephys_link.platforms.ump3_handler").UMP3Handler()
     elif platform_type == "new_scale":
         platform = importlib.import_module(
             "ephys_link.platforms.new_scale_handler"
