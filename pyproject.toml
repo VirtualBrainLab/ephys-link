@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ephys-link"
-version = "0.9.18rc1"
+version = "0.9.18rc2"
 license = { file = "LICENSE" }
 
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
