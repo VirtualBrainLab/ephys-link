@@ -30,7 +30,7 @@ dependencies = [
     "pyserial==3.5",
     "python-socketio==5.10.0",
     "pythonnet==3.0.3",
-    "wheel==0.41.3",
+    "wheel==0.42.0",
     "sensapex==1.400.0",
 ]
 
