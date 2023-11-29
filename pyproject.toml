@@ -41,6 +41,7 @@ dev = [
     "isort",
     "pylama[all]",
     "twine",
+    "setuptools",
 ]
 
 [project.urls]
