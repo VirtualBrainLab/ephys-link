@@ -5,9 +5,7 @@
 [![Dependency Review](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/dependency-review.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-<div style="text-align: center;">
-    <img width="95%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/c89e433c-2ce0-4f27-aa9d-66f89c59c979" alt="Manipulator and probe in pinpoint moving in sync">
-</div>
+ <img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/c89e433c-2ce0-4f27-aa9d-66f89c59c979" alt="Manipulator and probe in pinpoint moving in sync">
 
 The [Electrophysiology Manipulator Link](https://github.com/VirtualBrainLab/ephys-link)
 (or Ephys Link for short) is a Python [Socket.IO](https://socket.io/docs/v4/#what-socketio-is) server that allows any
