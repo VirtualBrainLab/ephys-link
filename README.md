@@ -6,7 +6,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 <div style="text-align: center;">
-    <img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/c89e433c-2ce0-4f27-aa9d-66f89c59c979">
+    <img width="95%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/c89e433c-2ce0-4f27-aa9d-66f89c59c979" alt="Manipulator and probe in pinpoint moving in sync">
 </div>
 
 The [Electrophysiology Manipulator Link](https://github.com/VirtualBrainLab/ephys-link)
@@ -29,7 +29,7 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 
 ## Prerequisites
 
-1. [Python > 3.8, < 3.12](https://www.python.org/downloads/release/python-3116/) and pip.
+1. [Python ≥ 3.8, < 3.13](https://www.python.org/downloads/release/python-3116/) and pip.
 2. An **x86 Windows PC is required** to run the server.
 3. For Sensapex devices, the controller unit must be connected via an ethernet
    cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
@@ -83,7 +83,7 @@ Run the following commands in a terminal to start the server for the desired man
 
 | Manipulator Platform                 | Command                              |
 |--------------------------------------|--------------------------------------|
-| Sensapex                             | `ephys-link`                         |
+| Sensapex UMP-4                       | `ephys-link`                         |
 | New Scale                            | `ephys-link -t new_scale`            |
 | New Scale via Pathfinder HTTP server | `ephys-link -t new_scale_pathfinder` |
 
