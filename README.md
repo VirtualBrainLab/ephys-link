@@ -85,6 +85,7 @@ Run the following commands in a terminal to start the server for the desired man
 | Manipulator Platform                 | Command                              |
 |--------------------------------------|--------------------------------------|
 | Sensapex UMP-4                       | `ephys-link`                         |
+| Sensapex UMP-3                       | `ephys-link -t ump3`                 |
 | New Scale                            | `ephys-link -t new_scale`            |
 | New Scale via Pathfinder HTTP server | `ephys-link -t new_scale_pathfinder` |
 
