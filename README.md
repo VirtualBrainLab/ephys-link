@@ -27,7 +27,10 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 
 ## Prerequisites
 
-1. [Python ≥ 3.8, < 3.13](https://www.python.org/downloads/release/python-3116/) and pip.
+1. [Python ≥ 3.8, < 3.13](https://www.python.org/downloads/release/python-3116/)
+    1. Python 3.12+ requires the latest version
+       of [Microsoft Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (MSVC v143+) to
+       be installed.
 2. An **x86 Windows PC is required** to run the server.
 3. For Sensapex devices, the controller unit must be connected via an ethernet
    cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
