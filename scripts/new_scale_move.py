@@ -1,4 +1,4 @@
-# pylama:ignore=E402
+# ruff: noqa: E402
 from pythonnet import load
 
 load("netfx")
