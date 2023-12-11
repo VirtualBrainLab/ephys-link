@@ -124,6 +124,20 @@ class AngularOutputData(dict):
         super(AngularOutputData, self).__init__(angles=angles, error=error)
 
 
+class ShankCountOutputData(dict):
+    """Output format for (num_shanks, error)
+
+    :param num_shanks: Number of shanks on the probe
+    :type num_shanks: int
+    :param error: Error message
+    :type error: str
+    """
+
+    def __init__(self, num_shanks: int, error: str) -> None:
+        """Constructor"""
+        super(ShankCountOutputData, self).__init__(num_shanks=num_shanks, error=error)
+
+
 class DriveToDepthOutputData(dict):
     """Output format for depth driving (depth, error)
 

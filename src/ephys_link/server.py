@@ -172,6 +172,22 @@ async def get_angles(_, manipulator_id: str) -> com.AngularOutputData:
 
 
 @sio.event
+async def get_shank_count(_, manipulator_id: str) -> com.ShankCountOutputData:
+    """Number of shanks of manipulator request
+
+    :param _: Socket session ID (unused)
+    :type _: str
+    :param manipulator_id: ID of manipulator to pull number of shanks from
+    :type manipulator_id: str
+    :return: Callback parameters (manipulator ID, number of shanks (or -1 on error), error
+        message)
+    :rtype: :class:`ephys_link.common.ShankCountOutputData`
+    """
+
+    return platform.get_shank_count(manipulator_id)
+
+
+@sio.event
 async def goto_pos(
     _, data: com.GotoPositionInputDataFormat
 ) -> com.PositionalOutputData:

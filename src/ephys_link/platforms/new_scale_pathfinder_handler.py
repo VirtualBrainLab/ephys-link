@@ -191,6 +191,16 @@ class NewScalePathfinderHandler(PlatformHandler):
             "",
         )
 
+    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+        """Get the number of shanks on the probe
+
+        :param manipulator_id: manipulator ID
+        :return: Callback parameters (number of shanks (or -1 on error), error message)
+        """
+        manipulator_data = self.query_manipulator_data(manipulator_id)
+
+        return com.ShankCountOutputData(manipulator_data["ShankCount"], "")
+
     async def _goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
