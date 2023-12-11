@@ -197,9 +197,11 @@ class NewScalePathfinderHandler(PlatformHandler):
         :param manipulator_id: manipulator ID
         :return: Callback parameters (number of shanks (or -1 on error), error message)
         """
-        manipulator_data = self.query_manipulator_data(manipulator_id)
+        for probe in self.query_data()["ProbeArray"]:
+            if probe["Id"] == manipulator_id:
+                return com.ShankCountOutputData(probe["ShankCount"], "")
 
-        return com.ShankCountOutputData(manipulator_data["ShankCount"], "")
+        return com.ShankCountOutputData(-1, "Unable to find manipulator")
 
     async def _goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
