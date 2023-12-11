@@ -2,7 +2,7 @@
 import socket
 from argparse import Namespace
 from threading import Event, Thread
-from tkinter import *
+from tkinter import IntVar, StringVar, Tk, E, CENTER, RIGHT
 from tkinter import ttk
 
 # GUI Variables
