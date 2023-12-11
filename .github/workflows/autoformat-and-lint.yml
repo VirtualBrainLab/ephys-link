@@ -34,11 +34,8 @@ jobs:
       - name: 📦 Install dependencies
         run: pip install .[dev]
 
-      - name: 🔃 Sort Imports
-        run: isort .
-
       - name: 📝 Format Code
-        run: black .
+        run: ruff format .
 
       - name: ✅ Commit code format changes
         if: github.event.pull_request.user.login != 'dependabot[bot]'
@@ -47,4 +44,4 @@ jobs:
           commit_message: "Autoformat code"
 
       - name: 🔍 Lint
-        run: pylama
+        run: ruff check .
