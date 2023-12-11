@@ -176,8 +176,8 @@ class PlatformHandler(ABC):
 
         :param manipulator_id: The ID of the manipulator to get the position of.
         :type manipulator_id: str
-        :return: Callback parameters (manipulator ID, angles in (yaw, pitch, roll) (or an
-            empty array on error) in degrees, error message)
+        :return: Callback parameters (angles in (yaw, pitch, roll) or an
+            empty array on error in degrees, error message)
         :rtype: :class:`ephys_link.common.AngularOutputData`
         """
         try:
@@ -196,6 +196,15 @@ class PlatformHandler(ABC):
             # Manipulator not found in registered manipulators
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
             return com.AngularOutputData([], "Manipulator not registered")
+
+    def get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+        """Get the number of shanks on the probe
+
+        :param manipulator_id: The ID of the manipulator to get the number of shanks of.
+        :type manipulator_id: str
+        :return: Callback parameters (number of shanks or -1 on error, error message)
+        """
+        return self._get_shank_count(manipulator_id)
 
     async def goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
@@ -451,6 +460,15 @@ class PlatformHandler(ABC):
         :return: Callback parameters (manipulator ID, position in (yaw, pitch, roll) (or an
             empty array on error) in degrees, error message)
         :rtype: :class:`ephys_link.common.AngularOutputData`
+        """
+
+    @abstractmethod
+    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+        """Get the number of shanks on the probe
+
+        :param manipulator_id: The ID of the manipulator to get the number of shanks of.
+        :type manipulator_id: str
+        :return: Callback parameters (number of shanks or -1 on error, error message)
         """
 
     @abstractmethod

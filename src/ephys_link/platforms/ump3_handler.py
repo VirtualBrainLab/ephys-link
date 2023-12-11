@@ -43,6 +43,9 @@ class UMP3Handler(PlatformHandler):
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
         raise NotImplementedError
 
+    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+        raise NotImplementedError
+
     async def _goto_pos(
         self, manipulator_id: str, position: list[float], speed: int
     ) -> com.PositionalOutputData:
