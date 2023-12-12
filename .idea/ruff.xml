@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="RuffConfigService">
-    <option name="projectRuffLspExecutablePath" value="V:\ephys-link\venv\Scripts\ruff.exe" />
+    <option name="projectRuffExecutablePath" value="V:\ephys-link\venv\Scripts\ruff.exe" />
   </component>
 </project>
