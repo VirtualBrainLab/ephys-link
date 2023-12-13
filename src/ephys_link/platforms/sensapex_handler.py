@@ -47,9 +47,6 @@ class SensapexHandler(PlatformHandler):
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
         return self.manipulators[manipulator_id].get_pos()
 
-    def _get_raw_pos(self, manipulator_id: str) -> com.PositionalOutputData:
-        return self._get_pos(manipulator_id)
-
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
         raise NotImplementedError
 

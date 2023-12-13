@@ -158,7 +158,7 @@ class NewScalePathfinderHandler(PlatformHandler):
         """Get the current position of the manipulator in mm
 
         :param manipulator_id: manipulator ID
-        :return: Callback parameters (position in (ML, AP, DV) (or an empty array on
+        :return: Callback parameters (position in (x, y, z, w) (or an empty array on
             error) in mm, error message)
         """
         manipulator_data = self.query_manipulator_data(manipulator_id)
@@ -168,25 +168,6 @@ class NewScalePathfinderHandler(PlatformHandler):
                 manipulator_data["Tip_X_ML"],
                 manipulator_data["Tip_Y_AP"],
                 manipulator_data["Tip_Z_DV"],
-                0,
-            ],
-            "",
-        )
-
-    def _get_raw_pos(self, manipulator_id: str) -> com.PositionalOutputData:
-        """Get the stage position of the manipulator in mm
-
-        :param manipulator_id: manipulator ID
-        :return: Callback parameters (position in (x, y, z) (or an empty array on
-            error) in mm, error message)
-        """
-        manipulator_data = self.query_manipulator_data(manipulator_id)
-
-        return com.PositionalOutputData(
-            [
-                manipulator_data["Stage_X"],
-                manipulator_data["Stage_Y"],
-                manipulator_data["Stage_Z"],
                 0,
             ],
             "",

@@ -156,22 +156,6 @@ async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
 
 
 @sio.event
-async def get_raw_pos(_, manipulator_id: str) -> com.PositionalOutputData:
-    """Position of manipulator request in platform space
-
-    :param _: Socket session ID (unused)
-    :type _: str
-    :param manipulator_id: ID of manipulator to pull position from
-    :type manipulator_id: str
-    :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
-        array on error) in mm, error message)
-    :rtype: :class:`ephys_link.common.PositionalOutputData`
-    """
-
-    return platform.get_raw_pos(manipulator_id)
-
-
-@sio.event
 async def get_angles(_, manipulator_id: str) -> com.AngularOutputData:
     """Angles of manipulator request
 

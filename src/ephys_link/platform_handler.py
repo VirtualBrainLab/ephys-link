@@ -171,31 +171,6 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
             return com.PositionalOutputData([], "Manipulator not registered")
 
-    def get_raw_pos(self, manipulator_id: str) -> com.PositionalOutputData:
-        """Get the current position of a manipulator in platform space
-
-        :param manipulator_id: The ID of the manipulator to get the position of.
-        :type manipulator_id: str
-        :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
-            empty array on error) in mm, error message)
-        :rtype: :class:`ephys_link.common.PositionalOutputData`
-        """
-        try:
-            # Check calibration status
-            if (
-                hasattr(self.manipulators[manipulator_id], "get_calibrated")
-                and not self.manipulators[manipulator_id].get_calibrated()
-            ):
-                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.PositionalOutputData([], "Manipulator not calibrated")
-
-            # Get position
-            return self._get_raw_pos(manipulator_id)
-        except KeyError:
-            # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
-            return com.PositionalOutputData([], "Manipulator not registered")
-
     def get_angles(self, manipulator_id: str) -> com.AngularOutputData:
         """Get the current position of a manipulator
 
@@ -468,17 +443,6 @@ class PlatformHandler(ABC):
     @abstractmethod
     def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
         """Get the current position of a manipulator
-
-        :param manipulator_id: The ID of the manipulator to get the position of.
-        :type manipulator_id: int
-        :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an
-            empty array on error) in mm, error message)
-        :rtype: :class:`ephys_link.common.PositionalOutputData`
-        """
-
-    @abstractmethod
-    def _get_raw_pos(self, manipulator_id: str) -> com.PositionalOutputData:
-        """Get the current position of a manipulator in platform space
 
         :param manipulator_id: The ID of the manipulator to get the position of.
         :type manipulator_id: int
