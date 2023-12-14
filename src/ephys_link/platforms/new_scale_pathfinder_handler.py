@@ -5,21 +5,24 @@ Implements New Scale specific API calls.
 This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 """
 
-from json import loads
-from urllib import request
+from __future__ import annotations
 
-# noinspection PyPackageRequirements
-import socketio
+from json import loads
+from typing import TYPE_CHECKING
+from urllib import request
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
+
+if TYPE_CHECKING:
+    import socketio
 
 
 class NewScalePathfinderHandler(PlatformHandler):
     """Handler for New Scale HTTP server"""
 
     # Valid New Scale manipulator IDs
-    VALID_MANIPULATOR_IDS = {
+    VALID_MANIPULATOR_IDS = (
         "A",
         "B",
         "C",
@@ -60,7 +63,7 @@ class NewScalePathfinderHandler(PlatformHandler):
         "AL",
         "AM",
         "AN",
-    }
+    )
 
     def __init__(self, port: int = 8080) -> None:
         """
@@ -80,9 +83,8 @@ class NewScalePathfinderHandler(PlatformHandler):
         try:
             request.urlopen(f"http://localhost:{self.port}")
         except Exception as e:
-            raise ValueError(
-                f"New Scale HTTP server not online on port {self.port}"
-            ) from e
+            msg = f"New Scale HTTP server not online on port {self.port}"
+            raise ValueError(msg) from e
 
     def query_data(self) -> dict:
         """Query New Scale HTTP server for data and return as dict
@@ -121,7 +123,8 @@ class NewScalePathfinderHandler(PlatformHandler):
 
         # If data query was unsuccessful
         if not manipulator_data:
-            raise ValueError(f"Unable to find manipulator {manipulator_id}")
+            msg = f"Unable to find manipulator {manipulator_id}"
+            raise ValueError(msg)
 
         # Return data
         return manipulator_data
@@ -132,23 +135,22 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _register_manipulator(self, manipulator_id: str) -> None:
         # Check if ID is a valid New Scale manipulator ID
         if manipulator_id not in self.VALID_MANIPULATOR_IDS:
-            raise ValueError(f"Invalid manipulator ID {manipulator_id}")
+            msg = f"Invalid manipulator ID {manipulator_id}"
+            raise ValueError(msg)
 
         # Check if ID is connected
         if manipulator_id not in self._get_manipulators():
-            raise ValueError(f"Manipulator {manipulator_id} not connected")
+            msg = f"Manipulator {manipulator_id} not connected"
+            raise ValueError(msg)
 
         # Get index of the manipulator
         manipulator_index = next(
-            (
-                index
-                for index, data in enumerate(self.query_data()["ProbeArray"])
-                if data["Id"] == manipulator_id
-            ),
+            (index for index, data in enumerate(self.query_data()["ProbeArray"]) if data["Id"] == manipulator_id),
             None,
         )
         if manipulator_index is None:
-            raise ValueError(f"Unable to find manipulator {manipulator_id}")
+            msg = f"Unable to find manipulator {manipulator_id}"
+            raise ValueError(msg)
         self.manipulators[manipulator_id] = manipulator_index
 
     def _unregister_manipulator(self, manipulator_id: str) -> None:
@@ -203,19 +205,13 @@ class NewScalePathfinderHandler(PlatformHandler):
 
         return com.ShankCountOutputData(-1, "Unable to find manipulator")
 
-    async def _goto_pos(
-        self, manipulator_id: str, position: list[float], speed: int
-    ) -> com.PositionalOutputData:
+    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
         pass
 
-    async def _drive_to_depth(
-        self, manipulator_id: str, depth: float, speed: int
-    ) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
         pass
 
-    def _set_inside_brain(
-        self, manipulator_id: str, inside: bool
-    ) -> com.StateOutputData:
+    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
         pass
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
@@ -233,12 +229,8 @@ class NewScalePathfinderHandler(PlatformHandler):
     ) -> com.StateOutputData:
         pass
 
-    def _unified_space_to_platform_space(
-        self, unified_position: list[float]
-    ) -> list[float]:
+    def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
         pass
 
-    def _platform_space_to_unified_space(
-        self, platform_position: list[float]
-    ) -> list[float]:
+    def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
         pass

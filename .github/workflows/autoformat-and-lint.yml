@@ -31,11 +31,11 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: 📦 Install dependencies
-        run: pip install .[dev]
+      - name: 📦 Install Hatch
+        run: pip install hatch
 
       - name: 📝 Format Code
-        run: ruff format .
+        run: hatch fmt -f
 
       - name: ✅ Commit code format changes
         if: github.event.pull_request.user.login != 'dependabot[bot]'
@@ -44,4 +44,4 @@ jobs:
           commit_message: "Autoformat code"
 
       - name: 🔍 Lint
-        run: ruff check .
+        run: hatch fmt --check

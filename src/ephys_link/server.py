@@ -10,6 +10,7 @@ every event, the server does the following:
 """
 
 import importlib
+import sys
 from importlib import metadata
 from typing import Any
 
@@ -57,9 +58,10 @@ async def connect(sid, _, __) -> bool:
     if not is_connected:
         print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
         is_connected = True
-    else:
-        print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
-        return False
+        return True
+
+    print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
+    return False
 
 
 @sio.event
@@ -188,9 +190,7 @@ async def get_shank_count(_, manipulator_id: str) -> com.ShankCountOutputData:
 
 
 @sio.event
-async def goto_pos(
-    _, data: com.GotoPositionInputDataFormat
-) -> com.PositionalOutputData:
+async def goto_pos(_, data: com.GotoPositionInputDataFormat) -> com.PositionalOutputData:
     """Move manipulator to position
 
     :param _: Socket session ID (unused)
@@ -221,9 +221,7 @@ async def goto_pos(
 
 
 @sio.event
-async def drive_to_depth(
-    _, data: com.DriveToDepthInputDataFormat
-) -> com.DriveToDepthOutputData:
+async def drive_to_depth(_, data: com.DriveToDepthInputDataFormat) -> com.DriveToDepthOutputData:
     """Drive to depth
 
     :param _: Socket session ID (unused)
@@ -254,9 +252,7 @@ async def drive_to_depth(
 
 
 @sio.event
-async def set_inside_brain(
-    _, data: com.InsideBrainInputDataFormat
-) -> com.StateOutputData:
+async def set_inside_brain(_, data: com.InsideBrainInputDataFormat) -> com.StateOutputData:
     """Set the inside brain state
 
     :param _: Socket session ID (unused)
@@ -278,10 +274,7 @@ async def set_inside_brain(
         print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
         return com.StateOutputData(False, "Error in set_inside_brain")
 
-    com.dprint(
-        f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to "
-        f'{"true" if inside else "false"}'
-    )
+    com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to " f'{"true" if inside else "false"}')
 
     return platform.set_inside_brain(manipulator_id, inside)
 
@@ -344,8 +337,7 @@ async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutput
         return com.StateOutputData(False, "Error in set_can_write")
 
     com.dprint(
-        f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to "
-        f'{"true" if can_write else "false"}'
+        f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to " f'{"true" if can_write else "false"}'
     )
 
     return platform.set_can_write(manipulator_id, can_write, hours, sio)
@@ -398,23 +390,17 @@ def launch_server(platform_type: str, server_port: int, pathfinder_port: int) ->
     # Import correct manipulator handler
     global platform
     if platform_type == "sensapex":
-        platform = importlib.import_module(
-            "ephys_link.platforms.sensapex_handler"
-        ).SensapexHandler()
+        platform = importlib.import_module("ephys_link.platforms.sensapex_handler").SensapexHandler()
     elif platform_type == "ump3":
-        platform = importlib.import_module(
-            "ephys_link.platforms.ump3_handler"
-        ).UMP3Handler()
+        platform = importlib.import_module("ephys_link.platforms.ump3_handler").UMP3Handler()
     elif platform_type == "new_scale":
-        platform = importlib.import_module(
-            "ephys_link.platforms.new_scale_handler"
-        ).NewScaleHandler()
+        platform = importlib.import_module("ephys_link.platforms.new_scale_handler").NewScaleHandler()
     elif platform_type == "new_scale_pathfinder":
         platform = importlib.import_module(
             "ephys_link.platforms.new_scale_pathfinder_handler"
         ).NewScalePathfinderHandler(pathfinder_port)
     else:
-        exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
+        sys.exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 
     # Preamble
     print(f"=== Ephys Link v{metadata.version('ephys_link')} ===")
@@ -436,7 +422,7 @@ def close_server(_, __) -> None:
     print("[INFO]\t\t Closing server")
 
     # Stop movement
-    platform.stop()  # noqa
+    platform.stop()
 
     # Exit
-    raise GracefulExit()
+    raise GracefulExit

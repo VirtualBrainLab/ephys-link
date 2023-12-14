@@ -1,20 +1,26 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "ephys-link"
-version = "1.0.5"
-license = { file = "LICENSE" }
-
-authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
-maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
-
+dynamic = ["version"]
 description = "A Python Socket.IO server that allows any Socket.IO-compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
-
+requires-python = ">=3.8, <3.13"
+license = "GPL-3.0-only"
 keywords = ["socket-io", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "neurotech", "virtualbrainlab", "new-scale"]
+authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
+maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
@@ -23,8 +29,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
-
-requires-python = ">=3.8, <3.13"
 dependencies = [
     "aiohttp==3.9.1",
     "pyserial==3.5",
@@ -34,20 +38,67 @@ dependencies = [
     "sensapex==1.400.0",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "build",
-    "ruff",
-    "twine",
-    "setuptools",
-]
-
 [project.urls]
-"GitHub" = "https://github.com/VirtualBrainLab/ephys-link"
 Documentation = "https://virtualbrainlab.org/ephys_link/installation_and_use.html"
-"Issue Tracker" = "https://github.com/VirtualBrainLab/ephys-link/issues"
+Issues = "https://github.com/VirtualBrainLab/ephys-link/issues"
+Source = "https://github.com/VirtualBrainLab/ephys-link"
 
 [project.scripts]
 ephys-link = "ephys_link.__main__:main"
 ephys_link = "ephys_link.__main__:main"
 el = "ephys_link.__main__:main"
+
+[tool.hatch.version]
+path = "src/ephys_link/__about__.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/.github", "/.idea"]
+
+[tool.hatch.envs.default]
+dependencies = [
+    "coverage[toml]>=6.5",
+    "pytest",
+]
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+    "- coverage combine",
+    "coverage report",
+]
+cov = [
+    "test-cov",
+    "cov-report",
+]
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.types]
+dependencies = [
+    "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/ephys_link tests}"
+
+[tool.coverage.run]
+source_pkgs = ["ephys_link", "tests"]
+branch = true
+parallel = true
+omit = [
+    "src/ephys_link/__about__.py",
+]
+
+[tool.coverage.paths]
+ephys_link = ["src/ephys_link", "*/ephys-link/src/ephys_link"]
+tests = ["tests", "*/ephys-link/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "no cov",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.ruff.lint]
+extend-ignore = ["T201", "PLW0603", "BLE001", "FBT001", "ARG002", "S310"]
