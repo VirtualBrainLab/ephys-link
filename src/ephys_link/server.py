@@ -345,11 +345,11 @@ class Server:
         :type __: str
         :param data: Data received from client
         :type data: Any
-        :return: "Unknown event" response message
+        :return: "UNKNOWN_EVENT" response message
         :rtype: str
         """
         print(f"[UNKNOWN EVENT]:\t {data}")
-        return "Unknown event"
+        return "UNKNOWN_EVENT"
 
     def launch_server(self, platform_type: str, server_port: int, pathfinder_port: int) -> None:
         """Launch the server
