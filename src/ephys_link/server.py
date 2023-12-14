@@ -436,7 +436,7 @@ def close_server(_, __) -> None:
     print("[INFO]\t\t Closing server")
 
     # Stop movement
-    platform.stop()  # noqa
+    platform.stop()
 
     # Exit
     raise GracefulExit()

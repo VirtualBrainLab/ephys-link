@@ -2,8 +2,7 @@
 import socket
 from argparse import Namespace
 from threading import Event, Thread
-from tkinter import IntVar, StringVar, Tk, E, CENTER, RIGHT
-from tkinter import ttk
+from tkinter import CENTER, RIGHT, E, IntVar, StringVar, Tk, ttk
 
 # GUI Variables
 is_running = False
