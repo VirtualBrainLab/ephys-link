@@ -1,13 +1,13 @@
 import argparse
 import signal
 import time
-from importlib import metadata
 from threading import Event, Thread
 
 import serial
 import serial.tools.list_ports as ports
 
 from ephys_link import common as com
+from ephys_link.__about__ import __version__ as version
 from ephys_link.server import Server
 
 # Setup Arduino serial port (emergency stop)
@@ -103,7 +103,7 @@ parser.add_argument(
     "-v",
     "--version",
     action="version",
-    version=f"Electrophysiology Manipulator Link v{metadata.version('ephys_link')}",
+    version=f"Electrophysiology Manipulator Link v{version}",
     help="Print version and exit",
 )
 

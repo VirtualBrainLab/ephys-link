@@ -27,333 +27,339 @@ load("netfx")
 
 class Server:
     def __init__(self):
+        # Server and Socketio
         self.sio = socketio.AsyncServer()
         self.app = web.Application()
-        self.is_connected = False
-        self.platform = None
 
-        # Is the server running
+        # Is there a client connected?
+        self.is_connected = False
+
+        # Is the server running?
         self.is_running = False
+
+        # Current platform handler
+        self.platform = None
 
         # Attach server to the web app
         self.sio.attach(self.app)
 
-    def event_handlers(self):
-        @self.sio.event
-        async def connect(sid, _, __) -> bool:
-            """Acknowledge connection to the server
+        # Declare events
+        self.sio.on("connect", self.connect)
+        self.sio.on("disconnect", self.disconnect)
+        self.sio.on("get_version", self.get_version)
+        self.sio.on("get_manipulators", self.get_manipulators)
+        self.sio.on("register_manipulator", self.register_manipulator)
+        self.sio.on("unregister_manipulator", self.unregister_manipulator)
+        self.sio.on("get_pos", self.get_pos)
+        self.sio.on("get_angles", self.get_angles)
+        self.sio.on("get_shank_count", self.get_shank_count)
+        self.sio.on("goto_pos", self.goto_pos)
+        self.sio.on("drive_to_depth", self.drive_to_depth)
+        self.sio.on("set_inside_brain", self.set_inside_brain)
+        self.sio.on("calibrate", self.calibrate)
+        self.sio.on("bypass_calibration", self.bypass_calibration)
+        self.sio.on("set_can_write", self.set_can_write)
+        self.sio.on("stop", self.stop)
+        self.sio.on("*", self.catch_all)
 
-            :param sid: Socket session ID
-            :type sid: str
-            :param _: WSGI formatted dictionary with request info (unused)
-            :type _: dict
-            :param __: Authentication details (unused)
-            :type __: dict
-            :return: False on error to refuse connection. None otherwise.
-            :rtype: bool
-            """
-            print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
+    async def connect(self, sid, _, __) -> bool:
+        """Acknowledge connection to the server
 
-            if not self.is_connected:
-                print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
-                self.is_connected = True
-                return True
+        :param sid: Socket session ID
+        :type sid: str
+        :param _: WSGI formatted dictionary with request info (unused)
+        :type _: dict
+        :param __: Authentication details (unused)
+        :type __: dict
+        :return: False on error to refuse connection. None otherwise.
+        :rtype: bool
+        """
+        print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
 
-            print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
-            return False
+        if not self.is_connected:
+            print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
+            self.is_connected = True
+            return True
 
-        @self.sio.event
-        async def disconnect(sid) -> None:
-            """Acknowledge disconnection from the server
+        print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
+        return False
 
-            :param sid: Socket session ID
-            :type sid: str
-            :return: None
-            """
-            print(f"[DISCONNECTION]:\t {sid}\n")
+    async def disconnect(self, sid) -> None:
+        """Acknowledge disconnection from the server
 
-            self.platform.reset()
-            self.is_connected = False
+        :param sid: Socket session ID
+        :type sid: str
+        :return: None
+        """
+        print(f"[DISCONNECTION]:\t {sid}\n")
 
-        # Events
+        self.platform.reset()
+        self.is_connected = False
 
-        @self.sio.event
-        async def get_version(_) -> str:
-            """Get the version number of the server
+    # Events
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :return: Version number as defined in __version__
-            :rtype: str
-            """
-            return version
+    @staticmethod
+    async def get_version(_) -> str:
+        """Get the version number of the server
 
-        @self.sio.event
-        async def get_manipulators(_) -> com.GetManipulatorsOutputData:
-            """Get the list of discoverable manipulators
+        :param _: Socket session ID (unused)
+        :type _: str
+        :return: Version number as defined in __version__
+        :rtype: str
+        """
+        return version
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :return: Callback parameters (manipulators, error message)
-            :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
-            """
-            com.dprint("[EVENT]\t\t Get discoverable manipulators")
+    async def get_manipulators(self, _) -> com.GetManipulatorsOutputData:
+        """Get the list of discoverable manipulators
 
-            return self.platform.get_manipulators()
+        :param _: Socket session ID (unused)
+        :type _: str
+        :return: Callback parameters (manipulators, error message)
+        :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
+        """
+        com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
-        @self.sio.event
-        async def register_manipulator(_, manipulator_id: str) -> str:
-            """Register a manipulator with the server
+        return self.platform.get_manipulators()
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param manipulator_id: ID of the manipulator to register
-            :type manipulator_id: str
-            :return: Callback parameter (Error message (on error))
-            :rtype: str
-            """
-            com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
+    async def register_manipulator(self, _, manipulator_id: str) -> str:
+        """Register a manipulator with the server
 
-            return self.platform.register_manipulator(manipulator_id)
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param manipulator_id: ID of the manipulator to register
+        :type manipulator_id: str
+        :return: Callback parameter (Error message (on error))
+        :rtype: str
+        """
+        com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
 
-        @self.sio.event
-        async def unregister_manipulator(_, manipulator_id: str) -> str:
-            """Unregister a manipulator from the server
+        return self.platform.register_manipulator(manipulator_id)
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param manipulator_id: ID of the manipulator to unregister
-            :type manipulator_id: str
-            :return: Callback parameter (Error message (on error))
-            :rtype: str
-            """
-            com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
+    async def unregister_manipulator(self, _, manipulator_id: str) -> str:
+        """Unregister a manipulator from the server
 
-            return self.platform.unregister_manipulator(manipulator_id)
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param manipulator_id: ID of the manipulator to unregister
+        :type manipulator_id: str
+        :return: Callback parameter (Error message (on error))
+        :rtype: str
+        """
+        com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
 
-        @self.sio.event
-        async def get_pos(_, manipulator_id: str) -> com.PositionalOutputData:
-            """Position of manipulator request
+        return self.platform.unregister_manipulator(manipulator_id)
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param manipulator_id: ID of manipulator to pull position from
-            :type manipulator_id: str
-            :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
-                array on error) in mm, error message)
-            :rtype: :class:`ephys_link.common.PositionalOutputData`
-            """
-            # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
+    async def get_pos(self, _, manipulator_id: str) -> com.PositionalOutputData:
+        """Position of manipulator request
 
-            return self.platform.get_pos(manipulator_id)
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param manipulator_id: ID of manipulator to pull position from
+        :type manipulator_id: str
+        :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
+            array on error) in mm, error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        """
+        # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
-        @self.sio.event
-        async def get_angles(_, manipulator_id: str) -> com.AngularOutputData:
-            """Angles of manipulator request
+        return self.platform.get_pos(manipulator_id)
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param manipulator_id: ID of manipulator to pull angles from
-            :type manipulator_id: str
-            :return: Callback parameters (manipulator ID, angles in (yaw, pitch, roll) (or an empty
-                array on error) in degrees, error message)
-            :rtype: :class:`ephys_link.common.AngularOutputData`
-            """
+    async def get_angles(self, _, manipulator_id: str) -> com.AngularOutputData:
+        """Angles of manipulator request
 
-            return self.platform.get_angles(manipulator_id)
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param manipulator_id: ID of manipulator to pull angles from
+        :type manipulator_id: str
+        :return: Callback parameters (manipulator ID, angles in (yaw, pitch, roll) (or an empty
+            array on error) in degrees, error message)
+        :rtype: :class:`ephys_link.common.AngularOutputData`
+        """
 
-        @self.sio.event
-        async def get_shank_count(_, manipulator_id: str) -> com.ShankCountOutputData:
-            """Number of shanks of manipulator request
+        return self.platform.get_angles(manipulator_id)
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param manipulator_id: ID of manipulator to pull number of shanks from
-            :type manipulator_id: str
-            :return: Callback parameters (manipulator ID, number of shanks (or -1 on error), error
-                message)
-            :rtype: :class:`ephys_link.common.ShankCountOutputData`
-            """
+    async def get_shank_count(self, _, manipulator_id: str) -> com.ShankCountOutputData:
+        """Number of shanks of manipulator request
 
-            return self.platform.get_shank_count(manipulator_id)
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param manipulator_id: ID of manipulator to pull number of shanks from
+        :type manipulator_id: str
+        :return: Callback parameters (manipulator ID, number of shanks (or -1 on error), error
+            message)
+        :rtype: :class:`ephys_link.common.ShankCountOutputData`
+        """
 
-        @self.sio.event
-        async def goto_pos(_, data: com.GotoPositionInputDataFormat) -> com.PositionalOutputData:
-            """Move manipulator to position
+        return self.platform.get_shank_count(manipulator_id)
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param data: Data containing manipulator ID, position in mm, and speed in mm/s
-            :type data: :class:`ephys_link.common.GotoPositionInputDataFormat`
-            :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
-                tuple on error) in mm, error message)
-            :rtype: :class:`ephys_link.common.PositionalOutputData`
-            """
-            try:
-                manipulator_id = data["manipulator_id"]
-                pos = data["pos"]
-                speed = data["speed"]
+    async def goto_pos(self, _, data: com.GotoPositionInputDataFormat) -> com.PositionalOutputData:
+        """Move manipulator to position
 
-            except KeyError:
-                manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
-                print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
-                return com.PositionalOutputData([], "Invalid data format")
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param data: Data containing manipulator ID, position in mm, and speed in mm/s
+        :type data: :class:`ephys_link.common.GotoPositionInputDataFormat`
+        :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
+            tuple on error) in mm, error message)
+        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        """
+        try:
+            manipulator_id = data["manipulator_id"]
+            pos = data["pos"]
+            speed = data["speed"]
 
-            except Exception as e:
-                print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
-                return com.PositionalOutputData([], "Error in goto_pos")
+        except KeyError:
+            manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
+            print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+            return com.PositionalOutputData([], "Invalid data format")
 
-            com.dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
+        except Exception as e:
+            print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
+            return com.PositionalOutputData([], "Error in goto_pos")
 
-            return await self.platform.goto_pos(manipulator_id, pos, speed)
+        com.dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
 
-        @self.sio.event
-        async def drive_to_depth(_, data: com.DriveToDepthInputDataFormat) -> com.DriveToDepthOutputData:
-            """Drive to depth
+        return await self.platform.goto_pos(manipulator_id, pos, speed)
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param data: Data containing manipulator ID, depth in mm, and speed in mm/s
-            :type data: :class:`ephys_link.common.DriveToDepthInputDataFormat`
-            :return: Callback parameters (manipulator ID, depth (or -1 on error) in mm, error message
-                )
-            :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
-            """
-            try:
-                manipulator_id = data["manipulator_id"]
-                depth = data["depth"]
-                speed = data["speed"]
+    async def drive_to_depth(self, _, data: com.DriveToDepthInputDataFormat) -> com.DriveToDepthOutputData:
+        """Drive to depth
 
-            except KeyError:
-                manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
-                print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
-                return com.DriveToDepthOutputData(-1, "Invalid data " "format")
-
-            except Exception as e:
-                print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
-                return com.DriveToDepthOutputData(-1, "Error in drive_to_depth")
-
-            com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} " f"to depth {depth}")
-
-            return await self.platform.drive_to_depth(manipulator_id, depth, speed)
-
-        @self.sio.event
-        async def set_inside_brain(_, data: com.InsideBrainInputDataFormat) -> com.StateOutputData:
-            """Set the inside brain state
-
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param data: Data containing manipulator ID and inside brain state
-            :type data: :class:`ephys_link.common.InsideBrainInputDataFormat`
-            :return: Callback parameters (manipulator ID, inside, error message)
-            :rtype: :class:`ephys_link.common.StateOutputData`
-            """
-            try:
-                manipulator_id = data["manipulator_id"]
-                inside = data["inside"]
-
-            except KeyError:
-                manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
-                print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
-                return com.StateOutputData(False, "Invalid data format")
-            except Exception as e:
-                print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-                return com.StateOutputData(False, "Error in set_inside_brain")
-
-            com.dprint(
-                f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to " f'{"true" if inside else "false"}'
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param data: Data containing manipulator ID, depth in mm, and speed in mm/s
+        :type data: :class:`ephys_link.common.DriveToDepthInputDataFormat`
+        :return: Callback parameters (manipulator ID, depth (or -1 on error) in mm, error message
             )
+        :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
+        """
+        try:
+            manipulator_id = data["manipulator_id"]
+            depth = data["depth"]
+            speed = data["speed"]
 
-            return self.platform.set_inside_brain(manipulator_id, inside)
+        except KeyError:
+            manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
+            print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+            return com.DriveToDepthOutputData(-1, "Invalid data " "format")
 
-        @self.sio.event
-        async def calibrate(_, manipulator_id: str) -> str:
-            """Calibrate manipulator
+        except Exception as e:
+            print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
+            return com.DriveToDepthOutputData(-1, "Error in drive_to_depth")
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param manipulator_id: ID of manipulator to calibrate
-            :type manipulator_id: str
-            :return: Callback parameters (manipulator ID, error message)
-            :rtype: str
-            """
-            com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
+        com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} " f"to depth {depth}")
 
-            return await self.platform.calibrate(manipulator_id, self.sio)
+        return await self.platform.drive_to_depth(manipulator_id, depth, speed)
 
-        @self.sio.event
-        async def bypass_calibration(_, manipulator_id: str) -> str:
-            """Bypass calibration of manipulator
+    async def set_inside_brain(self, _, data: com.InsideBrainInputDataFormat) -> com.StateOutputData:
+        """Set the inside brain state
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param manipulator_id: ID of manipulator to bypass calibration
-            :type manipulator_id: str
-            :return: Callback parameters (manipulator ID, error message)
-            :rtype: str
-            """
-            com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param data: Data containing manipulator ID and inside brain state
+        :type data: :class:`ephys_link.common.InsideBrainInputDataFormat`
+        :return: Callback parameters (manipulator ID, inside, error message)
+        :rtype: :class:`ephys_link.common.StateOutputData`
+        """
+        try:
+            manipulator_id = data["manipulator_id"]
+            inside = data["inside"]
 
-            return self.platform.bypass_calibration(manipulator_id)
+        except KeyError:
+            manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
+            print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+            return com.StateOutputData(False, "Invalid data format")
+        except Exception as e:
+            print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
+            return com.StateOutputData(False, "Error in set_inside_brain")
 
-        @self.sio.event
-        async def set_can_write(_, data: com.CanWriteInputDataFormat) -> com.StateOutputData:
-            """Set manipulator can_write state
+        com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to " f'{"true" if inside else "false"}')
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param data: Data containing manipulator ID and can_write brain state
-            :type data: :class:`ephys_link.common.CanWriteInputDataFormat`
-            :return: Callback parameters (manipulator ID, can_write, error message)
-            :rtype: :class:`ephys_link.common.StateOutputData`
-            """
-            try:
-                manipulator_id = data["manipulator_id"]
-                can_write = data["can_write"]
-                hours = data["hours"]
+        return self.platform.set_inside_brain(manipulator_id, inside)
 
-            except KeyError:
-                manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
-                print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
-                return com.StateOutputData(False, "Invalid data " "format")
+    async def calibrate(self, _, manipulator_id: str) -> str:
+        """Calibrate manipulator
 
-            except Exception as e:
-                print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-                return com.StateOutputData(False, "Error in set_can_write")
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param manipulator_id: ID of manipulator to calibrate
+        :type manipulator_id: str
+        :return: Callback parameters (manipulator ID, error message)
+        :rtype: str
+        """
+        com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
 
-            com.dprint(
-                f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to "
-                f'{"true" if can_write else "false"}'
-            )
+        return await self.platform.calibrate(manipulator_id, self.sio)
 
-            return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio)
+    async def bypass_calibration(self, _, manipulator_id: str) -> str:
+        """Bypass calibration of manipulator
 
-        @self.sio.event
-        def stop(_) -> bool:
-            """Stop all manipulators
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param manipulator_id: ID of manipulator to bypass calibration
+        :type manipulator_id: str
+        :return: Callback parameters (manipulator ID, error message)
+        :rtype: str
+        """
+        com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :return: True if successful, False otherwise
-            :rtype: bool
-            """
-            com.dprint("[EVENT]\t\t Stop all manipulators")
+        return self.platform.bypass_calibration(manipulator_id)
 
-            return self.platform.stop()
+    async def set_can_write(self, _, data: com.CanWriteInputDataFormat) -> com.StateOutputData:
+        """Set manipulator can_write state
 
-        @self.sio.on("*")
-        async def catch_all(_, __, data: Any) -> None:
-            """Catch all event
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param data: Data containing manipulator ID and can_write brain state
+        :type data: :class:`ephys_link.common.CanWriteInputDataFormat`
+        :return: Callback parameters (manipulator ID, can_write, error message)
+        :rtype: :class:`ephys_link.common.StateOutputData`
+        """
+        try:
+            manipulator_id = data["manipulator_id"]
+            can_write = data["can_write"]
+            hours = data["hours"]
 
-            :param _: Socket session ID (unused)
-            :type _: str
-            :param __: Client ID (unused)
-            :type __: str
-            :param data: Data received from client
-            :type data: Any
-            :return: None
-            """
-            print(f"[UNKNOWN EVENT]:\t {data}")
+        except KeyError:
+            manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
+            print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+            return com.StateOutputData(False, "Invalid data " "format")
+
+        except Exception as e:
+            print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
+            return com.StateOutputData(False, "Error in set_can_write")
+
+        com.dprint(
+            f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to " f'{"true" if can_write else "false"}'
+        )
+
+        return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio)
+
+    def stop(self, _) -> bool:
+        """Stop all manipulators
+
+        :param _: Socket session ID (unused)
+        :type _: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
+        com.dprint("[EVENT]\t\t Stop all manipulators")
+
+        return self.platform.stop()
+
+    @staticmethod
+    async def catch_all(_, __, data: Any) -> str:
+        """Catch all event
+
+        :param _: Socket session ID (unused)
+        :type _: str
+        :param __: Client ID (unused)
+        :type __: str
+        :param data: Data received from client
+        :type data: Any
+        :return: None
+        """
+        print(f"[UNKNOWN EVENT]:\t {data}")
+        return "Unknown event"
 
     def launch_server(self, platform_type: str, server_port: int, pathfinder_port: int) -> None:
         """Launch the server
