@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "A Python Socket.IO server that allows any Socket.IO-compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
 requires-python = ">=3.8, <3.13"
-license = "GPLv3"
+license = "GPL-3.0-only"
 keywords = ["socket-io", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "neurotech", "virtualbrainlab", "new-scale"]
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
@@ -50,6 +50,9 @@ el = "ephys_link.__main__:main"
 
 [tool.hatch.version]
 path = "src/ephys_link/__about__.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/.github", "/.idea"]
 
 [tool.hatch.envs.default]
 dependencies = [
