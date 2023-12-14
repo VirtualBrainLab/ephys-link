@@ -8,12 +8,15 @@ import serial
 import serial.tools.list_ports as ports
 
 from ephys_link import common as com
-from ephys_link import server
+from ephys_link.server import Server
 
 # Setup Arduino serial port (emergency stop)
 poll_rate = 0.05
 kill_serial_event = Event()
 poll_serial_thread: Thread
+
+# Create Server
+server = Server()
 
 
 def poll_serial(kill_event: Event, serial_port: str) -> None:
