@@ -4,21 +4,12 @@ Contains globally used helper functions and typed dictionaries (to be used as
 callback parameters)
 """
 
+from __future__ import annotations
+
 from typing import TypedDict
 
 # Debugging flag
 DEBUG = False
-
-
-def set_debug(debug: bool) -> None:
-    """Set debug flag
-
-    :param debug: True to enable debug mode, False to disable
-    :type debug: bool
-    :return: None
-    """
-    global DEBUG
-    DEBUG = debug
 
 
 def dprint(message: str) -> None:
@@ -81,11 +72,9 @@ class GetManipulatorsOutputData(dict):
         :code:`{"manipulators": ["1", "2"], "error": ""}`
     """
 
-    def __init__(
-        self, manipulators: list, num_axes: int, dimensions: list, error: str
-    ) -> None:
+    def __init__(self, manipulators: list, num_axes: int, dimensions: list, error: str) -> None:
         """Constructor"""
-        super(GetManipulatorsOutputData, self).__init__(
+        super().__init__(
             manipulators=manipulators,
             num_axes=num_axes,
             dimensions=dimensions,
@@ -107,7 +96,7 @@ class PositionalOutputData(dict):
 
     def __init__(self, position: list, error: str) -> None:
         """Constructor"""
-        super(PositionalOutputData, self).__init__(position=position, error=error)
+        super().__init__(position=position, error=error)
 
 
 class AngularOutputData(dict):
@@ -121,7 +110,7 @@ class AngularOutputData(dict):
 
     def __init__(self, angles: list, error: str) -> None:
         """Constructor"""
-        super(AngularOutputData, self).__init__(angles=angles, error=error)
+        super().__init__(angles=angles, error=error)
 
 
 class ShankCountOutputData(dict):
@@ -135,7 +124,7 @@ class ShankCountOutputData(dict):
 
     def __init__(self, shank_count: int, error: str) -> None:
         """Constructor"""
-        super(ShankCountOutputData, self).__init__(shank_count=shank_count, error=error)
+        super().__init__(shank_count=shank_count, error=error)
 
 
 class DriveToDepthOutputData(dict):
@@ -151,7 +140,7 @@ class DriveToDepthOutputData(dict):
 
     def __init__(self, depth: float, error: str) -> None:
         """Create drive to depth output data dictionary"""
-        super(DriveToDepthOutputData, self).__init__(depth=depth, error=error)
+        super().__init__(depth=depth, error=error)
 
 
 class StateOutputData(dict):
@@ -167,4 +156,4 @@ class StateOutputData(dict):
 
     def __init__(self, state: bool, error: str) -> None:
         """Create state output data dictionary"""
-        super(StateOutputData, self).__init__(state=state, error=error)
+        super().__init__(state=state, error=error)

@@ -5,12 +5,11 @@ function calls, error handling, managing per-manipulator attributes, and returni
 appropriate callback parameters like in :mod:`ephys_link.sensapex_handler`.
 """
 
+from __future__ import annotations
+
 import asyncio
 import threading
-
-# noinspection PyPackageRequirements
-import socketio
-from sensapex import SensapexDevice
+from typing import TYPE_CHECKING
 
 import ephys_link.common as com
 from ephys_link.platform_manipulator import (
@@ -19,6 +18,10 @@ from ephys_link.platform_manipulator import (
     POSITION_POLL_DELAY,
     PlatformManipulator,
 )
+
+if TYPE_CHECKING:
+    import socketio
+    from sensapex import SensapexDevice
 
 
 class SensapexManipulator(PlatformManipulator):
@@ -54,9 +57,7 @@ class SensapexManipulator(PlatformManipulator):
             print(f"{e}\n")
             return com.PositionalOutputData([], "Error getting position")
 
-    async def goto_pos(
-        self, position: list[float], speed: float
-    ) -> com.PositionalOutputData:
+    async def goto_pos(self, position: list[float], speed: float) -> com.PositionalOutputData:
         """Move manipulator to position
 
         :param position: The position to move to in mm
@@ -106,21 +107,14 @@ class SensapexManipulator(PlatformManipulator):
             if not self._can_write:
                 return com.PositionalOutputData([], "Manipulator movement canceled")
 
-            com.dprint(
-                f"[SUCCESS]\t Moved manipulator {self._id} to position"
-                f" {manipulator_final_position}\n"
-            )
+            com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position" f" {manipulator_final_position}\n")
             return com.PositionalOutputData(manipulator_final_position, "")
         except Exception as e:
-            print(
-                f"[ERROR]\t\t Moving manipulator {self._id} to position" f" {position}"
-            )
+            print(f"[ERROR]\t\t Moving manipulator {self._id} to position" f" {position}")
             print(f"{e}\n")
             return com.PositionalOutputData([], "Error moving manipulator")
 
-    async def drive_to_depth(
-        self, depth: float, speed: int
-    ) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(self, depth: float, speed: int) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth
 
         :param depth: The depth to drive to in mm
@@ -139,9 +133,9 @@ class SensapexManipulator(PlatformManipulator):
         if movement_result["error"] == "":
             # Return depth on success
             return com.DriveToDepthOutputData(movement_result["position"][3], "")
-        else:
-            # Return 0 and error message on failure
-            return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
+
+        # Return 0 and error message on failure
+        return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
 
     def set_inside_brain(self, inside: bool) -> None:
         """Set if the manipulator is inside the brain
@@ -162,9 +156,7 @@ class SensapexManipulator(PlatformManipulator):
         """
         return self._can_write
 
-    def set_can_write(
-        self, can_write: bool, hours: float, sio: socketio.AsyncServer
-    ) -> None:
+    def set_can_write(self, can_write: bool, hours: float, sio: socketio.AsyncServer) -> None:
         """Set if the manipulator can move
 
         :param can_write: True if the manipulator can move, False otherwise
@@ -181,9 +173,7 @@ class SensapexManipulator(PlatformManipulator):
         if can_write and hours > 0:
             if self._reset_timer:
                 self._reset_timer.cancel()
-            self._reset_timer = threading.Timer(
-                hours * HOURS_TO_SECONDS, self.reset_can_write, [sio]
-            )
+            self._reset_timer = threading.Timer(hours * HOURS_TO_SECONDS, self.reset_can_write, [sio])
             self._reset_timer.start()
 
     def reset_can_write(self, sio: socketio.AsyncServer) -> None:

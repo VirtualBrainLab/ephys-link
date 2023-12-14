@@ -12,12 +12,15 @@ server receives an event from a client. In general, each function does the follo
 4. Return the callback parameters to :mod:`ephys_link.server`
 """
 
-from abc import ABC, abstractmethod
+from __future__ import annotations
 
-# noinspection PyPackageRequirements
-import socketio
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from ephys_link import common as com
+
+if TYPE_CHECKING:
+    import socketio
 
 
 class PlatformHandler(ABC):
@@ -56,10 +59,11 @@ class PlatformHandler(ABC):
             for manipulator in self.manipulators.values():
                 if hasattr(manipulator, "stop"):
                     manipulator.stop()
-            return True
         except Exception as e:
             print(f"[ERROR]\t\t Could not stop manipulators: {e}\n")
             return False
+        else:
+            return True
 
     def get_manipulators(self) -> com.GetManipulatorsOutputData:
         """Get all registered manipulators
@@ -75,10 +79,8 @@ class PlatformHandler(ABC):
             error = ""
         except Exception as e:
             print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
-        finally:
-            return com.GetManipulatorsOutputData(
-                devices, self.num_axes, self.dimensions, error
-            )
+        else:
+            return com.GetManipulatorsOutputData(devices, self.num_axes, self.dimensions, error)
 
     def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator
@@ -97,18 +99,17 @@ class PlatformHandler(ABC):
             # Register manipulator
             self._register_manipulator(manipulator_id)
             com.dprint(f"[SUCCESS]\t Registered manipulator: {manipulator_id}\n")
-            return ""
-
         except ValueError as ve:
             # Manipulator not found in UMP
             print(f"[ERROR]\t\t Manipulator not found: {manipulator_id}: {ve}\n")
             return "Manipulator not found"
-
         except Exception as e:
             # Other error
             print(f"[ERROR]\t\t Registering manipulator: {manipulator_id}")
             print(f"{type(e)}: {e}\n")
             return "Error registering manipulator"
+        else:
+            return ""
 
     def unregister_manipulator(self, manipulator_id: str) -> str:
         """Unregister a manipulator
@@ -127,12 +128,13 @@ class PlatformHandler(ABC):
             self._unregister_manipulator(manipulator_id)
 
             com.dprint(f"[SUCCESS]\t Unregistered manipulator: {manipulator_id}\n")
-            return ""
         except Exception as e:
             # Other error
             print(f"[ERROR]\t\t Unregistering manipulator: {manipulator_id}")
             print(f"{e}\n")
             return "Error unregistering manipulator"
+        else:
+            return ""
 
     def get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
         """Get the current position of a manipulator
@@ -162,9 +164,7 @@ class PlatformHandler(ABC):
             # Error check and convert position to unified space
             if manipulator_pos["error"] != "":
                 return manipulator_pos
-            return com.PositionalOutputData(
-                self._platform_space_to_unified_space(manipulator_pos["position"]), ""
-            )
+            return com.PositionalOutputData(self._platform_space_to_unified_space(manipulator_pos["position"]), "")
 
         except KeyError:
             # Manipulator not found in registered manipulators
@@ -206,9 +206,7 @@ class PlatformHandler(ABC):
         """
         return self._get_shank_count(manipulator_id)
 
-    async def goto_pos(
-        self, manipulator_id: str, position: list[float], speed: int
-    ) -> com.PositionalOutputData:
+    async def goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
         """Move manipulator to position
 
         :param manipulator_id: The ID of the manipulator to move
@@ -234,23 +232,17 @@ class PlatformHandler(ABC):
 
             # Convert position to platform space, move, and convert final position back to
             # unified space
-            end_position = await self._goto_pos(
-                manipulator_id, self._unified_space_to_platform_space(position), speed
-            )
+            end_position = await self._goto_pos(manipulator_id, self._unified_space_to_platform_space(position), speed)
             if end_position["error"] != "":
                 return end_position
-            return com.PositionalOutputData(
-                self._platform_space_to_unified_space(end_position["position"]), ""
-            )
+            return com.PositionalOutputData(self._platform_space_to_unified_space(end_position["position"]), "")
 
         except KeyError:
             # Manipulator not found in registered manipulators
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
             return com.PositionalOutputData([], "Manipulator not registered")
 
-    async def drive_to_depth(
-        self, manipulator_id: str, depth: float, speed: int
-    ) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
         """Drive manipulator to depth
 
         :param manipulator_id: The ID of the manipulator to drive
@@ -291,9 +283,7 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
             return com.DriveToDepthOutputData(0, "Manipulator " "not registered")
 
-    def set_inside_brain(
-        self, manipulator_id: str, inside: bool
-    ) -> com.StateOutputData:
+    def set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
         """Set manipulator inside brain state (restricts motion)
 
         :param manipulator_id: The ID of the manipulator to set the state of
@@ -321,9 +311,7 @@ class PlatformHandler(ABC):
 
         except Exception as e:
             # Other error
-            print(
-                f"[ERROR]\t\t Set manipulator {manipulator_id} inside brain " f"state"
-            )
+            print(f"[ERROR]\t\t Set manipulator {manipulator_id} inside brain " f"state")
             print(f"{e}\n")
             return com.StateOutputData(False, "Error setting " "inside brain")
 
@@ -472,9 +460,7 @@ class PlatformHandler(ABC):
         """
 
     @abstractmethod
-    async def _goto_pos(
-        self, manipulator_id: str, position: list[float], speed: int
-    ) -> com.PositionalOutputData:
+    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
         """Move manipulator to position
 
         :param manipulator_id: The ID of the manipulator to move
@@ -489,9 +475,7 @@ class PlatformHandler(ABC):
         """
 
     @abstractmethod
-    async def _drive_to_depth(
-        self, manipulator_id: str, depth: float, speed: int
-    ) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
         """Drive manipulator to depth
 
         :param manipulator_id: The ID of the manipulator to drive
@@ -506,9 +490,7 @@ class PlatformHandler(ABC):
         """
 
     @abstractmethod
-    def _set_inside_brain(
-        self, manipulator_id: str, inside: bool
-    ) -> com.StateOutputData:
+    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
         """Set manipulator inside brain state (restricts motion)
 
         :param manipulator_id: The ID of the manipulator to set the state of
@@ -564,9 +546,7 @@ class PlatformHandler(ABC):
         """
 
     @abstractmethod
-    def _platform_space_to_unified_space(
-        self, platform_position: list[float]
-    ) -> list[float]:
+    def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
         """Convert position in platform space to position in unified manipulator space
 
         :param platform_position: Position in platform space (x, y, z, w) in mm
@@ -576,9 +556,7 @@ class PlatformHandler(ABC):
         """
 
     @abstractmethod
-    def _unified_space_to_platform_space(
-        self, unified_position: list[float]
-    ) -> list[float]:
+    def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
         """Convert position in unified manipulator space to position in platform space
 
         :param unified_position: Position in unified manipulator space (x, y, z, w) in mm

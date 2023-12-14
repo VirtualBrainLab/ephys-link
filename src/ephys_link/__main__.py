@@ -69,12 +69,9 @@ parser.add_argument(
     type=str,
     dest="type",
     default="sensapex",
-    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathfinder").'
-    ' Default: "sensapex"',
+    help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathfinder").' ' Default: "sensapex"',
 )
-parser.add_argument(
-    "-d", "--debug", dest="debug", action="store_true", help="Enable debug mode"
-)
+parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="Enable debug mode")
 parser.add_argument(
     "-p",
     "--port",
@@ -113,7 +110,7 @@ def main() -> None:
 
     # Parse arguments
     args = parser.parse_args()
-    com.set_debug(args.debug)
+    com.DEBUG = args.debug
 
     # Setup serial port
     if args.serial != "no-e-stop":
