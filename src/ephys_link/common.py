@@ -6,6 +6,7 @@ callback parameters)
 
 from __future__ import annotations
 
+import json
 from typing import TypedDict
 
 # Debugging flag
@@ -81,6 +82,10 @@ class GetManipulatorsOutputData(dict):
             error=error,
         )
 
+    def json(self) -> str:
+        """Return JSON string"""
+        return json.dumps(self)
+
 
 class PositionalOutputData(dict):
     """Output format for (position, error)
@@ -98,6 +103,10 @@ class PositionalOutputData(dict):
         """Constructor"""
         super().__init__(position=position, error=error)
 
+    def json(self) -> str:
+        """Return JSON string"""
+        return json.dumps(self)
+
 
 class AngularOutputData(dict):
     """Output format for (angles, error)
@@ -112,6 +121,10 @@ class AngularOutputData(dict):
         """Constructor"""
         super().__init__(angles=angles, error=error)
 
+    def json(self) -> str:
+        """Return JSON string"""
+        return json.dumps(self)
+
 
 class ShankCountOutputData(dict):
     """Output format for (num_shanks, error)
@@ -125,6 +138,10 @@ class ShankCountOutputData(dict):
     def __init__(self, shank_count: int, error: str) -> None:
         """Constructor"""
         super().__init__(shank_count=shank_count, error=error)
+
+    def json(self) -> str:
+        """Return JSON string"""
+        return json.dumps(self)
 
 
 class DriveToDepthOutputData(dict):
@@ -142,6 +159,10 @@ class DriveToDepthOutputData(dict):
         """Create drive to depth output data dictionary"""
         super().__init__(depth=depth, error=error)
 
+    def json(self) -> str:
+        """Return JSON string"""
+        return json.dumps(self)
+
 
 class StateOutputData(dict):
     """Output format for (state, error)
@@ -157,3 +178,7 @@ class StateOutputData(dict):
     def __init__(self, state: bool, error: str) -> None:
         """Create state output data dictionary"""
         super().__init__(state=state, error=error)
+
+    def json(self) -> str:
+        """Return JSON string"""
+        return json.dumps(self)

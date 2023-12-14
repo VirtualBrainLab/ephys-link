@@ -20,6 +20,7 @@ from pythonnet import load
 
 from ephys_link import common as com
 from ephys_link.__about__ import __version__ as version
+from ephys_link.platform_handler import PlatformHandler
 
 # Setup server
 load("netfx")
@@ -37,8 +38,8 @@ class Server:
         # Is the server running?
         self.is_running = False
 
-        # Current platform handler
-        self.platform = None
+        # Current platform handler (default to generic)
+        self.platform: PlatformHandler = PlatformHandler()
 
         # Attach server to the web app
         self.sio.attach(self.app)
@@ -109,7 +110,7 @@ class Server:
         """
         return version
 
-    async def get_manipulators(self, _) -> com.GetManipulatorsOutputData:
+    async def get_manipulators(self, _) -> str:
         """Get the list of discoverable manipulators
 
         :param _: Socket session ID (unused)
@@ -119,7 +120,7 @@ class Server:
         """
         com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
-        return self.platform.get_manipulators()
+        return self.platform.get_manipulators().json()
 
     async def register_manipulator(self, _, manipulator_id: str) -> str:
         """Register a manipulator with the server
@@ -149,7 +150,7 @@ class Server:
 
         return self.platform.unregister_manipulator(manipulator_id)
 
-    async def get_pos(self, _, manipulator_id: str) -> com.PositionalOutputData:
+    async def get_pos(self, _, manipulator_id: str) -> str:
         """Position of manipulator request
 
         :param _: Socket session ID (unused)
@@ -162,9 +163,9 @@ class Server:
         """
         # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
-        return self.platform.get_pos(manipulator_id)
+        return self.platform.get_pos(manipulator_id).json()
 
-    async def get_angles(self, _, manipulator_id: str) -> com.AngularOutputData:
+    async def get_angles(self, _, manipulator_id: str):
         """Angles of manipulator request
 
         :param _: Socket session ID (unused)
@@ -176,9 +177,9 @@ class Server:
         :rtype: :class:`ephys_link.common.AngularOutputData`
         """
 
-        return self.platform.get_angles(manipulator_id)
+        return self.platform.get_angles(manipulator_id).json()
 
-    async def get_shank_count(self, _, manipulator_id: str) -> com.ShankCountOutputData:
+    async def get_shank_count(self, _, manipulator_id: str) -> str:
         """Number of shanks of manipulator request
 
         :param _: Socket session ID (unused)
@@ -190,9 +191,9 @@ class Server:
         :rtype: :class:`ephys_link.common.ShankCountOutputData`
         """
 
-        return self.platform.get_shank_count(manipulator_id)
+        return self.platform.get_shank_count(manipulator_id).json()
 
-    async def goto_pos(self, _, data: com.GotoPositionInputDataFormat) -> com.PositionalOutputData:
+    async def goto_pos(self, _, data: com.GotoPositionInputDataFormat) -> str:
         """Move manipulator to position
 
         :param _: Socket session ID (unused)
@@ -207,21 +208,19 @@ class Server:
             manipulator_id = data["manipulator_id"]
             pos = data["pos"]
             speed = data["speed"]
-
         except KeyError:
             manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
             print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
-            return com.PositionalOutputData([], "Invalid data format")
-
+            return com.PositionalOutputData([], "Invalid data format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
-            return com.PositionalOutputData([], "Error in goto_pos")
+            return com.PositionalOutputData([], "Error in goto_pos").json()
+        else:
+            com.dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
+            goto_result = await self.platform.goto_pos(manipulator_id, pos, speed)
+            return goto_result.json()
 
-        com.dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
-
-        return await self.platform.goto_pos(manipulator_id, pos, speed)
-
-    async def drive_to_depth(self, _, data: com.DriveToDepthInputDataFormat) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(self, _, data: com.DriveToDepthInputDataFormat) -> str:
         """Drive to depth
 
         :param _: Socket session ID (unused)
@@ -236,21 +235,19 @@ class Server:
             manipulator_id = data["manipulator_id"]
             depth = data["depth"]
             speed = data["speed"]
-
         except KeyError:
             manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
             print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
-            return com.DriveToDepthOutputData(-1, "Invalid data " "format")
-
+            return com.DriveToDepthOutputData(-1, "Invalid data " "format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
-            return com.DriveToDepthOutputData(-1, "Error in drive_to_depth")
+            return com.DriveToDepthOutputData(-1, "Error in drive_to_depth").json()
+        else:
+            com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} " f"to depth {depth}")
+            drive_result = await self.platform.drive_to_depth(manipulator_id, depth, speed)
+            return drive_result.json()
 
-        com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} " f"to depth {depth}")
-
-        return await self.platform.drive_to_depth(manipulator_id, depth, speed)
-
-    async def set_inside_brain(self, _, data: com.InsideBrainInputDataFormat) -> com.StateOutputData:
+    async def set_inside_brain(self, _, data: com.InsideBrainInputDataFormat) -> str:
         """Set the inside brain state
 
         :param _: Socket session ID (unused)
@@ -263,18 +260,16 @@ class Server:
         try:
             manipulator_id = data["manipulator_id"]
             inside = data["inside"]
-
         except KeyError:
             manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
             print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
-            return com.StateOutputData(False, "Invalid data format")
+            return com.StateOutputData(False, "Invalid data format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-            return com.StateOutputData(False, "Error in set_inside_brain")
-
-        com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to " f'{"true" if inside else "false"}')
-
-        return self.platform.set_inside_brain(manipulator_id, inside)
+            return com.StateOutputData(False, "Error in set_inside_brain").json()
+        else:
+            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {"true" if inside else "false"}")
+            return self.platform.set_inside_brain(manipulator_id, inside).json()
 
     async def calibrate(self, _, manipulator_id: str) -> str:
         """Calibrate manipulator
@@ -327,12 +322,11 @@ class Server:
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
             return com.StateOutputData(False, "Error in set_can_write")
-
-        com.dprint(
-            f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to " f'{"true" if can_write else "false"}'
-        )
-
-        return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio)
+        else:
+            com.dprint(
+                f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {"true" if can_write else "false"}"
+            )
+            return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio)
 
     def stop(self, _) -> bool:
         """Stop all manipulators
