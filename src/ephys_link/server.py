@@ -72,7 +72,7 @@ class Server:
         :type _: dict
         :param __: Authentication details (unused)
         :type __: dict
-        :return: False on error to refuse connection. None otherwise.
+        :return: False on error to refuse connection. True otherwise.
         :rtype: bool
         """
         print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
@@ -115,8 +115,8 @@ class Server:
 
         :param _: Socket session ID (unused)
         :type _: str
-        :return: Callback parameters (manipulators, error message)
-        :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
+        :return: Callback as :class:`ephys_link.common.GetManipulatorsOutputData`
+        :rtype: str
         """
         com.dprint("[EVENT]\t\t Get discoverable manipulators")
 
@@ -129,7 +129,7 @@ class Server:
         :type _: str
         :param manipulator_id: ID of the manipulator to register
         :type manipulator_id: str
-        :return: Callback parameter (Error message (on error))
+        :return: Error message (on error)
         :rtype: str
         """
         com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
@@ -143,7 +143,7 @@ class Server:
         :type _: str
         :param manipulator_id: ID of the manipulator to unregister
         :type manipulator_id: str
-        :return: Callback parameter (Error message (on error))
+        :return: Error message (on error)
         :rtype: str
         """
         com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
@@ -157,9 +157,8 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to pull position from
         :type manipulator_id: str
-        :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
-            array on error) in mm, error message)
-        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        :return: Callback as :class:`ephys_link.common.PositionalOutputData`
+        :rtype: str
         """
         # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
@@ -172,9 +171,8 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to pull angles from
         :type manipulator_id: str
-        :return: Callback parameters (manipulator ID, angles in (yaw, pitch, roll) (or an empty
-            array on error) in degrees, error message)
-        :rtype: :class:`ephys_link.common.AngularOutputData`
+        :return: Callback as :class:`ephys_link.common.AngularOutputData`
+        :rtype: str
         """
 
         return self.platform.get_angles(manipulator_id).json()
@@ -186,9 +184,8 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to pull number of shanks from
         :type manipulator_id: str
-        :return: Callback parameters (manipulator ID, number of shanks (or -1 on error), error
-            message)
-        :rtype: :class:`ephys_link.common.ShankCountOutputData`
+        :return: Callback as :class:`ephys_link.common.ShankCountOutputData`
+        :rtype: str
         """
 
         return self.platform.get_shank_count(manipulator_id).json()
@@ -200,9 +197,8 @@ class Server:
         :type _: str
         :param data: Data containing manipulator ID, position in mm, and speed in mm/s
         :type data: :class:`ephys_link.common.GotoPositionInputDataFormat`
-        :return: Callback parameters (manipulator ID, position in (x, y, z, w) (or an empty
-            tuple on error) in mm, error message)
-        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        :return: Callback as :class:`ephys_link.common.PositionalOutputData`
+        :rtype: str
         """
         try:
             manipulator_id = data["manipulator_id"]
@@ -227,9 +223,8 @@ class Server:
         :type _: str
         :param data: Data containing manipulator ID, depth in mm, and speed in mm/s
         :type data: :class:`ephys_link.common.DriveToDepthInputDataFormat`
-        :return: Callback parameters (manipulator ID, depth (or -1 on error) in mm, error message
-            )
-        :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
+        :return: Callback as :class:`ephys_link.common.DriveToDepthOutputData`
+        :rtype: str
         """
         try:
             manipulator_id = data["manipulator_id"]
@@ -254,8 +249,8 @@ class Server:
         :type _: str
         :param data: Data containing manipulator ID and inside brain state
         :type data: :class:`ephys_link.common.InsideBrainInputDataFormat`
-        :return: Callback parameters (manipulator ID, inside, error message)
-        :rtype: :class:`ephys_link.common.StateOutputData`
+        :return: Callback as :class:`ephys_link.common.StateOutputData`:
+        :rtype: str
         """
         try:
             manipulator_id = data["manipulator_id"]
@@ -278,7 +273,7 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to calibrate
         :type manipulator_id: str
-        :return: Callback parameters (manipulator ID, error message)
+        :return: Error message (on error)
         :rtype: str
         """
         com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
@@ -292,7 +287,7 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to bypass calibration
         :type manipulator_id: str
-        :return: Callback parameters (manipulator ID, error message)
+        :return: Error message (on error)
         :rtype: str
         """
         com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
@@ -306,8 +301,8 @@ class Server:
         :type _: str
         :param data: Data containing manipulator ID and can_write brain state
         :type data: :class:`ephys_link.common.CanWriteInputDataFormat`
-        :return: Callback parameters (manipulator ID, can_write, error message)
-        :rtype: :class:`ephys_link.common.StateOutputData`
+        :return: Callback as :class:`ephys_link.common.StateOutputData`
+        :rtype: str
         """
         try:
             manipulator_id = data["manipulator_id"]
@@ -350,7 +345,8 @@ class Server:
         :type __: str
         :param data: Data received from client
         :type data: Any
-        :return: None
+        :return: "Unknown event" response message
+        :rtype: str
         """
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "Unknown event"
