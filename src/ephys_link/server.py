@@ -11,7 +11,7 @@ every event, the server does the following:
 
 import importlib
 import sys
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import socketio
 from aiohttp import web
@@ -20,7 +20,9 @@ from pythonnet import load
 
 from ephys_link import common as com
 from ephys_link.__about__ import __version__ as version
-from ephys_link.platform_handler import PlatformHandler
+
+if TYPE_CHECKING:
+    from ephys_link.platform_handler import PlatformHandler
 
 # Setup server
 load("netfx")
@@ -38,8 +40,10 @@ class Server:
         # Is the server running?
         self.is_running = False
 
-        # Current platform handler (default to generic)
-        self.platform: PlatformHandler = PlatformHandler()
+        # Current platform handler
+        self.platform: PlatformHandler = importlib.import_module(
+            "ephys_link.platforms.sensapex_handler"
+        ).SensapexHandler()
 
         # Attach server to the web app
         self.sio.attach(self.app)
@@ -365,7 +369,8 @@ class Server:
 
         # Import correct manipulator handler
         if platform_type == "sensapex":
-            self.platform = importlib.import_module("ephys_link.platforms.sensapex_handler").SensapexHandler()
+            # Already imported (was the default)
+            pass
         elif platform_type == "ump3":
             self.platform = importlib.import_module("ephys_link.platforms.ump3_handler").UMP3Handler()
         elif platform_type == "new_scale":
