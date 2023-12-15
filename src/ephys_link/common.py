@@ -26,30 +26,60 @@ def dprint(message: str) -> None:
 
 # Input data formats
 class GotoPositionInputDataFormat(TypedDict):
-    """Data format for positional requests"""
+    """Data format for positional requests
+
+    :param manipulator_id: ID of the manipulator to move
+    :type manipulator_id: str
+    :param pos: Position to move to in mm (X, Y, Z, W)
+    :type pos: list[float]
+    :param speed: Speed to move at in mm/s
+    :type speed: float
+    """
 
     manipulator_id: str
     pos: list[float]
-    speed: int
+    speed: float
 
 
 class InsideBrainInputDataFormat(TypedDict):
-    """Data format for setting inside brain state"""
+    """Data format for setting inside brain state
+
+    :param manipulator_id: ID of the manipulator to move
+    :type manipulator_id: str
+    :param inside: Whether the manipulator is inside the brain
+    :type inside: bool
+    """
 
     manipulator_id: str
     inside: bool
 
 
 class DriveToDepthInputDataFormat(TypedDict):
-    """Data format for depth driving requests"""
+    """Data format for depth driving requests
+
+    :param manipulator_id: ID of the manipulator to move
+    :type manipulator_id: str
+    :param depth: Depth to drive to in mm
+    :type depth: float
+    :param speed: Speed to drive at in mm/s
+    :type speed: float
+    """
 
     manipulator_id: str
     depth: float
-    speed: int
+    speed: float
 
 
 class CanWriteInputDataFormat(TypedDict):
-    """Data format for setting can write state"""
+    """Data format for setting can write state
+
+    :param manipulator_id: ID of the manipulator to move
+    :type manipulator_id: str
+    :param can_write: Whether the manipulator can write
+    :type can_write: bool
+    :param hours: Number of hours the manipulator can write for
+    :type hours: float
+    """
 
     manipulator_id: str
     can_write: bool
