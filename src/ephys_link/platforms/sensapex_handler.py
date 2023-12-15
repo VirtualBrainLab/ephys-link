@@ -1,10 +1,13 @@
 """Handle communications with Sensapex uMp API
 
+This supports the uMp-4 manipulator. Any Sensapex variants should extend this class.
+
 Implements Sensapex uMp specific API calls including coordinating the usage of the
 :class:`ephys_link.platforms.sensapex_manipulator.SensapexManipulator` class.
 
 This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -21,9 +24,9 @@ if TYPE_CHECKING:
 
 
 class SensapexHandler(PlatformHandler):
-    """Handler for Sensapex platform"""
+    """Handler for Sensapex platform."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         # Establish connection to Sensapex API (exit if connection fails)

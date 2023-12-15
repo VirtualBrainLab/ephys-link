@@ -14,9 +14,9 @@ DEBUG = False
 
 
 def dprint(message: str) -> None:
-    """Print message if debug is enabled
+    """Print message if debug is enabled.
 
-    :param message: Message to print
+    :param message: Message to print.
     :type message: str
     :return: None
     """
@@ -26,13 +26,13 @@ def dprint(message: str) -> None:
 
 # Input data formats
 class GotoPositionInputDataFormat(TypedDict):
-    """Data format for positional requests
+    """Data format for positional requests.
 
-    :param manipulator_id: ID of the manipulator to move
+    :param manipulator_id: ID of the manipulator to move.
     :type manipulator_id: str
-    :param pos: Position to move to in mm (X, Y, Z, W)
+    :param pos: Position to move to in mm (X, Y, Z, W).
     :type pos: list[float]
-    :param speed: Speed to move at in mm/s
+    :param speed: Speed to move at in mm/s.
     :type speed: float
     """
 
@@ -42,11 +42,11 @@ class GotoPositionInputDataFormat(TypedDict):
 
 
 class InsideBrainInputDataFormat(TypedDict):
-    """Data format for setting inside brain state
+    """Data format for setting inside brain state.
 
-    :param manipulator_id: ID of the manipulator to move
+    :param manipulator_id: ID of the manipulator to move.
     :type manipulator_id: str
-    :param inside: Whether the manipulator is inside the brain
+    :param inside: Whether the manipulator is inside the brain.
     :type inside: bool
     """
 
@@ -55,13 +55,13 @@ class InsideBrainInputDataFormat(TypedDict):
 
 
 class DriveToDepthInputDataFormat(TypedDict):
-    """Data format for depth driving requests
+    """Data format for depth driving requests.
 
-    :param manipulator_id: ID of the manipulator to move
+    :param manipulator_id: ID of the manipulator to move.
     :type manipulator_id: str
-    :param depth: Depth to drive to in mm
+    :param depth: Depth to drive to in mm.
     :type depth: float
-    :param speed: Speed to drive at in mm/s
+    :param speed: Speed to drive at in mm/s.
     :type speed: float
     """
 
@@ -71,13 +71,13 @@ class DriveToDepthInputDataFormat(TypedDict):
 
 
 class CanWriteInputDataFormat(TypedDict):
-    """Data format for setting can write state
+    """Data format for setting can write state.
 
-    :param manipulator_id: ID of the manipulator to move
+    :param manipulator_id: ID of the manipulator to move.
     :type manipulator_id: str
-    :param can_write: Whether the manipulator can write
+    :param can_write: Whether the manipulator can write.
     :type can_write: bool
-    :param hours: Number of hours the manipulator can write for
+    :param hours: Number of hours the manipulator can write for.
     :type hours: float
     """
 
@@ -88,15 +88,15 @@ class CanWriteInputDataFormat(TypedDict):
 
 # Output data dictionaries
 class GetManipulatorsOutputData(dict):
-    """Output format for (manipulators)
+    """Output format for get manipulators request.
 
-    :param manipulators: List of manipulator IDs (as strings)
+    :param manipulators: List of manipulator IDs (as strings).
     :type manipulators: list
-    :param num_axes: Number of axes this manipulator has
+    :param num_axes: Number of axes this manipulator has.
     :type num_axes: int
-    :param dimensions: Size of the movement space in mm (first 3 axes)
+    :param dimensions: Size of the movement space in mm (first 3 axes).
     :type dimensions: list
-    :param error: Error message
+    :param error: Error message.
     :type error: str
 
     :example: Example generated dictionary
@@ -118,11 +118,11 @@ class GetManipulatorsOutputData(dict):
 
 
 class PositionalOutputData(dict):
-    """Output format for (position, error)
+    """Output format for positional requests.
 
-    :param position: Position in mm (as a list, can be empty) in X, Y, Z, W order
+    :param position: Position in mm (as a list, empty on error) in X, Y, Z, W order.
     :type position: list
-    :param error: Error message
+    :param error: Error message.
     :type error: str
 
     :example: Example generated dictionary
@@ -139,11 +139,11 @@ class PositionalOutputData(dict):
 
 
 class AngularOutputData(dict):
-    """Output format for (angles, error)
+    """Output format for manipulator angle requests.
 
-    :param angles: Angles in degrees (as a list, can be empty) in yaw, pitch, roll order
+    :param angles: Angles in degrees (as a list, can be empty) in yaw, pitch, roll order.
     :type angles: list
-    :param error: Error message
+    :param error: Error message.
     :type error: str
     """
 
@@ -157,11 +157,11 @@ class AngularOutputData(dict):
 
 
 class ShankCountOutputData(dict):
-    """Output format for (num_shanks, error)
+    """Output format for number of shanks.
 
-    :param shank_count: Number of shanks on the probe
+    :param shank_count: Number of shanks on the probe (-1 if error).
     :type shank_count: int
-    :param error: Error message
+    :param error: Error message.
     :type error: str
     """
 
@@ -175,11 +175,11 @@ class ShankCountOutputData(dict):
 
 
 class DriveToDepthOutputData(dict):
-    """Output format for depth driving (depth, error)
+    """Output format for depth driving.
 
-    :param depth: Depth in mm
+    :param depth: Depth in mm (0 on error).
     :type depth: float
-    :param error: Error message
+    :param error: Error message.
     :type error: str
 
     :example: Example generated dictionary :code:`{"depth": 1.23, "error": ""}`
@@ -195,11 +195,11 @@ class DriveToDepthOutputData(dict):
 
 
 class StateOutputData(dict):
-    """Output format for (state, error)
+    """Output format for boolean state requests.
 
-    :param state: State of the event
+    :param state: State of the event.
     :type state: bool
-    :param error: Error message
+    :param error: Error message.
     :type error: str
 
     :example: Example generated dictionary :code:`{"state": True, "error": ""}`
