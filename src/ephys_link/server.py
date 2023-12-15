@@ -321,9 +321,7 @@ class Server:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
             return com.StateOutputData(False, "Error in set_can_write").json()
         else:
-            com.dprint(
-                f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {can_write}"
-            )
+            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {can_write}")
             return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio).json()
 
     def stop(self, _) -> bool:
