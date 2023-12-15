@@ -26,7 +26,7 @@ def dprint(message: str) -> None:
 
 # Input data formats
 class GotoPositionInputDataFormat(TypedDict):
-    """Data format for :func:`server.goto_pos`"""
+    """Data format for positional requests"""
 
     manipulator_id: str
     pos: list[float]
@@ -34,14 +34,14 @@ class GotoPositionInputDataFormat(TypedDict):
 
 
 class InsideBrainInputDataFormat(TypedDict):
-    """Data format for :func:`server.set_inside_brain`"""
+    """Data format for setting inside brain state"""
 
     manipulator_id: str
     inside: bool
 
 
 class DriveToDepthInputDataFormat(TypedDict):
-    """Data format for :func:`server.drive_to_depth`"""
+    """Data format for depth driving requests"""
 
     manipulator_id: str
     depth: float
@@ -49,7 +49,7 @@ class DriveToDepthInputDataFormat(TypedDict):
 
 
 class CanWriteInputDataFormat(TypedDict):
-    """Data format for :func:`server.set_can_write`"""
+    """Data format for setting can write state"""
 
     manipulator_id: str
     can_write: bool
@@ -60,7 +60,7 @@ class CanWriteInputDataFormat(TypedDict):
 class GetManipulatorsOutputData(dict):
     """Output format for (manipulators)
 
-    :param manipulators: Tuple of manipulator IDs (as strings)
+    :param manipulators: List of manipulator IDs (as strings)
     :type manipulators: list
     :param num_axes: Number of axes this manipulator has
     :type num_axes: int
@@ -70,7 +70,7 @@ class GetManipulatorsOutputData(dict):
     :type error: str
 
     :example: Example generated dictionary
-        :code:`{"manipulators": ["1", "2"], "error": ""}`
+        :code:`{"manipulators": ["1", "2"], "num_axes": 4, "dimensions": [20, 20, 20], "error": ""}`
     """
 
     def __init__(self, manipulators: list, num_axes: int, dimensions: list, error: str) -> None:
@@ -90,7 +90,7 @@ class GetManipulatorsOutputData(dict):
 class PositionalOutputData(dict):
     """Output format for (position, error)
 
-    :param position: Position in mm (as a tuple, can be empty) in X, Y, Z, W order
+    :param position: Position in mm (as a list, can be empty) in X, Y, Z, W order
     :type position: list
     :param error: Error message
     :type error: str
@@ -111,7 +111,7 @@ class PositionalOutputData(dict):
 class AngularOutputData(dict):
     """Output format for (angles, error)
 
-    :param angles: Angles in degrees (as a tuple, can be empty) in yaw, pitch, roll order
+    :param angles: Angles in degrees (as a list, can be empty) in yaw, pitch, roll order
     :type angles: list
     :param error: Error message
     :type error: str
@@ -152,7 +152,7 @@ class DriveToDepthOutputData(dict):
     :param error: Error message
     :type error: str
 
-    :example: Example generated dictionary :code:`{"depth": 0.123, "error": ""}`
+    :example: Example generated dictionary :code:`{"depth": 1.23, "error": ""}`
     """
 
     def __init__(self, depth: float, error: str) -> None:
