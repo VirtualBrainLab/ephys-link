@@ -268,7 +268,7 @@ class Server:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
             return com.StateOutputData(False, "Error in set_inside_brain").json()
         else:
-            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {"true" if inside else "false"}")
+            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {inside}")
             return self.platform.set_inside_brain(manipulator_id, inside).json()
 
     async def calibrate(self, _, manipulator_id: str) -> str:
@@ -322,7 +322,7 @@ class Server:
             return com.StateOutputData(False, "Error in set_can_write").json()
         else:
             com.dprint(
-                f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {"true" if can_write else "false"}"
+                f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {can_write}"
             )
             return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio).json()
 
