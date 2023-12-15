@@ -55,6 +55,7 @@ path = "src/ephys_link/__about__.py"
 exclude = ["/.github", "/.idea"]
 
 [tool.hatch.envs.default]
+python = "3.12"
 dependencies = [
     "coverage[toml]>=6.5",
     "pytest",
