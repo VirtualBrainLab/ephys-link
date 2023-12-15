@@ -7,7 +7,7 @@ This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 
 from __future__ import annotations
 
-from json import loads
+import json
 from typing import TYPE_CHECKING
 from urllib import request
 
@@ -87,21 +87,23 @@ class NewScalePathfinderHandler(PlatformHandler):
             raise ValueError(msg) from e
 
     def query_data(self) -> dict:
-        """Query New Scale HTTP server for data and return as dict
+        """Query New Scale HTTP server for data and return as dict.
 
-        :return: dict of data (originally in JSON)
+        :return: Parsed JSON data from New Scale HTTP server.
+        :rtype: dict
         """
         try:
-            return loads(request.urlopen(f"http://localhost:{self.port}").read())
+            return json.loads(request.urlopen(f"http://localhost:{self.port}").read())
         except Exception as e:
             print(f"[ERROR]\t\t Unable to query for New Scale data: {type(e)} {e}\n")
 
     def query_manipulator_data(self, manipulator_id: str) -> dict:
-        """Query New Scale HTTP server for data on a specific manipulator
+        """Query New Scale HTTP server for data on a specific manipulator.
 
-        :param manipulator_id: manipulator ID
-        :return: dict of data (originally in JSON)
-        :raises ValueError: if manipulator ID is not found in query
+        :param manipulator_id: manipulator ID.
+        :return: Parsed JSON data for a particular manipulator.
+        :rtype: dict
+        :raises ValueError: if manipulator ID is not found in query.
         """
         data_query = self.query_data()["ProbeArray"]
         manipulator_data = data_query[self.manipulators[manipulator_id]]
@@ -176,12 +178,6 @@ class NewScalePathfinderHandler(PlatformHandler):
         )
 
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
-        """Get the current angles of the manipulator in degrees
-
-        :param manipulator_id: manipulator ID
-        :return: Callback parameters (angles in (yaw, pitch, roll) (or an empty array on
-            error) in degrees, error message)
-        """
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
         return com.AngularOutputData(
@@ -194,11 +190,6 @@ class NewScalePathfinderHandler(PlatformHandler):
         )
 
     def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
-        """Get the number of shanks on the probe
-
-        :param manipulator_id: manipulator ID
-        :return: Callback parameters (number of shanks (or -1 on error), error message)
-        """
         for probe in self.query_data()["ProbeArray"]:
             if probe["Id"] == manipulator_id:
                 return com.ShankCountOutputData(probe["ShankCount"], "")
@@ -206,16 +197,16 @@ class NewScalePathfinderHandler(PlatformHandler):
         return com.ShankCountOutputData(-1, "Unable to find manipulator")
 
     async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
-        pass
+        raise NotImplementedError
 
     async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
-        pass
+        raise NotImplementedError
 
     def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
-        pass
+        raise NotImplementedError
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
-        pass
+        raise NotImplementedError
 
     def _bypass_calibration(self, manipulator_id: str) -> str:
         return ""
@@ -227,10 +218,10 @@ class NewScalePathfinderHandler(PlatformHandler):
         hours: float,
         sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
-        pass
+        raise NotImplementedError
 
     def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
-        pass
+        raise NotImplementedError
 
     def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
-        pass
+        raise NotImplementedError

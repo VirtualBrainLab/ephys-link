@@ -41,7 +41,7 @@ class Server:
         # Is the server running?
         self.is_running = False
 
-        # Current platform handler
+        # Current platform handler (defaults to Sensapex)
         self.platform: PlatformHandler = importlib.import_module(
             "ephys_link.platforms.sensapex_handler"
         ).SensapexHandler()
@@ -69,13 +69,13 @@ class Server:
         self.sio.on("*", self.catch_all)
 
     async def connect(self, sid, _, __) -> bool:
-        """Acknowledge connection to the server
+        """Acknowledge connection to the server.
 
-        :param sid: Socket session ID
+        :param sid: Socket session ID.
         :type sid: str
-        :param _: WSGI formatted dictionary with request info (unused)
+        :param _: WSGI formatted dictionary with request info (unused).
         :type _: dict
-        :param __: Authentication details (unused)
+        :param __: Authentication details (unused).
         :type __: dict
         :return: False on error to refuse connection. True otherwise.
         :rtype: bool
@@ -91,9 +91,9 @@ class Server:
         return False
 
     async def disconnect(self, sid) -> None:
-        """Acknowledge disconnection from the server
+        """Acknowledge disconnection from the server.
 
-        :param sid: Socket session ID
+        :param sid: Socket session ID.
         :type sid: str
         :return: None
         """
@@ -106,21 +106,21 @@ class Server:
 
     @staticmethod
     async def get_version(_) -> str:
-        """Get the version number of the server
+        """Get the version number of the server.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :return: Version number as defined in __version__
+        :return: Version number as defined in :mod:`ephys_link.__about__`.
         :rtype: str
         """
         return version
 
     async def get_manipulators(self, _) -> str:
-        """Get the list of discoverable manipulators
+        """Get the list of discoverable manipulators.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :return: Callback as :class:`ephys_link.common.GetManipulatorsOutputData`
+        :return: :class:`ephys_link.common.GetManipulatorsOutputData` as JSON formatted string.
         :rtype: str
         """
         com.dprint("[EVENT]\t\t Get discoverable manipulators")
@@ -128,13 +128,13 @@ class Server:
         return self.platform.get_manipulators().json()
 
     async def register_manipulator(self, _, manipulator_id: str) -> str:
-        """Register a manipulator with the server
+        """Register a manipulator with the server.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param manipulator_id: ID of the manipulator to register
+        :param manipulator_id: ID of the manipulator to register.
         :type manipulator_id: str
-        :return: Error message (on error)
+        :return: Error message on error, empty string otherwise.
         :rtype: str
         """
         com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
@@ -142,13 +142,13 @@ class Server:
         return self.platform.register_manipulator(manipulator_id)
 
     async def unregister_manipulator(self, _, manipulator_id: str) -> str:
-        """Unregister a manipulator from the server
+        """Unregister a manipulator from the server.
 
         :param _: Socket session ID (unused)
         :type _: str
-        :param manipulator_id: ID of the manipulator to unregister
+        :param manipulator_id: ID of the manipulator to unregister.
         :type manipulator_id: str
-        :return: Error message (on error)
+        :return: Error message on error, empty string otherwise.
         :rtype: str
         """
         com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
@@ -156,13 +156,13 @@ class Server:
         return self.platform.unregister_manipulator(manipulator_id)
 
     async def get_pos(self, _, manipulator_id: str) -> str:
-        """Position of manipulator request
+        """Position of manipulator request.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param manipulator_id: ID of manipulator to pull position from
+        :param manipulator_id: ID of manipulator to pull position from.
         :type manipulator_id: str
-        :return: Callback as :class:`ephys_link.common.PositionalOutputData`
+        :return: :class:`ephys_link.common.PositionalOutputData` as JSON formatted string.
         :rtype: str
         """
         # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
@@ -170,39 +170,39 @@ class Server:
         return self.platform.get_pos(manipulator_id).json()
 
     async def get_angles(self, _, manipulator_id: str):
-        """Angles of manipulator request
+        """Angles of manipulator request.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param manipulator_id: ID of manipulator to pull angles from
+        :param manipulator_id: ID of manipulator to pull angles from.
         :type manipulator_id: str
-        :return: Callback as :class:`ephys_link.common.AngularOutputData`
+        :return: :class:`ephys_link.common.AngularOutputData` as JSON formatted string.
         :rtype: str
         """
 
         return self.platform.get_angles(manipulator_id).json()
 
     async def get_shank_count(self, _, manipulator_id: str) -> str:
-        """Number of shanks of manipulator request
+        """Number of shanks of manipulator request.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param manipulator_id: ID of manipulator to pull number of shanks from
+        :param manipulator_id: ID of manipulator to pull number of shanks from.
         :type manipulator_id: str
-        :return: Callback as :class:`ephys_link.common.ShankCountOutputData`
+        :return: :class:`ephys_link.common.ShankCountOutputData` as JSON formatted string.
         :rtype: str
         """
 
         return self.platform.get_shank_count(manipulator_id).json()
 
     async def goto_pos(self, _, data: str) -> str:
-        """Move manipulator to position
+        """Move manipulator to position.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param data: Data containing manipulator ID, position in mm, and speed in mm/s
-        :type data: :class:`ephys_link.common.GotoPositionInputDataFormat`
-        :return: Callback as :class:`ephys_link.common.PositionalOutputData`
+        :param data: :class:`ephys_link.common.GotoPositionInputDataFormat` as JSON formatted string.
+        :type data: str
+        :return: :class:`ephys_link.common.PositionalOutputData` as JSON formatted string.
         :rtype: str
         """
         try:
@@ -222,13 +222,13 @@ class Server:
             return goto_result.json()
 
     async def drive_to_depth(self, _, data: str) -> str:
-        """Drive to depth
+        """Drive to depth.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param data: Data containing manipulator ID, depth in mm, and speed in mm/s
-        :type data: :class:`ephys_link.common.DriveToDepthInputDataFormat`
-        :return: Callback as :class:`ephys_link.common.DriveToDepthOutputData`
+        :param data: :class:`ephys_link.common.DriveToDepthInputDataFormat` as JSON formatted string.
+        :type data: str
+        :return: :class:`ephys_link.common.DriveToDepthOutputData` as JSON formatted string.
         :rtype: str
         """
         try:
@@ -248,13 +248,13 @@ class Server:
             return drive_result.json()
 
     async def set_inside_brain(self, _, data: str) -> str:
-        """Set the inside brain state
+        """Set the inside brain state.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param data: Data containing manipulator ID and inside brain state
-        :type data: :class:`ephys_link.common.InsideBrainInputDataFormat`
-        :return: Callback as :class:`ephys_link.common.StateOutputData`:
+        :param data: :class:`ephys_link.common.InsideBrainInputDataFormat` as JSON formatted string.
+        :type data: str
+        :return: :class:`ephys_link.common.StateOutputData` as JSON formatted string.
         :rtype: str
         """
         try:
@@ -268,17 +268,17 @@ class Server:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
             return com.StateOutputData(False, "Error in set_inside_brain").json()
         else:
-            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {"true" if inside else "false"}")
+            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {inside}")
             return self.platform.set_inside_brain(manipulator_id, inside).json()
 
     async def calibrate(self, _, manipulator_id: str) -> str:
-        """Calibrate manipulator
+        """Calibrate manipulator.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param manipulator_id: ID of manipulator to calibrate
+        :param manipulator_id: ID of manipulator to calibrate.
         :type manipulator_id: str
-        :return: Error message (on error)
+        :return: Error message on error, empty string otherwise.
         :rtype: str
         """
         com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
@@ -286,13 +286,13 @@ class Server:
         return await self.platform.calibrate(manipulator_id, self.sio)
 
     async def bypass_calibration(self, _, manipulator_id: str) -> str:
-        """Bypass calibration of manipulator
+        """Bypass calibration of manipulator.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param manipulator_id: ID of manipulator to bypass calibration
+        :param manipulator_id: ID of manipulator to bypass calibration.
         :type manipulator_id: str
-        :return: Error message (on error)
+        :return: Error message on error, empty string otherwise.
         :rtype: str
         """
         com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
@@ -300,13 +300,13 @@ class Server:
         return self.platform.bypass_calibration(manipulator_id)
 
     async def set_can_write(self, _, data: str) -> str:
-        """Set manipulator can_write state
+        """Set manipulator can_write state.
 
         :param _: Socket session ID (unused)
         :type _: str
-        :param data: Data containing manipulator ID and can_write brain state
-        :type data: :class:`ephys_link.common.CanWriteInputDataFormat`
-        :return: Callback as :class:`ephys_link.common.StateOutputData`
+        :param data: :class:`ephys_link.common.CanWriteInputDataFormat` as JSON formatted string.
+        :type data: str
+        :return: :class:`ephys_link.common.StateOutputData` as JSON formatted string.
         :rtype: str
         """
         try:
@@ -321,17 +321,15 @@ class Server:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
             return com.StateOutputData(False, "Error in set_can_write").json()
         else:
-            com.dprint(
-                f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {"true" if can_write else "false"}"
-            )
+            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {can_write}")
             return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio).json()
 
     def stop(self, _) -> bool:
-        """Stop all manipulators
+        """Stop all manipulators.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :return: True if successful, False otherwise
+        :return: True if successful, False otherwise.
         :rtype: bool
         """
         com.dprint("[EVENT]\t\t Stop all manipulators")
@@ -340,28 +338,28 @@ class Server:
 
     @staticmethod
     async def catch_all(_, __, data: Any) -> str:
-        """Catch all event
+        """Catch all event.
 
-        :param _: Socket session ID (unused)
+        :param _: Socket session ID (unused).
         :type _: str
-        :param __: Client ID (unused)
+        :param __: Client ID (unused).
         :type __: str
-        :param data: Data received from client
+        :param data: Data received from client.
         :type data: Any
-        :return: "UNKNOWN_EVENT" response message
+        :return: "UNKNOWN_EVENT" response message.
         :rtype: str
         """
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "UNKNOWN_EVENT"
 
     def launch_server(self, platform_type: str, server_port: int, pathfinder_port: int) -> None:
-        """Launch the server
+        """Launch the server.
 
-        :param platform_type: Parsed argument for platform type
+        :param platform_type: Parsed argument for platform type.
         :type platform_type: str
-        :param server_port: HTTP port to serve the server
+        :param server_port: HTTP port to serve the server.
         :type server_port: int
-        :param pathfinder_port: Port New Scale Pathfinder's server is on
+        :param pathfinder_port: Port New Scale Pathfinder's server is on.
         :type pathfinder_port: int
         :return: None
         """
@@ -395,7 +393,7 @@ class Server:
         web.run_app(self.app, port=server_port)
 
     def close_server(self, _, __) -> None:
-        """Close the server"""
+        """Close the server."""
         print("[INFO]\t\t Closing server")
 
         # Stop movement

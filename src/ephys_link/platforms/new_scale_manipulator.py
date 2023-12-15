@@ -65,10 +65,9 @@ class NewScaleManipulator(PlatformManipulator):
             axis.QueryPosStatus()
 
     def get_pos(self) -> com.PositionalOutputData:
-        """Get the current position of the manipulator and convert it into mm
+        """Get the current position of the manipulator and convert it into mm.
 
-        :return: Callback parameters (position in (x, y, z, 0) (or an empty array on
-            error) in mm, error message)
+        :return: Position of manipulator in (x, y, z, z) in mm (or an empty array on error) and error message (if any).
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         self.query_all_axes()
@@ -89,14 +88,14 @@ class NewScaleManipulator(PlatformManipulator):
             return com.PositionalOutputData([], "Error getting position")
 
     async def goto_pos(self, position: list[float], speed: float) -> com.PositionalOutputData:
-        """Move manipulator to position
+        """Move manipulator to position.
 
-        :param position: The position to move to in mm
+        :param position: The position to move to in mm.
         :type position: list[float]
-        :param speed: The speed to move at (in mm/s)
+        :param speed: The speed to move at (in mm/s).
         :type speed: float
-        :return: Callback parameters (position in (x, y, z, w) (or an empty array on
-            error), error message)
+        :return: Resulting position of manipulator in (x, y, z, z) in mm (or an empty array on error)
+         and error message (if any).
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         # Check if able to write
@@ -159,14 +158,14 @@ class NewScaleManipulator(PlatformManipulator):
             print(f"{e}\n")
             return com.PositionalOutputData([], "Error moving manipulator")
 
-    async def drive_to_depth(self, depth: float, speed: int) -> com.DriveToDepthOutputData:
-        """Drive the manipulator to a certain depth
+    async def drive_to_depth(self, depth: float, speed: float) -> com.DriveToDepthOutputData:
+        """Drive the manipulator to a certain depth.
 
-        :param depth: The depth to drive to in mm
+        :param depth: The depth to drive to in mm.
         :type depth: float
-        :param speed: The speed to drive at in mm/s
-        :type speed: int
-        :return: Callback parameters (depth (or 0 on error), error message)
+        :param speed: The speed to drive at in mm/s.
+        :type speed: float
+        :return: Resulting depth of manipulator in mm (or 0 on error) and error message (if any).
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
         # Check if able to write
@@ -220,7 +219,7 @@ class NewScaleManipulator(PlatformManipulator):
             return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
 
     def calibrate(self) -> bool:
-        """Calibrate the manipulator
+        """Calibrate the manipulator.
 
         :return: None
         """
@@ -229,7 +228,7 @@ class NewScaleManipulator(PlatformManipulator):
     def get_calibrated(self) -> bool:
         """Return the calibration state of the manipulator.
 
-        :return: True if the manipulator is calibrated, False otherwise
+        :return: True if the manipulator is calibrated, False otherwise.
         :rtype: bool
         """
         return self._calibrated
@@ -242,14 +241,13 @@ class NewScaleManipulator(PlatformManipulator):
         self._calibrated = True
 
     def set_can_write(self, can_write: bool, hours: float, sio: socketio.AsyncServer) -> None:
-        """Set if the manipulator can move
+        """Set if the manipulator can move.
 
-        :param can_write: True if the manipulator can move, False otherwise
+        :param can_write: True if the manipulator can move, False otherwise.
         :type can_write: bool
-        :param hours: The number of hours to allow the manipulator to move (0 =
-            forever)
+        :param hours: The number of hours to allow the manipulator to move (0 = forever).
         :type hours: float
-        :param sio: SocketIO object from server to emit reset event
+        :param sio: SocketIO object from server to emit reset event.
         :type sio: :class:`socketio.AsyncServer`
         :return: None
         """
@@ -262,17 +260,17 @@ class NewScaleManipulator(PlatformManipulator):
             self._reset_timer.start()
 
     def get_can_write(self) -> bool:
-        """Return if the manipulator can move
+        """Return if the manipulator can move.
 
-        :return: True if the manipulator can move, False otherwise
+        :return: True if the manipulator can move, False otherwise.
         :rtype: bool
         """
         return self._can_write
 
     def reset_can_write(self, sio: socketio.AsyncServer) -> None:
-        """Reset the :attr:`can_write` flag
+        """Reset the :attr:`can_write` flag.
 
-        :param sio: SocketIO object from server to emit reset event
+        :param sio: SocketIO object from server to emit reset event.
         :type sio: :class:`socketio.AsyncServer`
         :return: None
         """
@@ -280,16 +278,16 @@ class NewScaleManipulator(PlatformManipulator):
         asyncio.run(sio.emit("write_disabled", self._id))
 
     def set_inside_brain(self, inside: bool) -> None:
-        """Set if the manipulator is inside the brain
+        """Set if the manipulator is inside the brain.
 
-        :param inside: True if the manipulator is inside the brain, False otherwise
+        :param inside: True if the manipulator is inside the brain, False otherwise.
         :type inside: bool
         :return: None
         """
         self._inside_brain = inside
 
     def stop(self) -> None:
-        """Stop all axes on manipulator
+        """Stop all axes on manipulator.
 
         :returns None
         """
