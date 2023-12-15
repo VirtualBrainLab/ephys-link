@@ -10,6 +10,7 @@ every event, the server does the following:
 """
 
 import importlib
+import json
 import sys
 from typing import TYPE_CHECKING, Any
 
@@ -194,7 +195,7 @@ class Server:
 
         return self.platform.get_shank_count(manipulator_id).json()
 
-    async def goto_pos(self, _, data: com.GotoPositionInputDataFormat) -> str:
+    async def goto_pos(self, _, data: str) -> str:
         """Move manipulator to position
 
         :param _: Socket session ID (unused)
@@ -205,12 +206,12 @@ class Server:
         :rtype: str
         """
         try:
-            manipulator_id = data["manipulator_id"]
-            pos = data["pos"]
-            speed = data["speed"]
+            parsed_data: com.GotoPositionInputDataFormat = json.loads(data)
+            manipulator_id = parsed_data["manipulator_id"]
+            pos = parsed_data["pos"]
+            speed = parsed_data["speed"]
         except KeyError:
-            manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
-            print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+            print(f"[ERROR]\t\t Invalid goto_pos data: {data}\n")
             return com.PositionalOutputData([], "Invalid data format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
@@ -220,7 +221,7 @@ class Server:
             goto_result = await self.platform.goto_pos(manipulator_id, pos, speed)
             return goto_result.json()
 
-    async def drive_to_depth(self, _, data: com.DriveToDepthInputDataFormat) -> str:
+    async def drive_to_depth(self, _, data: str) -> str:
         """Drive to depth
 
         :param _: Socket session ID (unused)
@@ -231,12 +232,12 @@ class Server:
         :rtype: str
         """
         try:
-            manipulator_id = data["manipulator_id"]
-            depth = data["depth"]
-            speed = data["speed"]
+            parsed_data: com.DriveToDepthInputDataFormat = json.loads(data)
+            manipulator_id = parsed_data["manipulator_id"]
+            depth = parsed_data["depth"]
+            speed = parsed_data["speed"]
         except KeyError:
-            manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
-            print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+            print(f"[ERROR]\t\t Invalid drive_to_depth data: {data}\n")
             return com.DriveToDepthOutputData(-1, "Invalid data " "format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
@@ -246,7 +247,7 @@ class Server:
             drive_result = await self.platform.drive_to_depth(manipulator_id, depth, speed)
             return drive_result.json()
 
-    async def set_inside_brain(self, _, data: com.InsideBrainInputDataFormat) -> str:
+    async def set_inside_brain(self, _, data: str) -> str:
         """Set the inside brain state
 
         :param _: Socket session ID (unused)
@@ -257,11 +258,11 @@ class Server:
         :rtype: str
         """
         try:
-            manipulator_id = data["manipulator_id"]
-            inside = data["inside"]
+            parsed_data: com.InsideBrainInputDataFormat = json.loads(data)
+            manipulator_id = parsed_data["manipulator_id"]
+            inside = parsed_data["inside"]
         except KeyError:
-            manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
-            print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
+            print(f"[ERROR]\t\t Invalid set_inside_brain data: {data}\n")
             return com.StateOutputData(False, "Invalid data format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
@@ -298,7 +299,7 @@ class Server:
 
         return self.platform.bypass_calibration(manipulator_id)
 
-    async def set_can_write(self, _, data: com.CanWriteInputDataFormat) -> com.StateOutputData:
+    async def set_can_write(self, _, data: str) -> str:
         """Set manipulator can_write state
 
         :param _: Socket session ID (unused)
@@ -309,23 +310,21 @@ class Server:
         :rtype: str
         """
         try:
-            manipulator_id = data["manipulator_id"]
-            can_write = data["can_write"]
-            hours = data["hours"]
-
+            parsed_data: com.CanWriteInputDataFormat = json.loads(data)
+            manipulator_id = parsed_data["manipulator_id"]
+            can_write = parsed_data["can_write"]
+            hours = parsed_data["hours"]
         except KeyError:
-            manipulator_id = data["manipulator_id"] if "manipulator_id" in data else -1
-            print(f"[ERROR]\t\t Invalid data for manipulator {manipulator_id}\n")
-            return com.StateOutputData(False, "Invalid data " "format")
-
+            print(f"[ERROR]\t\t Invalid set_can_write data: {data}\n")
+            return com.StateOutputData(False, "Invalid data " "format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-            return com.StateOutputData(False, "Error in set_can_write")
+            return com.StateOutputData(False, "Error in set_can_write").json()
         else:
             com.dprint(
                 f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {"true" if can_write else "false"}"
             )
-            return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio)
+            return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio).json()
 
     def stop(self, _) -> bool:
         """Stop all manipulators

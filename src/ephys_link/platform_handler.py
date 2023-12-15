@@ -98,7 +98,6 @@ class PlatformHandler(ABC):
         try:
             # Register manipulator
             self._register_manipulator(manipulator_id)
-            com.dprint(f"[SUCCESS]\t Registered manipulator: {manipulator_id}\n")
         except ValueError as ve:
             # Manipulator not found in UMP
             print(f"[ERROR]\t\t Manipulator not found: {manipulator_id}: {ve}\n")
@@ -109,6 +108,7 @@ class PlatformHandler(ABC):
             print(f"{type(e)}: {e}\n")
             return "Error registering manipulator"
         else:
+            com.dprint(f"[SUCCESS]\t Registered manipulator: {manipulator_id}\n")
             return ""
 
     def unregister_manipulator(self, manipulator_id: str) -> str:
