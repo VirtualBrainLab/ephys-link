@@ -6,7 +6,7 @@
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
- <img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/c89e433c-2ce0-4f27-aa9d-66f89c59c979" alt="Manipulator and probe in pinpoint moving in sync">
+<img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/0c7c60b1-0926-4697-a461-221554f82de1" alt="Manipulator and probe in pinpoint moving in sync">
 
 The [Electrophysiology Manipulator Link](https://github.com/VirtualBrainLab/ephys-link)
 (or Ephys Link for short) is a Python [Socket.IO](https://socket.io/docs/v4/#what-socketio-is) server that allows any
