@@ -32,7 +32,7 @@ classifiers = [
 dependencies = [
     "aiohttp==3.9.1",
     "pyserial==3.5",
-    "python-socketio==5.10.0",
+    "python-socketio==5.11.0",
     "pythonnet==3.0.3",
     "wheel==0.42.0",
     "sensapex==1.400.0",
