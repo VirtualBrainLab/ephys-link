@@ -30,7 +30,7 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 
 1. [Python ≥ 3.8, < 3.13](https://www.python.org/downloads/release/python-3116/)
     1. Python 3.12+ requires the latest version
-       of [Microsoft Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (MSVC v143+) to
+       of [Microsoft Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (MSVC v143+ x86/64) to
        be installed.
 2. An **x86 Windows PC is required** to run the server.
 3. For Sensapex devices, the controller unit must be connected via an ethernet
@@ -72,12 +72,14 @@ pip install --upgrade ephys-link
 ## Install for development
 
 1. Clone the repository.
-2. Run the following command in the root directory of the repository to install the package along with development
-   tools:
+2. Install [Hatch](https://hatch.pypa.io/latest/install/)
+3. In a terminal, navigate to the repository's root directory and run
 
    ```bash
-   pip install -e .[dev]
+   hatch shell
    ```
+   
+This will create a virtual environment and install the package in editable mode.
 
 # Usage
 
