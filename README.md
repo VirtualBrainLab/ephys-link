@@ -30,8 +30,8 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 
 1. [Python ≥ 3.8, < 3.13](https://www.python.org/downloads/release/python-3116/)
     1. Python 3.12+ requires the latest version
-       of [Microsoft Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (MSVC v143+ x86/64) to
-       be installed.
+       of Microsoft Visual C++ (MSVC v143+ x86/64) and the Windows SDK (10/11) to
+       be installed. They can be acquired through the [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
 2. An **x86 Windows PC is required** to run the server.
 3. For Sensapex devices, the controller unit must be connected via an ethernet
    cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
@@ -42,18 +42,16 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
    connected to the computer. Follow the instructions on that repo for how to
    set up the Arduino.
 
-> ### Using a Python virtual environment is encouraged.
->
-> Create a virtual environment by running `python -m venv ephys_link`
->
-> Activate the environment by running `.\ephys_link\scripts\activate`
->
-> A virtual environment helps to isolate installed packages from other packages on your computer and ensures a clean
-> installation of Ephys Link
-
 **NOTE:** Ephys Link is an HTTP server without cross-origin support. The server
 is currently designed to interface with local/desktop instances of Pinpoint. It
 will not work with the web browser versions of Pinpoint at this time.
+
+<div style="padding: 15px; border: 1px solid transparent; border-color: transparent; margin-bottom: 20px; border-radius: 4px; color: #31708f; background-color: #d9edf7; border-color: #bce8f1;">
+<h3>Using a Python virtual environment is encouraged.</h3>
+<p>Create a virtual environment by running <code>python -m venv ephys_link</code></p>
+<p>Activate the environment by running <code>.\ephys_link\scripts\activate</code></p>
+<p>A virtual environment helps to isolate installed packages from other packages on your computer and ensures a clean installation of Ephys Link</p>
+</div>
 
 ## Install for use
 
