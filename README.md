@@ -42,16 +42,16 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
    connected to the computer. Follow the instructions on that repo for how to
    set up the Arduino.
 
+**NOTE:** Ephys Link is an HTTP server without cross-origin support. The server
+is currently designed to interface with local/desktop instances of Pinpoint. It
+will not work with the web browser versions of Pinpoint at this time.
+
 <div style="padding: 15px; border: 1px solid transparent; border-color: transparent; margin-bottom: 20px; border-radius: 4px; color: #31708f; background-color: #d9edf7; border-color: #bce8f1;">
 <h3>Using a Python virtual environment is encouraged.</h3>
 <p>Create a virtual environment by running <code>python -m venv ephys_link</code></p>
 <p>Activate the environment by running <code>.\ephys_link\scripts\activate</code></p>
 <p>A virtual environment helps to isolate installed packages from other packages on your computer and ensures a clean installation of Ephys Link</p>
 </div>
-
-**NOTE:** Ephys Link is an HTTP server without cross-origin support. The server
-is currently designed to interface with local/desktop instances of Pinpoint. It
-will not work with the web browser versions of Pinpoint at this time.
 
 ## Install for use
 
