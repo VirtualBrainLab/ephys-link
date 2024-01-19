@@ -7,14 +7,14 @@ This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 
 from __future__ import annotations
 
-import importlib
 from typing import TYPE_CHECKING
 
-# noinspection PyPackageRequirements
-import clr
+# noinspection PyUnresolvedReferences
+from NstMotorCtrl import NstCtrlHostIntf
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
+from ephys_link.platforms.new_scale_manipulator import NewScaleManipulator
 
 if TYPE_CHECKING:
     import socketio
@@ -29,12 +29,6 @@ class NewScaleHandler(PlatformHandler):
 
         self.num_axes = 3
         self.dimensions = [15, 15, 15]
-
-        # Load New Scale API
-        # noinspection PyUnresolvedReferences
-        clr.AddReference("ephys_link/resources/NstMotorCtrl")
-        # noinspection PyUnresolvedReferences
-        from NstMotorCtrl import NstCtrlHostIntf
 
         self.ctrl = NstCtrlHostIntf()
 
@@ -63,9 +57,7 @@ class NewScaleHandler(PlatformHandler):
 
         # Register manipulator
         first_axis_index = int(manipulator_id) * 3
-        self.manipulators[manipulator_id] = importlib.import_module(
-            "ephys_link.platforms.new_scale_manipulator"
-        ).NewScaleManipulator(
+        self.manipulators[manipulator_id] = NewScaleManipulator(
             manipulator_id,
             self.ctrl.GetAxis(first_axis_index),
             self.ctrl.GetAxis(first_axis_index + 1),
