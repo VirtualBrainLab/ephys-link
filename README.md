@@ -14,7 +14,14 @@ Socket.IO-compliant application (such
 as [Pinpoint](https://github.com/VirtualBrainLab/Pinpoint))
 to communicate with manipulators used in electrophysiology experiments.
 
-Currently, Ephys Link only supports Sensapex uMp-4 and uMp-3 Micromanipulators and New Scale 3-axis
+Supported Manipulators
+
+| Manufacturer | Model                                                             |
+|--------------|-------------------------------------------------------------------|
+| Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3</li> </ul>                          |
+| New Scale    | <ul> <li>Pathfinder MPM Control</li> <li>M3-USB-3:1-EP</li> </ul> |
+
+Currently, Ephys Link only supports Sensapex uMp-4, uMp-3 Micromanipulators and New Scale 3-axis
 manipulators. However, this platform is designed to be extensible to other
 manipulators and more may be added in the future.
 
@@ -31,7 +38,8 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 1. [Python ≥ 3.8, < 3.13](https://www.python.org/downloads/release/python-3116/)
     1. Python 3.12+ requires the latest version
        of Microsoft Visual C++ (MSVC v143+ x86/64) and the Windows SDK (10/11) to
-       be installed. They can be acquired through the [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+       be installed. They can be acquired through
+       the [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
 2. An **x86 Windows PC is required** to run the server.
 3. For Sensapex devices, the controller unit must be connected via an ethernet
    cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
@@ -76,7 +84,7 @@ pip install --upgrade ephys-link
    ```bash
    hatch shell
    ```
-   
+
 This will create a virtual environment and install the package in editable mode.
 
 # Usage
