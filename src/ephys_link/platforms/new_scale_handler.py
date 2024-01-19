@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-# noinspection PyPackageRequirements
-import clr
+# noinspection PyUnresolvedReferences
+from NstMotorCtrl import NstCtrlHostIntf
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
@@ -29,12 +29,6 @@ class NewScaleHandler(PlatformHandler):
 
         self.num_axes = 3
         self.dimensions = [15, 15, 15]
-
-        # Load New Scale API
-        # noinspection PyUnresolvedReferences
-        clr.AddReference("ephys_link/resources/NstMotorCtrl")
-        # noinspection PyUnresolvedReferences
-        from NstMotorCtrl import NstCtrlHostIntf
 
         self.ctrl = NstCtrlHostIntf()
 
@@ -102,11 +96,11 @@ class NewScaleHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-            self,
-            manipulator_id: str,
-            can_write: bool,
-            hours: float,
-            sio: socketio.AsyncServer,
+        self,
+        manipulator_id: str,
+        can_write: bool,
+        hours: float,
+        sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         com.dprint(f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n")

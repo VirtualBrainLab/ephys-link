@@ -16,7 +16,6 @@ from typing import TYPE_CHECKING, Any
 import socketio
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
-from pythonnet import load
 
 from ephys_link import common as com
 from ephys_link.__about__ import __version__ as version
@@ -27,9 +26,6 @@ from ephys_link.platforms.ump3_handler import UMP3Handler
 
 if TYPE_CHECKING:
     from ephys_link.platform_handler import PlatformHandler
-
-# Setup server
-load("netfx")
 
 
 class Server:
