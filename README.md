@@ -14,16 +14,14 @@ Socket.IO-compliant application (such
 as [Pinpoint](https://github.com/VirtualBrainLab/Pinpoint))
 to communicate with manipulators used in electrophysiology experiments.
 
-Supported Manipulators
+**Supported Manipulators:**
 
 | Manufacturer | Model                                                             |
 |--------------|-------------------------------------------------------------------|
 | Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3</li> </ul>                          |
 | New Scale    | <ul> <li>Pathfinder MPM Control</li> <li>M3-USB-3:1-EP</li> </ul> |
 
-Currently, Ephys Link only supports Sensapex uMp-4, uMp-3 Micromanipulators and New Scale 3-axis
-manipulators. However, this platform is designed to be extensible to other
-manipulators and more may be added in the future.
+Ephys Link is an open and extensible platform. It is designed to easily support integration with other manipulators.
 
 For more information regarding the server's implementation and how the code is organized, see
 the [package's development documentation](https://virtualbrainlab.org/ephys_link/development.html).
