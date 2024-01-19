@@ -9,7 +9,6 @@ every event, the server does the following:
 4. Relay the response from :mod:`ephys_link.sensapex_handler` to the callback function
 """
 
-import importlib
 import json
 import sys
 from typing import TYPE_CHECKING, Any
@@ -21,6 +20,10 @@ from pythonnet import load
 
 from ephys_link import common as com
 from ephys_link.__about__ import __version__ as version
+from ephys_link.platforms.new_scale_handler import NewScaleHandler
+from ephys_link.platforms.new_scale_pathfinder_handler import NewScalePathfinderHandler
+from ephys_link.platforms.sensapex_handler import SensapexHandler
+from ephys_link.platforms.ump3_handler import UMP3Handler
 
 if TYPE_CHECKING:
     from ephys_link.platform_handler import PlatformHandler
@@ -42,9 +45,7 @@ class Server:
         self.is_running = False
 
         # Current platform handler (defaults to Sensapex)
-        self.platform: PlatformHandler = importlib.import_module(
-            "ephys_link.platforms.sensapex_handler"
-        ).SensapexHandler()
+        self.platform: PlatformHandler = SensapexHandler()
 
         # Attach server to the web app
         self.sio.attach(self.app)
@@ -366,16 +367,14 @@ class Server:
 
         # Import correct manipulator handler
         if platform_type == "sensapex":
-            # Already imported (was the default)
+            # Already assigned (was the default)
             pass
         elif platform_type == "ump3":
-            self.platform = importlib.import_module("ephys_link.platforms.ump3_handler").UMP3Handler()
+            self.platform = UMP3Handler()
         elif platform_type == "new_scale":
-            self.platform = importlib.import_module("ephys_link.platforms.new_scale_handler").NewScaleHandler()
+            self.platform = NewScaleHandler()
         elif platform_type == "new_scale_pathfinder":
-            self.platform = importlib.import_module(
-                "ephys_link.platforms.new_scale_pathfinder_handler"
-            ).NewScalePathfinderHandler(pathfinder_port)
+            self.platform = NewScalePathfinderHandler(pathfinder_port)
         else:
             sys.exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 

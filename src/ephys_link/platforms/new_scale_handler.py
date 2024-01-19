@@ -7,7 +7,6 @@ This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 
 from __future__ import annotations
 
-import importlib
 from typing import TYPE_CHECKING
 
 # noinspection PyPackageRequirements
@@ -15,6 +14,7 @@ import clr
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
+from ephys_link.platforms.new_scale_manipulator import NewScaleManipulator
 
 if TYPE_CHECKING:
     import socketio
@@ -63,9 +63,7 @@ class NewScaleHandler(PlatformHandler):
 
         # Register manipulator
         first_axis_index = int(manipulator_id) * 3
-        self.manipulators[manipulator_id] = importlib.import_module(
-            "ephys_link.platforms.new_scale_manipulator"
-        ).NewScaleManipulator(
+        self.manipulators[manipulator_id] = NewScaleManipulator(
             manipulator_id,
             self.ctrl.GetAxis(first_axis_index),
             self.ctrl.GetAxis(first_axis_index + 1),
@@ -104,11 +102,11 @@ class NewScaleHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: str,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         com.dprint(f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n")
