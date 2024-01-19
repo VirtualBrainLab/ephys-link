@@ -82,6 +82,12 @@ dependencies = [
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/ephys_link tests}"
 
+[tool.hatch.envs.exe]
+python = "3.12"
+dependencies = [
+    "pyinstaller==6.3.0",
+]
+
 [tool.coverage.run]
 source_pkgs = ["ephys_link", "tests"]
 branch = true
