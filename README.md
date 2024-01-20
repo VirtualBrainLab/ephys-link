@@ -16,10 +16,10 @@ to communicate with manipulators used in electrophysiology experiments.
 
 **Supported Manipulators:**
 
-| Manufacturer | Model                                                             |
-|--------------|-------------------------------------------------------------------|
-| Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3</li> </ul>                          |
-| New Scale    | <ul> <li>Pathfinder MPM Control</li> <li>M3-USB-3:1-EP</li> </ul> |
+| Manufacturer | Model                                                                     |
+|--------------|---------------------------------------------------------------------------|
+| Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3</li> </ul>                                  |
+| New Scale    | <ul> <li>Pathfinder MPM Control v2.8.8+</li> <li>M3-USB-3:1-EP</li> </ul> |
 
 Ephys Link is an open and extensible platform. It is designed to easily support integration with other manipulators.
 
