@@ -87,6 +87,8 @@ python = "3.12"
 dependencies = [
     "pyinstaller==6.3.0",
 ]
+[tool.hatch.envs.exe.scripts]
+build = "pyinstaller.exe ephys_link.spec -y"
 
 [tool.coverage.run]
 source_pkgs = ["ephys_link", "tests"]
