@@ -1,7 +1,6 @@
 import socket
-from argparse import Namespace
-from threading import Event, Thread
-from tkinter import CENTER, RIGHT, E, IntVar, StringVar, Tk, ttk
+from threading import Thread
+from tkinter import CENTER, RIGHT, E, IntVar, StringVar, ttk
 
 # GUI Variables
 is_running = False
@@ -13,29 +12,10 @@ server_launch_button_text: StringVar
 
 
 class GUI:
-    """GUI definition for Ephys Link
+    """GUI definition for Ephys Link"""
 
-    :param root: Root object of the Tk GUI
-    :type root: Tk
-    """
-
-    def __init__(
-        self,
-        root: Tk,
-        launch_func: callable,
-        manipulator_stop_func: callable,
-        poll_serial_func: callable,
-        parsed_args: Namespace,
-    ) -> None:
+    def __init__(self) -> None:
         """Setup and construction of the Tk GUI"""
-
-        # Fields
-        self._root = root
-        self._launch_func = launch_func
-        self._manipulator_stop_func = manipulator_stop_func
-        self._poll_serial_func = poll_serial_func
-        self._kill_serial_event = Event()
-        self._parsed_args = parsed_args
 
         # Update GUI variables with defaults
         global server_port, platform_type, new_scale_port, e_stop_serial_port

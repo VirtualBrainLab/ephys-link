@@ -8,6 +8,7 @@ import serial.tools.list_ports as ports
 
 from ephys_link import common as com
 from ephys_link.__about__ import __version__ as version
+from ephys_link.gui import GUI
 from ephys_link.server import Server
 
 # Setup Arduino serial port (emergency stop)
@@ -65,7 +66,7 @@ parser = argparse.ArgumentParser(
     " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
-# parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
+parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
 parser.add_argument(
     "-t",
     "--type",
@@ -113,6 +114,14 @@ def main() -> None:
 
     # Parse arguments
     args = parser.parse_args()
+
+    # Launch GUI if specified
+    if args.gui:
+        gui = GUI()
+        gui.launch()
+        return None
+
+    # Continue with CLI if not
     com.DEBUG = args.debug
 
     # Setup serial port
