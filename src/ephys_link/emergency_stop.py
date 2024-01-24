@@ -30,7 +30,7 @@ class EmergencyStop:
         signal(SIGTERM, self._close_serial)
         signal(SIGINT, self._close_serial)
 
-    def start(self) -> None:
+    def watch(self) -> None:
         """Start polling serial port for emergency stop"""
         self.poll_serial_thread.start()
 
