@@ -11,6 +11,7 @@ every event, the server does the following:
 
 import json
 import sys
+from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING, Any
 
 import socketio
@@ -40,10 +41,14 @@ class Server:
         # Is the server running?
         self.is_running = False
 
-        # Current platform handler (defaults to Sensapex)
+        # Current platform handler (defaults to Sensapex).
         self.platform: PlatformHandler = SensapexHandler()
 
-        # Attach server to the web app
+        # Register server exit handlers.
+        signal(SIGTERM, self.close_server)
+        signal(SIGINT, self.close_server)
+
+        # Attach server to the web app.
         self.sio.attach(self.app)
 
         # Declare events

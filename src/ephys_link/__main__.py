@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-from signal import SIGINT, SIGTERM, signal
 
 from ephys_link import common as com
 from ephys_link.__about__ import __version__ as version
@@ -80,10 +79,6 @@ def main() -> None:
     if args.serial != "no-e-stop":
         e_stop = EmergencyStop(server, args.serial)
         e_stop.watch()
-
-    # Register server exit.
-    signal(SIGTERM, server.close_server)
-    signal(SIGINT, server.close_server)
 
     # Launch with parsed arguments on main thread.
     server.launch_server(args.type, args.port, args.pathfinder_port)
