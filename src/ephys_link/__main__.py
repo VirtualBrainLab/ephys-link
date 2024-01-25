@@ -7,13 +7,15 @@ from ephys_link.emergency_stop import EmergencyStop
 from ephys_link.gui import GUI
 from ephys_link.server import Server
 
-# Setup argument parser
+# Setup argument parser.
 parser = ArgumentParser(
     description="Electrophysiology Manipulator Link: a websocket interface for"
     " manipulators in electrophysiology experiments",
     prog="python -m ephys-link",
 )
-parser.add_argument("-g", "--gui", dest="gui", action="store_true", help="Launches GUI")
+parser.add_argument(
+    "-b", "--background", dest="background", action="store_true", help="Launches in headless mode (no GUI)"
+)
 parser.add_argument(
     "-t",
     "--type",
@@ -59,31 +61,31 @@ parser.add_argument(
 def main() -> None:
     """Main function"""
 
-    # Parse arguments
+    # Parse arguments.
     args = parser.parse_args()
 
-    # Launch GUI if specified
-    if args.gui:
+    # Launch GUI if not background.
+    if not args.background:
         gui = GUI()
         gui.launch()
         return None
 
-    # Otherwise, create Server from CLI
+    # Otherwise, create Server from CLI.
     server = Server()
 
-    # Continue with CLI if not
+    # Continue with CLI if not.
     com.DEBUG = args.debug
 
-    # Setup serial port
+    # Setup serial port.
     if args.serial != "no-e-stop":
         e_stop = EmergencyStop(server, args.serial)
         e_stop.watch()
 
-    # Register server exit
+    # Register server exit.
     signal(SIGTERM, server.close_server)
     signal(SIGINT, server.close_server)
 
-    # Launch with parsed arguments on main thread
+    # Launch with parsed arguments on main thread.
     server.launch_server(args.type, args.port, args.pathfinder_port)
 
 

@@ -1,14 +1,8 @@
 import socket
 from threading import Thread
-from tkinter import CENTER, RIGHT, E, IntVar, StringVar, ttk
+from tkinter import CENTER, RIGHT, BooleanVar, E, IntVar, StringVar, Tk, ttk
 
-# GUI Variables
-is_running = False
-server_port: IntVar
-platform_type: StringVar
-new_scale_port: IntVar
-e_stop_serial_port: StringVar
-server_launch_button_text: StringVar
+from ephys_link.__about__ import __version__ as version
 
 
 class GUI:
@@ -17,22 +11,22 @@ class GUI:
     def __init__(self) -> None:
         """Setup and construction of the Tk GUI"""
 
-        # Update GUI variables with defaults
-        global server_port, platform_type, new_scale_port, e_stop_serial_port
-        global server_launch_button_text
-        server_port = IntVar(value=self._parsed_args.port)
-        platform_type = StringVar(value=self._parsed_args.type)
-        new_scale_port = IntVar(value=self._parsed_args.new_scale_port)
-        e_stop_serial_port = StringVar(value=self._parsed_args.serial)
-        server_launch_button_text = StringVar(value="Start Server")
+        self._type = StringVar(value="sensapex")
+        self._debug = BooleanVar(value=False)
+        self._port = IntVar(value=8081)
+        self._pathfinder_port = IntVar(value=8080)
+        self._serial = StringVar(value="no-e-stop")
 
-        # Build GUI
-        self.build_gui()
+        self._root = Tk()
 
-    def build_gui(self):
+    def launch(self) -> None:
+        """Build and launch GUI"""
+        self._build_gui()
+
+    def _build_gui(self):
         """Build GUI"""
 
-        self._root.title("Ephys Link")
+        self._root.title(f"Ephys Link v{version}")
 
         mainframe = ttk.Frame(self._root, padding=3)
         mainframe.grid(column=0, row=0, sticky="news")
