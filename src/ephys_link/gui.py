@@ -28,17 +28,6 @@ class GUI:
         self._build_gui()
         self._root.mainloop()
 
-        # Launch server based on GUI settings.
-        server = Server()
-
-        com.DEBUG = self._debug.get()
-
-        if self._serial.get() != "no-e-stop":
-            e_stop = EmergencyStop(server, self._serial.get())
-            e_stop.watch()
-
-        server.launch_server(self._type.get(), self._port.get(), self._pathfinder_port.get())
-
     def _build_gui(self):
         """Build GUI"""
 
@@ -53,7 +42,7 @@ class GUI:
 
         # Server serving settings.
 
-        server_serving_settings = ttk.LabelFrame(mainframe, text="Serving settings", padding=3)
+        server_serving_settings = ttk.LabelFrame(mainframe, text="Serving Settings", padding=3)
         server_serving_settings.grid(column=0, row=0, sticky="news")
 
         # IP.
@@ -76,21 +65,33 @@ class GUI:
 
         ttk.Radiobutton(
             platform_type_settings,
-            text="Sensapex uMp",
+            text="Sensapex uMp-4",
             variable=self._type,
             value="sensapex",
         ).grid(column=0, row=0, sticky="we")
         ttk.Radiobutton(
             platform_type_settings,
-            text="New Scale",
+            text="Sensapex uMp-3",
+            variable=self._type,
+            value="ump3",
+        ).grid(column=0, row=1, sticky="we")
+        ttk.Radiobutton(
+            platform_type_settings,
+            text="Pathfinder MPM Control v2.8.8+",
+            variable=self._type,
+            value="new_scale_pathfinder",
+        ).grid(column=0, row=2, sticky="we")
+        ttk.Radiobutton(
+            platform_type_settings,
+            text="New Scale M3-USB-3:1-EP",
             variable=self._type,
             value="new_scale",
-        ).grid(column=0, row=1, sticky="we")
+        ).grid(column=0, row=3, sticky="we")
 
         # ---
 
         # New Scale Settings.
-        new_scale_settings = ttk.LabelFrame(mainframe, text="New Scale settings", padding=3)
+        new_scale_settings = ttk.LabelFrame(mainframe, text="Pathfinder Settings", padding=3)
         new_scale_settings.grid(column=0, row=2, sticky="news")
 
         # Port
@@ -115,5 +116,22 @@ class GUI:
         ttk.Button(
             mainframe,
             text="Launch Server",
-            command=lambda: self._root.destroy(),
+            command=self._launch_server,
         ).grid(column=0, row=4, columnspan=2, sticky="we")
+
+    def _launch_server(self) -> None:
+        """Launch server based on GUI settings"""
+
+        # Close GUI.
+        self._root.destroy()
+
+        # Launch server.
+        server = Server()
+
+        com.DEBUG = self._debug.get()
+
+        if self._serial.get() != "no-e-stop":
+            e_stop = EmergencyStop(server, self._serial.get())
+            e_stop.watch()
+
+        server.launch_server(self._type.get(), self._port.get(), self._pathfinder_port.get())
