@@ -354,7 +354,7 @@ class Server:
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "UNKNOWN_EVENT"
 
-    def launch_server(self, platform_type: str, server_port: int, pathfinder_port: int) -> None:
+    def launch_server(self, platform_type: str, server_port: int, pathfinder_port: int = None) -> None:
         """Launch the server.
 
         :param platform_type: Parsed argument for platform type.

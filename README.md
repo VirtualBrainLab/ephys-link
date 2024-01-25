@@ -33,17 +33,12 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 
 ## Prerequisites
 
-1. [Python ≥ 3.8, < 3.13](https://www.python.org/downloads/release/python-3116/)
-    1. Python 3.12+ requires the latest version
-       of Microsoft Visual C++ (MSVC v143+ x86/64) and the Windows SDK (10/11) to
-       be installed. They can be acquired through
-       the [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
-2. An **x86 Windows PC is required** to run the server.
-3. For Sensapex devices, the controller unit must be connected via an ethernet
+1. An **x86 Windows PC is required** to run the server.
+2. For Sensapex devices, the controller unit must be connected via an ethernet
    cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
    the controller unit must be connected via USB and be powered by a 6V power
    supply.
-4. To use the emergency stop feature, ensure an Arduino with
+3. To use the emergency stop feature, ensure an Arduino with
    the [StopSignal](https://github.com/VirtualBrainLab/StopSignal) sketch is
    connected to the computer. Follow the instructions on that repo for how to
    set up the Arduino.
@@ -52,51 +47,14 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 is currently designed to interface with local/desktop instances of Pinpoint. It
 will not work with the web browser versions of Pinpoint at this time.
 
-<div style="padding: 15px; border: 1px solid transparent; border-color: transparent; margin-bottom: 20px; border-radius: 4px; color: #31708f; background-color: #d9edf7; border-color: #bce8f1;">
-<h3>Using a Python virtual environment is encouraged.</h3>
-<p>Create a virtual environment by running <code>python -m venv ephys_link</code></p>
-<p>Activate the environment by running <code>.\ephys_link\scripts\activate</code></p>
-<p>A virtual environment helps to isolate installed packages from other packages on your computer and ensures a clean installation of Ephys Link</p>
-</div>
-
 ## Install for use
 
-Run the following command to install the server:
+1. Download the latest executable from
+   the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
+2. Double-click the executable file to launch the startup window.
+3. Select the desired configuration and click "Launch Server".
 
-```bash
-pip install ephys-link
-```
-
-Update the server like any other Python package:
-
-```bash
-pip install --upgrade ephys-link
-```
-
-## Install for development
-
-1. Clone the repository.
-2. Install [Hatch](https://hatch.pypa.io/latest/install/)
-3. In a terminal, navigate to the repository's root directory and run
-
-   ```bash
-   hatch shell
-   ```
-
-This will create a virtual environment and install the package in editable mode.
-
-# Usage
-
-Run the following commands in a terminal to start the server for the desired manipulator platform:
-
-| Manipulator Platform                 | Command                              |
-|--------------------------------------|--------------------------------------|
-| Sensapex uMp-4                       | `ephys-link`                         |
-| Sensapex uMp-3                       | `ephys-link -t ump3`                 |
-| New Scale                            | `ephys-link -t new_scale`            |
-| New Scale via Pathfinder HTTP server | `ephys-link -t new_scale_pathfinder` |
-
-There are a couple additional aliases for the Ephys Link executable: `ephys_link` and `el`.
+The startup window will be replaced with the server's console. Your configurations will be saved for future use.
 
 By default, the server will broadcast with its local IP address on port 8081.
 **Copy this information into Pinpoint to connect**.
@@ -105,6 +63,49 @@ For example, if the server is running on the same computer that Pinpoint is, use
 
 - Server: `localhost`
 - Port: `8081`
+
+## Install for development
+
+1. Clone the repository.
+2. Install [Hatch](https://hatch.pypa.io/latest/install/)
+3. Install the latest Microsoft Visual C++ (MSVC v143+ x86/64) and the Windows SDK (10/11)
+   via [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+4. In a terminal, navigate to the repository's root directory and run
+
+   ```bash
+      hatch shell
+   ```
+
+This will create a virtual environment, install Python 12 (if not found), and install the package in editable mode.
+
+## Install as a Python package
+
+```bash
+pip install ephys-link
+```
+
+Import the modules you need and launch the server.
+
+```python
+from ephys_link.server import Server
+
+server = Server()
+server.launch_server("sensapex", 8081)
+```
+
+# CLI Usage
+
+Run the following commands in a terminal to start the server for the desired manipulator platform without the startup
+window:
+
+| Manipulator Platform                 | Command                                     |
+|--------------------------------------|---------------------------------------------|
+| Sensapex uMp-4                       | `ephys-link.exe -b`                         |
+| Sensapex uMp-3                       | `ephys-link.exe -b -t ump3`                 |
+| New Scale                            | `ephys-link.exe -b -t new_scale`            |
+| New Scale via Pathfinder HTTP server | `ephys-link.exe -b -t new_scale_pathfinder` |
+
+There are a couple additional aliases for the Ephys Link executable: `ephys_link` and `el`.
 
 # Documentation and More Information
 
