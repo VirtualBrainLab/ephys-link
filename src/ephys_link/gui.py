@@ -1,10 +1,18 @@
-import socket
+from json import dumps, load
+from os import makedirs
+from os.path import exists
+from socket import gethostbyname, gethostname
 from tkinter import CENTER, RIGHT, BooleanVar, E, IntVar, StringVar, Tk, ttk
+
+from platformdirs import user_config_dir
 
 import ephys_link.common as com
 from ephys_link.__about__ import __version__ as version
 from ephys_link.emergency_stop import EmergencyStop
 from ephys_link.server import Server
+
+SETTINGS_DIR = f"{user_config_dir()}\\VBL\\Ephys Link"
+SETTINGS_FILENAME = "settings.json"
 
 
 class GUI:
@@ -15,11 +23,19 @@ class GUI:
 
         self._root = Tk()
 
-        self._type = StringVar(value="sensapex")
-        self._debug = BooleanVar(value=False)
-        self._port = IntVar(value=8081)
-        self._pathfinder_port = IntVar(value=8080)
-        self._serial = StringVar(value="no-e-stop")
+        # Create default settings dictionary
+        settings = {"type": "sensapex", "debug": False, "port": 8081, "pathfinder_port": 8080, "serial": "no-e-stop"}
+
+        # Read settings.
+        if exists(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}"):
+            with open(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}") as settings_file:
+                settings = load(settings_file)
+
+        self._type = StringVar(value=settings["type"])
+        self._debug = BooleanVar(value=settings["debug"])
+        self._port = IntVar(value=settings["port"])
+        self._pathfinder_port = IntVar(value=settings["pathfinder_port"])
+        self._serial = StringVar(value=settings["serial"])
 
     def launch(self) -> None:
         """Build and launch GUI"""
@@ -47,9 +63,7 @@ class GUI:
 
         # IP.
         ttk.Label(server_serving_settings, text="IP:", anchor=E, justify=RIGHT).grid(column=0, row=0, sticky="we")
-        ttk.Label(server_serving_settings, text=socket.gethostbyname(socket.gethostname())).grid(
-            column=1, row=0, sticky="we"
-        )
+        ttk.Label(server_serving_settings, text=gethostbyname(gethostname())).grid(column=1, row=0, sticky="we")
 
         # Port.
         ttk.Label(server_serving_settings, text="Port:", anchor=E, justify=RIGHT).grid(column=0, row=1, sticky="we")
@@ -124,6 +138,18 @@ class GUI:
 
         # Close GUI.
         self._root.destroy()
+
+        # Save settings.
+        settings = {
+            "type": self._type.get(),
+            "debug": self._debug.get(),
+            "port": self._port.get(),
+            "pathfinder_port": self._pathfinder_port.get(),
+            "serial": self._serial.get(),
+        }
+        makedirs(SETTINGS_DIR, exist_ok=True)
+        with open(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}", "w+") as f:
+            f.write(dumps(settings))
 
         # Launch server.
         server = Server()
