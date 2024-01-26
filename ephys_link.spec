@@ -1,7 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from ephys_link import __version__ as version
-
+from ephys_link.__about__ import __version__ as version
 
 a = Analysis(
     ['src\\ephys_link\\__main__.py'],
@@ -20,26 +19,20 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.datas,
     [],
-    exclude_binaries=True,
     name=f"ephys_link-v{version}-Windows-x86_64",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
     console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='ephys_link',
 )
