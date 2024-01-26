@@ -51,11 +51,11 @@ will not work with the web browser versions of Pinpoint at this time.
 
 1. Download the latest executable from
    the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
-2. Double-click the executable file to launch the startup window.
+2. Double-click the executable file to launch the configuration window.
     1. Take note of the IP address and port. **Copy this information into Pinpoint to connect**.
 3. Select the desired configuration and click "Launch Server".
 
-The startup window will be replaced with the server's console. Your configurations will be saved for future use.
+The configuration window will close and the server will launch. Your configurations will be saved for future use.
 
 To connect to the server from Pinpoint, provide the IP address and port. For example, if the server is running on the
 same computer that Pinpoint is, use
@@ -92,7 +92,7 @@ Import the modules you need and launch the server.
 from ephys_link.server import Server
 
 server = Server()
-server.launch_server("sensapex", 8081)
+server.launch("sensapex", 8081)
 ```
 
 # CLI Usage
