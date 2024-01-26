@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  pull_request:
+  merge_group:
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 📦 Install Hatch
+        run: pip install hatch
+      
+      - name: 🗃️ Cache Build Artifacts
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: ${{ runner.os }}-build
+
+      - name: 🔨 Build
+        run: hatch -e exe run build

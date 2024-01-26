@@ -1,58 +1,53 @@
-import socket
-from argparse import Namespace
-from threading import Event, Thread
-from tkinter import CENTER, RIGHT, E, IntVar, StringVar, Tk, ttk
+from json import dumps, load
+from os import makedirs
+from os.path import exists
+from socket import gethostbyname, gethostname
+from tkinter import CENTER, RIGHT, BooleanVar, E, IntVar, StringVar, Tk, ttk
 
-# GUI Variables
-is_running = False
-server_port: IntVar
-platform_type: StringVar
-new_scale_port: IntVar
-e_stop_serial_port: StringVar
-server_launch_button_text: StringVar
+from platformdirs import user_config_dir
+
+import ephys_link.common as com
+from ephys_link.__about__ import __version__ as version
+from ephys_link.emergency_stop import EmergencyStop
+from ephys_link.server import Server
+
+SETTINGS_DIR = f"{user_config_dir()}\\VBL\\Ephys Link"
+SETTINGS_FILENAME = "settings.json"
 
 
 class GUI:
-    """GUI definition for Ephys Link
+    """GUI definition for Ephys Link"""
 
-    :param root: Root object of the Tk GUI
-    :type root: Tk
-    """
-
-    def __init__(
-        self,
-        root: Tk,
-        launch_func: callable,
-        manipulator_stop_func: callable,
-        poll_serial_func: callable,
-        parsed_args: Namespace,
-    ) -> None:
+    def __init__(self) -> None:
         """Setup and construction of the Tk GUI"""
 
-        # Fields
-        self._root = root
-        self._launch_func = launch_func
-        self._manipulator_stop_func = manipulator_stop_func
-        self._poll_serial_func = poll_serial_func
-        self._kill_serial_event = Event()
-        self._parsed_args = parsed_args
+        self._root = Tk()
 
-        # Update GUI variables with defaults
-        global server_port, platform_type, new_scale_port, e_stop_serial_port
-        global server_launch_button_text
-        server_port = IntVar(value=self._parsed_args.port)
-        platform_type = StringVar(value=self._parsed_args.type)
-        new_scale_port = IntVar(value=self._parsed_args.new_scale_port)
-        e_stop_serial_port = StringVar(value=self._parsed_args.serial)
-        server_launch_button_text = StringVar(value="Start Server")
+        # Create default settings dictionary
+        settings = {"type": "sensapex", "debug": False, "port": 8081, "pathfinder_port": 8080, "serial": "no-e-stop"}
 
-        # Build GUI
-        self.build_gui()
+        # Read settings.
+        if exists(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}"):
+            with open(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}") as settings_file:
+                settings = load(settings_file)
 
-    def build_gui(self):
+        self._type = StringVar(value=settings["type"])
+        self._debug = BooleanVar(value=settings["debug"])
+        self._port = IntVar(value=settings["port"])
+        self._pathfinder_port = IntVar(value=settings["pathfinder_port"])
+        self._serial = StringVar(value=settings["serial"])
+
+    def launch(self) -> None:
+        """Build and launch GUI"""
+
+        # Build and run GUI.
+        self._build_gui()
+        self._root.mainloop()
+
+    def _build_gui(self):
         """Build GUI"""
 
-        self._root.title("Ephys Link")
+        self._root.title(f"Ephys Link v{version}")
 
         mainframe = ttk.Frame(self._root, padding=3)
         mainframe.grid(column=0, row=0, sticky="news")
@@ -61,107 +56,108 @@ class GUI:
         mainframe.columnconfigure(0, weight=1)
         mainframe.rowconfigure(0, weight=1)
 
-        # Server serving settings
+        # Server serving settings.
 
-        server_serving_settings = ttk.LabelFrame(mainframe, text="Serving settings", padding=3)
+        server_serving_settings = ttk.LabelFrame(mainframe, text="Serving Settings", padding=3)
         server_serving_settings.grid(column=0, row=0, sticky="news")
 
-        # IP
+        # IP.
         ttk.Label(server_serving_settings, text="IP:", anchor=E, justify=RIGHT).grid(column=0, row=0, sticky="we")
-        ttk.Label(server_serving_settings, text=socket.gethostbyname(socket.gethostname())).grid(
-            column=1, row=0, sticky="we"
-        )
+        ttk.Label(server_serving_settings, text=gethostbyname(gethostname())).grid(column=1, row=0, sticky="we")
 
-        # Port
+        # Port.
         ttk.Label(server_serving_settings, text="Port:", anchor=E, justify=RIGHT).grid(column=0, row=1, sticky="we")
-        ttk.Entry(server_serving_settings, textvariable=server_port, width=5, justify=CENTER).grid(
+        ttk.Entry(server_serving_settings, textvariable=self._port, width=5, justify=CENTER).grid(
             column=1, row=1, sticky="we"
         )
 
         # ---
 
-        # Platform type
+        # Platform type.
         platform_type_settings = ttk.LabelFrame(mainframe, text="Platform Type", padding=3)
         platform_type_settings.grid(column=0, row=1, sticky="news")
 
         ttk.Radiobutton(
             platform_type_settings,
-            text="Sensapex uMp",
-            variable=platform_type,
+            text="Sensapex uMp-4",
+            variable=self._type,
             value="sensapex",
         ).grid(column=0, row=0, sticky="we")
         ttk.Radiobutton(
             platform_type_settings,
-            text="New Scale",
-            variable=platform_type,
-            value="new_scale",
+            text="Sensapex uMp-3",
+            variable=self._type,
+            value="ump3",
         ).grid(column=0, row=1, sticky="we")
+        ttk.Radiobutton(
+            platform_type_settings,
+            text="Pathfinder MPM Control v2.8.8+",
+            variable=self._type,
+            value="new_scale_pathfinder",
+        ).grid(column=0, row=2, sticky="we")
+        ttk.Radiobutton(
+            platform_type_settings,
+            text="New Scale M3-USB-3:1-EP",
+            variable=self._type,
+            value="new_scale",
+        ).grid(column=0, row=3, sticky="we")
 
         # ---
 
-        # New Scale Settings
-        new_scale_settings = ttk.LabelFrame(mainframe, text="New Scale settings", padding=3)
+        # New Scale Settings.
+        new_scale_settings = ttk.LabelFrame(mainframe, text="Pathfinder Settings", padding=3)
         new_scale_settings.grid(column=0, row=2, sticky="news")
 
         # Port
         ttk.Label(new_scale_settings, text="HTTP Server Port:", anchor=E, justify=RIGHT).grid(
             column=0, row=1, sticky="we"
         )
-        ttk.Entry(new_scale_settings, textvariable=new_scale_port, width=5, justify=CENTER).grid(
+        ttk.Entry(new_scale_settings, textvariable=self._pathfinder_port, width=5, justify=CENTER).grid(
             column=1, row=1, sticky="we"
         )
 
         # ---
 
-        # Emergency Stop serial port
+        # Emergency Stop serial port.
         e_stop_settings = ttk.LabelFrame(mainframe, text="Emergency Stop Settings", padding=3)
         e_stop_settings.grid(column=0, row=3, sticky="news")
 
         # Serial Port
         ttk.Label(e_stop_settings, text="Serial Port:", anchor=E, justify=RIGHT).grid(column=0, row=1, sticky="we")
-        ttk.Entry(e_stop_settings, textvariable=e_stop_serial_port, justify=CENTER).grid(column=1, row=1, sticky="we")
+        ttk.Entry(e_stop_settings, textvariable=self._serial, justify=CENTER).grid(column=1, row=1, sticky="we")
 
-        # Server start/stop button
+        # Server launch button.
         ttk.Button(
             mainframe,
-            textvariable=server_launch_button_text,
-            command=lambda: self.start_stop_server(not is_running),
+            text="Launch Server",
+            command=self._launch_server,
         ).grid(column=0, row=4, columnspan=2, sticky="we")
 
-    def start_stop_server(self, start: bool) -> None:
-        """Start/stop server and update button text
+    def _launch_server(self) -> None:
+        """Launch server based on GUI settings"""
 
-        :param start: Whether to start or stop the server
-        :type start: bool
-        :return None
-        """
-        global is_running
-        is_running = not is_running
-        if start:
-            # Launch serial
-            Thread(
-                target=self._poll_serial_func,
-                args=(
-                    self._kill_serial_event,
-                    e_stop_serial_port.get(),
-                ),
-                daemon=True,
-            ).start()
-            # Launch server
-            Thread(
-                target=self._launch_func,
-                args=(platform_type.get(), server_port.get(), new_scale_port.get()),
-                daemon=True,
-            ).start()
+        # Close GUI.
+        self._root.destroy()
 
-            # Update UI
-            server_launch_button_text.set("Close Server")
-        else:
-            # Stop serial
-            self._kill_serial_event.set()
+        # Save settings.
+        settings = {
+            "type": self._type.get(),
+            "debug": self._debug.get(),
+            "port": self._port.get(),
+            "pathfinder_port": self._pathfinder_port.get(),
+            "serial": self._serial.get(),
+        }
+        makedirs(SETTINGS_DIR, exist_ok=True)
+        with open(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}", "w+") as f:
+            f.write(dumps(settings))
 
-            # Stop manipulators
-            self._manipulator_stop_func(0)
+        # Launch server.
+        server = Server()
 
-            # Close
-            self._root.destroy()
+        com.DEBUG = self._debug.get()
+
+        if self._serial.get() != "no-e-stop":
+            e_stop = EmergencyStop(server, self._serial.get())
+            e_stop.watch()
+
+        server.launch(self._type.get(), self._port.get(), self._pathfinder_port.get())

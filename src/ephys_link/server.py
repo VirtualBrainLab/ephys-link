@@ -9,8 +9,11 @@ every event, the server does the following:
 4. Relay the response from :mod:`ephys_link.sensapex_handler` to the callback function
 """
 
+from __future__ import annotations
+
 import json
 import sys
+from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING, Any
 
 import socketio
@@ -40,10 +43,14 @@ class Server:
         # Is the server running?
         self.is_running = False
 
-        # Current platform handler (defaults to Sensapex)
+        # Current platform handler (defaults to Sensapex).
         self.platform: PlatformHandler = SensapexHandler()
 
-        # Attach server to the web app
+        # Register server exit handlers.
+        signal(SIGTERM, self.close_server)
+        signal(SIGINT, self.close_server)
+
+        # Attach server to the web app.
         self.sio.attach(self.app)
 
         # Declare events
@@ -349,7 +356,7 @@ class Server:
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "UNKNOWN_EVENT"
 
-    def launch_server(self, platform_type: str, server_port: int, pathfinder_port: int) -> None:
+    def launch(self, platform_type: str, server_port: int, pathfinder_port: int | None = None) -> None:
         """Launch the server.
 
         :param platform_type: Parsed argument for platform type.
