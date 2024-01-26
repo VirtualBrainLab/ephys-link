@@ -1,5 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from ephys_link import __version__ as version
+
 
 a = Analysis(
     ['src\\ephys_link\\__main__.py'],
@@ -20,7 +22,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='ephys_link',
+    name=f"ephys_link-v{version}-Windows-x86_64",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

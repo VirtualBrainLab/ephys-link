@@ -47,24 +47,26 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 is currently designed to interface with local/desktop instances of Pinpoint. It
 will not work with the web browser versions of Pinpoint at this time.
 
-## Install for use
+## Install as Standalone Executable
 
 1. Download the latest executable from
    the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
 2. Double-click the executable file to launch the startup window.
+    1. Take note of the IP address and port. **Copy this information into Pinpoint to connect**.
 3. Select the desired configuration and click "Launch Server".
 
 The startup window will be replaced with the server's console. Your configurations will be saved for future use.
 
-By default, the server will broadcast with its local IP address on port 8081.
-**Copy this information into Pinpoint to connect**.
-
-For example, if the server is running on the same computer that Pinpoint is, use
+To connect to the server from Pinpoint, provide the IP address and port. For example, if the server is running on the
+same computer that Pinpoint is, use
 
 - Server: `localhost`
 - Port: `8081`
 
-## Install for development
+If the server is running on a different (local) computer, use the IP address of that computer as shown in the startup
+window instead of `localhost`.
+
+## Install for Development
 
 1. Clone the repository.
 2. Install [Hatch](https://hatch.pypa.io/latest/install/)
@@ -95,6 +97,9 @@ server.launch_server("sensapex", 8081)
 
 # CLI Usage
 
+Ephys Link can be launched from the command line directly. This is useful for computers or servers without graphical
+user interfaces.
+
 Run the following commands in a terminal to start the server for the desired manipulator platform without the startup
 window:
 
@@ -105,7 +110,7 @@ window:
 | New Scale                            | `ephys-link.exe -b -t new_scale`            |
 | New Scale via Pathfinder HTTP server | `ephys-link.exe -b -t new_scale_pathfinder` |
 
-There are a couple additional aliases for the Ephys Link executable: `ephys_link` and `el`.
+More options can be viewed by running `ephys-link.exe -h`.
 
 # Documentation and More Information
 
