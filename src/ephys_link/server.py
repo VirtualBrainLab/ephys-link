@@ -9,6 +9,8 @@ every event, the server does the following:
 4. Relay the response from :mod:`ephys_link.sensapex_handler` to the callback function
 """
 
+from __future__ import annotations
+
 import json
 import sys
 from signal import SIGINT, SIGTERM, signal
@@ -354,7 +356,7 @@ class Server:
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "UNKNOWN_EVENT"
 
-    def launch(self, platform_type: str, server_port: int, pathfinder_port: int = None) -> None:
+    def launch(self, platform_type: str, server_port: int, pathfinder_port: int | None = None) -> None:
         """Launch the server.
 
         :param platform_type: Parsed argument for platform type.
