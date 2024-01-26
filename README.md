@@ -76,7 +76,7 @@ window instead of `localhost`.
 4. In a terminal, navigate to the repository's root directory and run
 
    ```bash
-      hatch shell
+   hatch shell
    ```
 
 This will create a virtual environment, install Python 12 (if not found), and install the package in editable mode.
@@ -98,20 +98,29 @@ server.launch("sensapex", 8081)
 
 # CLI Usage
 
-Ephys Link can be launched from the command line directly. This is useful for computers or servers without graphical
-user interfaces.
+Ephys Link can be launched from the command line directly without the configuration window. This is useful for computers
+or servers without graphical user interfaces.
+
+With the standalone executable downloaded, invoking the executable from the command line:
+
+```bash
+ephys_link-vX.X.X-Windows-x86_64.exe -b
+```
+
+Use the actual name of the executable you downloaded. The `-b` or `--background` flag will launch the server without the
+configuration window and read configuration from CLI arguments.
 
 Run the following commands in a terminal to start the server for the desired manipulator platform without the startup
-window:
+window (replace `ephys_link.exe` with the actual name of the executable you downloaded):
 
-| Manipulator Platform                 | Command                                     |
-|--------------------------------------|---------------------------------------------|
-| Sensapex uMp-4                       | `ephys-link.exe -b`                         |
-| Sensapex uMp-3                       | `ephys-link.exe -b -t ump3`                 |
-| New Scale                            | `ephys-link.exe -b -t new_scale`            |
-| New Scale via Pathfinder HTTP server | `ephys-link.exe -b -t new_scale_pathfinder` |
+| Manipulator Platform                     | Command                                     |
+|------------------------------------------|---------------------------------------------|
+| Sensapex uMp-4                           | `ephys_link.exe -b`                         |
+| Sensapex uMp-3                           | `ephys_link.exe -b -t ump3`                 |
+| New Scale Pathfinder MPM Control v2.8.8+ | `ephys_link.exe -b -t new_scale_pathfinder` |
+| New Scale M3-USB-3:1-EP                  | `ephys_link.exe -b -t new_scale`            |
 
-More options can be viewed by running `ephys-link.exe -h`.
+More options can be viewed by running `ephys_link.exe -h`.
 
 # Documentation and More Information
 
