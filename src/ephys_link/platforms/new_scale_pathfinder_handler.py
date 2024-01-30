@@ -8,8 +8,10 @@ This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 from __future__ import annotations
 
 import json
+from sys import exit
 from typing import TYPE_CHECKING
 from urllib import request
+from urllib.error import URLError
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
@@ -82,9 +84,11 @@ class NewScalePathfinderHandler(PlatformHandler):
         # Test connection to New Scale HTTP server
         try:
             request.urlopen(f"http://localhost:{self.port}")
-        except Exception as e:
-            msg = f"New Scale HTTP server not online on port {self.port}"
-            raise ValueError(msg) from e
+        except URLError:
+            print(f"New Scale Pathfinder HTTP server not online on port {self.port}")
+            print("Please start the HTTP server and try again.")
+            input("Press Enter to exit...")
+            exit(1)
 
     def query_data(self) -> dict:
         """Query New Scale HTTP server for data and return as dict.
@@ -192,7 +196,11 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
         for probe in self.query_data()["ProbeArray"]:
             if probe["Id"] == manipulator_id:
-                return com.ShankCountOutputData(probe["ShankCount"], "")
+                if "ShankCount" in probe:
+                    return com.ShankCountOutputData(probe["ShankCount"], "")
+
+                # Default to 1.0 if shank count is not found
+                return com.ShankCountOutputData(1, "")
 
         return com.ShankCountOutputData(-1, "Unable to find manipulator")
 

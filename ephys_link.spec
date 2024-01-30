@@ -22,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name=f"ephys_link-v{version}-Windows-x86_64",
+    name=f"EphysLink-v{version}",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
