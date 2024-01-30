@@ -17,10 +17,10 @@ to communicate with manipulators used in electrophysiology experiments.
 
 **Supported Manipulators:**
 
-| Manufacturer | Model                                                                     |
-|--------------|---------------------------------------------------------------------------|
-| Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3</li> </ul>                                  |
-| New Scale    | <ul> <li>Pathfinder MPM Control v2.8.8+</li> <li>M3-USB-3:1-EP</li> </ul> |
+| Manufacturer | Model                                                                   |
+|--------------|-------------------------------------------------------------------------|
+| Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3</li> </ul>                                |
+| New Scale    | <ul> <li>Pathfinder MPM Control v2.8+</li> <li>M3-USB-3:1-EP</li> </ul> |
 
 Ephys Link is an open and extensible platform. It is designed to easily support integration with other manipulators.
 
@@ -67,20 +67,6 @@ same computer that Pinpoint is, use
 If the server is running on a different (local) computer, use the IP address of that computer as shown in the startup
 window instead of `localhost`.
 
-## Install for Development
-
-1. Clone the repository.
-2. Install [Hatch](https://hatch.pypa.io/latest/install/)
-3. Install the latest Microsoft Visual C++ (MSVC v143+ x86/64) and the Windows SDK (10/11)
-   via [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
-4. In a terminal, navigate to the repository's root directory and run
-
-   ```bash
-   hatch shell
-   ```
-
-This will create a virtual environment, install Python 12 (if not found), and install the package in editable mode.
-
 ## Install as a Python package
 
 ```bash
@@ -96,31 +82,19 @@ server = Server()
 server.launch("sensapex", 8081)
 ```
 
-# CLI Usage
+## Install for Development
 
-Ephys Link can be launched from the command line directly without the configuration window. This is useful for computers
-or servers without graphical user interfaces.
+1. Clone the repository.
+2. Install [Hatch](https://hatch.pypa.io/latest/install/)
+3. Install the latest Microsoft Visual C++ (MSVC v143+ x86/64) and the Windows SDK (10/11)
+   via [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+4. In a terminal, navigate to the repository's root directory and run
 
-With the standalone executable downloaded, invoking the executable from the command line:
+   ```bash
+   hatch shell
+   ```
 
-```bash
-ephys_link-vX.X.X-Windows-x86_64.exe -b
-```
-
-Use the actual name of the executable you downloaded. The `-b` or `--background` flag will launch the server without the
-configuration window and read configuration from CLI arguments.
-
-Run the following commands in a terminal to start the server for the desired manipulator platform without the startup
-window (replace `ephys_link.exe` with the actual name of the executable you downloaded):
-
-| Manipulator Platform                     | Command                                     |
-|------------------------------------------|---------------------------------------------|
-| Sensapex uMp-4                           | `ephys_link.exe -b`                         |
-| Sensapex uMp-3                           | `ephys_link.exe -b -t ump3`                 |
-| New Scale Pathfinder MPM Control v2.8.8+ | `ephys_link.exe -b -t new_scale_pathfinder` |
-| New Scale M3-USB-3:1-EP                  | `ephys_link.exe -b -t new_scale`            |
-
-More options can be viewed by running `ephys_link.exe -h`.
+This will create a virtual environment, install Python 12 (if not found), and install the package in editable mode.
 
 # Documentation and More Information
 
