@@ -8,6 +8,7 @@ This is a subclass of :class:`ephys_link.platform_handler.PlatformHandler`.
 from __future__ import annotations
 
 import json
+from sys import exit
 from typing import TYPE_CHECKING
 from urllib import request
 from urllib.error import URLError
@@ -197,9 +198,9 @@ class NewScalePathfinderHandler(PlatformHandler):
             if probe["Id"] == manipulator_id:
                 if "ShankCount" in probe:
                     return com.ShankCountOutputData(probe["ShankCount"], "")
-                else:
-                    # Default to 1.0 if shank count is not found
-                    return com.ShankCountOutputData(1, "")
+
+                # Default to 1.0 if shank count is not found
+                return com.ShankCountOutputData(1, "")
 
         return com.ShankCountOutputData(-1, "Unable to find manipulator")
 
@@ -219,11 +220,11 @@ class NewScalePathfinderHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-            self,
-            manipulator_id: str,
-            can_write: bool,
-            hours: float,
-            sio: socketio.AsyncServer,
+        self,
+        manipulator_id: str,
+        can_write: bool,
+        hours: float,
+        sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         raise NotImplementedError
 
