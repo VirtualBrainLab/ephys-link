@@ -195,7 +195,11 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
         for probe in self.query_data()["ProbeArray"]:
             if probe["Id"] == manipulator_id:
-                return com.ShankCountOutputData(probe["ShankCount"], "")
+                if "ShankCount" in probe:
+                    return com.ShankCountOutputData(probe["ShankCount"], "")
+                else:
+                    # Default to 1.0 if shank count is not found
+                    return com.ShankCountOutputData(1, "")
 
         return com.ShankCountOutputData(-1, "Unable to find manipulator")
 
