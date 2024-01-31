@@ -2,6 +2,9 @@ name: Autoformat and Lint
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
   merge_group:
 
 jobs:
