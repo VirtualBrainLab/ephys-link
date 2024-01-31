@@ -26,7 +26,7 @@ jobs:
           cache: 'pip'
 
       - name: 📦 Install Hatch
-        run: pip install hatch
+        run: pip install -r .github/hatch.txt
 
       - name: 📝 Format Code
         run: hatch fmt -f
