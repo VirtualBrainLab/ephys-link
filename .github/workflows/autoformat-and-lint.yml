@@ -2,6 +2,9 @@ name: Autoformat and Lint
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
   merge_group:
 
 jobs:
@@ -26,7 +29,7 @@ jobs:
           cache: 'pip'
 
       - name: 📦 Install Hatch
-        run: pip install -r .github/hatch.txt
+        run: pip install hatch
 
       - name: 📝 Format Code
         run: hatch fmt -f

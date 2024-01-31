@@ -2,6 +2,9 @@ name: Build
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
   merge_group:
 
 jobs:
@@ -22,7 +25,7 @@ jobs:
           cache: 'pip'
 
       - name: 📦 Install Hatch
-        run: pip install -r .github/hatch.txt
+        run: pip install hatch
       
       - name: 🗃️ Cache Build Artifacts
         uses: actions/cache@v4
