@@ -184,9 +184,12 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
+        # Apply PosteriorAngle to Polar to get the correct angle.
+        adjusted_polar = manipulator_data["Polar"] - self.query_data()["PosteriorAngle"]
+
         return com.AngularOutputData(
             [
-                manipulator_data["Polar"],
+                adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
                 manipulator_data["Pitch"],
                 manipulator_data["Roll"],
             ],
