@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.WORKFLOW_COMMIT_VBL }}
+          token: ${{ secrets.WORKFLOW_COMMIT }}
 
       - name: 🐍 Setup Python
         uses: actions/setup-python@v4
