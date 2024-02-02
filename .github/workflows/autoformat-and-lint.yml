@@ -38,6 +38,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Autoformat code"
+          skip_fetch: true
+          skip_checkout: true
 
       - name: 🔍 Lint
         run: hatch fmt --check
