@@ -32,8 +32,13 @@ jobs:
         with:
           path: |
             build
-            ~/.cache/pip
+            C:\Users\runneradmin\AppData\Local\hatch\env\virtual\ephys-link
           key: ${{ runner.os }}-build-${{ hashFiles('pyproject.toml') }}
 
       - name: 🔨 Build
         run: hatch -e exe run build
+
+      - name: show files
+        run: |
+          ls -R
+          ls -R build
