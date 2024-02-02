@@ -37,8 +37,3 @@ jobs:
 
       - name: 🔨 Build
         run: hatch -e exe run build
-
-      - name: show files
-        run: |
-          ls -R
-          ls -R build
