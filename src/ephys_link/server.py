@@ -54,7 +54,7 @@ class Server:
         self.sio.attach(self.app)
 
         # Declare events
-        self.sio.on("connect",self.connect)
+        self.sio.on("connect", self.connect)
         self.sio.on("disconnect", self.disconnect)
         self.sio.on("get_version", self.get_version)
         self.sio.on("get_manipulators", self.get_manipulators)
