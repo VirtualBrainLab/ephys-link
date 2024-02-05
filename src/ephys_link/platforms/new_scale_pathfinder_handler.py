@@ -191,7 +191,7 @@ class NewScalePathfinderHandler(PlatformHandler):
             [
                 adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
                 manipulator_data["Pitch"],
-                manipulator_data.get("ShankOrientation", 0),
+                (360 - manipulator_data.get("ShankOrientation", 0)) % 360,
             ],
             "",
         )
@@ -219,11 +219,11 @@ class NewScalePathfinderHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: str,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         raise NotImplementedError
 
