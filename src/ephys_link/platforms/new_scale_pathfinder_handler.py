@@ -191,7 +191,7 @@ class NewScalePathfinderHandler(PlatformHandler):
             [
                 adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
                 manipulator_data["Pitch"],
-                manipulator_data["Roll"],
+                manipulator_data.get("ShankOrientation", 0),
             ],
             "",
         )
@@ -199,11 +199,7 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
         for probe in self.query_data()["ProbeArray"]:
             if probe["Id"] == manipulator_id:
-                if "ShankCount" in probe:
-                    return com.ShankCountOutputData(probe["ShankCount"], "")
-
-                # Default to 1.0 if shank count is not found
-                return com.ShankCountOutputData(1, "")
+                return com.ShankCountOutputData(probe.get("ShankCount", 1), "")
 
         return com.ShankCountOutputData(-1, "Unable to find manipulator")
 
