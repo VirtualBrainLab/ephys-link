@@ -219,11 +219,11 @@ class NewScalePathfinderHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-            self,
-            manipulator_id: str,
-            can_write: bool,
-            hours: float,
-            sio: socketio.AsyncServer,
+        self,
+        manipulator_id: str,
+        can_write: bool,
+        hours: float,
+        sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         raise NotImplementedError
 
