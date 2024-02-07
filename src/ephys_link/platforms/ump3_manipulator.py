@@ -100,8 +100,18 @@ class UMP3Manipulator(SensapexManipulator):
 
             # Return success unless write was disabled during movement (meaning a stop occurred)
             if not self._can_write:
+                com.dprint(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
                 return com.PositionalOutputData([], "Manipulator movement canceled")
 
+            # Return error if movement did not reach target.
+            if not all(
+                abs(manipulator_final_position[i] - position[i]) < self._movement_tolerance
+                for i in range(len(position))
+            ):
+                com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
+                return com.PositionalOutputData([], "Manipulator did not reach target position")
+
+            # Made it to the target.
             com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position" f" {manipulator_final_position}\n")
             return com.PositionalOutputData(manipulator_final_position, "")
         except Exception as e:
