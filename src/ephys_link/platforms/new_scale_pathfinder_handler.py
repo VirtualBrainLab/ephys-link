@@ -191,7 +191,7 @@ class NewScalePathfinderHandler(PlatformHandler):
             [
                 adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
                 manipulator_data["Pitch"],
-                (360 - manipulator_data.get("ShankOrientation", 0)) % 360,
+                manipulator_data.get("ShankOrientation", 0),
             ],
             "",
         )
