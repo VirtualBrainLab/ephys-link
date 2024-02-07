@@ -421,11 +421,11 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
+    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: float) -> com.PositionalOutputData:
         raise NotImplementedError
 
     @abstractmethod
-    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: float) -> com.DriveToDepthOutputData:
         raise NotImplementedError
 
     @abstractmethod
