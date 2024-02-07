@@ -18,6 +18,7 @@ class PlatformManipulator(ABC):
         """Initialize manipulator."""
 
         self._id = None
+        self._movement_tolerance = 0.001
         self._calibrated = False
         self._inside_brain = False
         self._can_write = False
