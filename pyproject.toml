@@ -60,6 +60,7 @@ python = "3.12"
 dependencies = [
     "coverage[toml]>=6.5",
     "pytest",
+    "python-socketio[client]==5.11.1",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
