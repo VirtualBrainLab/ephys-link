@@ -235,7 +235,7 @@ class NewScaleManipulator(PlatformManipulator):
             print(f"[ERROR]\t\t Moving manipulator {self._id} to depth {depth}")
             print(f"{e}\n")
             # Return 0 and error message on failure
-            return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
+            return com.DriveToDepthOutputData(0, "Error driving manipulator")
 
     def calibrate(self) -> bool:
         """Calibrate the manipulator.

@@ -143,7 +143,7 @@ class SensapexManipulator(PlatformManipulator):
             return com.DriveToDepthOutputData(movement_result["position"][3], "")
 
         # Return 0 and error message on failure
-        return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
+        return com.DriveToDepthOutputData(0, movement_result["error"])
 
     def set_inside_brain(self, inside: bool) -> None:
         """Set if the manipulator is inside the brain.
