@@ -155,9 +155,10 @@ class NewScaleManipulator(PlatformManipulator):
             # Return error if movement did not reach target.
             if not all(
                 abs(manipulator_final_position[i] - position[i]) < self._movement_tolerance
-                for i in range(len(position))
+                for i in range(3)
             ):
-                com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
+                com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position.")
+                com.dprint(f"\t\t\t Expected: {position}, Got: {manipulator_final_position}")
                 return com.PositionalOutputData([], "Manipulator did not reach target position")
 
             # Made it to the target.
