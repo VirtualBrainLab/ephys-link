@@ -247,7 +247,7 @@ class Server:
             print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
             return com.DriveToDepthOutputData(-1, "Error in drive_to_depth").json()
         else:
-            com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} " f"to depth {depth}")
+            com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} to depth {depth}")
             drive_result = await self.platform.drive_to_depth(manipulator_id, depth, speed)
             return drive_result.json()
 

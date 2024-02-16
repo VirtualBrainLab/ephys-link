@@ -49,6 +49,7 @@ class NewScaleManipulator(PlatformManipulator):
 
         super().__init__()
         self._id = manipulator_id
+        self._movement_tolerance = 0.01
         self._x = x_axis
         self._y = y_axis
         self._z = z_axis
@@ -131,13 +132,13 @@ class NewScaleManipulator(PlatformManipulator):
                 )
                 self._axes[i].MoveAbsolute(target_position_um[i])
 
-            # Check and wait for completion
+            # Check and wait for completion (while able to write)
             self.query_all_axes()
             while (
                 not (self._x.CurStatus & AT_TARGET_FLAG)
                 or not (self._y.CurStatus & AT_TARGET_FLAG)
                 or not (self._z.CurStatus & AT_TARGET_FLAG)
-            ):
+            ) and self._can_write:
                 await asyncio.sleep(POSITION_POLL_DELAY)
                 self.query_all_axes()
 
@@ -153,11 +154,9 @@ class NewScaleManipulator(PlatformManipulator):
                 return com.PositionalOutputData([], "Manipulator movement canceled")
 
             # Return error if movement did not reach target.
-            if not all(
-                abs(manipulator_final_position[i] - position[i]) < self._movement_tolerance
-                for i in range(len(position))
-            ):
-                com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
+            if not all(abs(manipulator_final_position[i] - position[i]) < self._movement_tolerance for i in range(3)):
+                com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position.")
+                com.dprint(f"\t\t\t Expected: {position}, Got: {manipulator_final_position}")
                 return com.PositionalOutputData([], "Manipulator did not reach target position")
 
             # Made it to the target.
@@ -204,9 +203,9 @@ class NewScaleManipulator(PlatformManipulator):
             )
             self._z.MoveAbsolute(target_depth_um)
 
-            # Check and wait for completion
+            # Check and wait for completion (while able to write)
             self._z.QueryPosStatus()
-            while not (self._z.CurStatus & AT_TARGET_FLAG):
+            while not (self._z.CurStatus & AT_TARGET_FLAG) and self._can_write:
                 await asyncio.sleep(0.1)
                 self._z.QueryPosStatus()
 
@@ -233,7 +232,7 @@ class NewScaleManipulator(PlatformManipulator):
             print(f"[ERROR]\t\t Moving manipulator {self._id} to depth {depth}")
             print(f"{e}\n")
             # Return 0 and error message on failure
-            return com.DriveToDepthOutputData(0, "Error driving " "manipulator")
+            return com.DriveToDepthOutputData(0, "Error driving manipulator")
 
     def calibrate(self) -> bool:
         """Calibrate the manipulator.
