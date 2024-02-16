@@ -49,6 +49,7 @@ class NewScaleManipulator(PlatformManipulator):
 
         super().__init__()
         self._id = manipulator_id
+        self._movement_tolerance = 0.01
         self._x = x_axis
         self._y = y_axis
         self._z = z_axis
