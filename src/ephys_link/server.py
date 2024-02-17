@@ -11,17 +11,27 @@ every event, the server does the following:
 
 from __future__ import annotations
 
-import json
-import sys
+from json import loads
 from signal import SIGINT, SIGTERM, signal
+from sys import exit
 from typing import TYPE_CHECKING, Any
 
-import socketio
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
+from socketio import AsyncServer
 
-from ephys_link import common as com
 from ephys_link.__about__ import __version__ as version
+from ephys_link.common import (
+    ASCII,
+    CanWriteInputDataFormat,
+    DriveToDepthInputDataFormat,
+    DriveToDepthOutputData,
+    GotoPositionInputDataFormat,
+    InsideBrainInputDataFormat,
+    PositionalOutputData,
+    StateOutputData,
+    dprint,
+)
 from ephys_link.platforms.new_scale_handler import NewScaleHandler
 from ephys_link.platforms.new_scale_pathfinder_handler import NewScalePathfinderHandler
 from ephys_link.platforms.sensapex_handler import SensapexHandler
@@ -34,7 +44,7 @@ if TYPE_CHECKING:
 class Server:
     def __init__(self):
         # Server and Socketio
-        self.sio = socketio.AsyncServer()
+        self.sio = AsyncServer()
         self.app = web.Application()
 
         # Is there a client connected?
@@ -127,7 +137,7 @@ class Server:
         :return: :class:`ephys_link.common.GetManipulatorsOutputData` as JSON formatted string.
         :rtype: str
         """
-        com.dprint("[EVENT]\t\t Get discoverable manipulators")
+        dprint("[EVENT]\t\t Get discoverable manipulators")
 
         return self.platform.get_manipulators().json()
 
@@ -141,7 +151,7 @@ class Server:
         :return: Error message on error, empty string otherwise.
         :rtype: str
         """
-        com.dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
+        dprint(f"[EVENT]\t\t Register manipulator: {manipulator_id}")
 
         return self.platform.register_manipulator(manipulator_id)
 
@@ -155,7 +165,7 @@ class Server:
         :return: Error message on error, empty string otherwise.
         :rtype: str
         """
-        com.dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
+        dprint(f"[EVENT]\t\t Unregister manipulator: {manipulator_id}")
 
         return self.platform.unregister_manipulator(manipulator_id)
 
@@ -169,7 +179,7 @@ class Server:
         :return: :class:`ephys_link.common.PositionalOutputData` as JSON formatted string.
         :rtype: str
         """
-        # com.dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
+        # dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
         return self.platform.get_pos(manipulator_id).json()
 
@@ -210,18 +220,18 @@ class Server:
         :rtype: str
         """
         try:
-            parsed_data: com.GotoPositionInputDataFormat = json.loads(data)
+            parsed_data: GotoPositionInputDataFormat = loads(data)
             manipulator_id = parsed_data["manipulator_id"]
             pos = parsed_data["pos"]
             speed = parsed_data["speed"]
         except KeyError:
             print(f"[ERROR]\t\t Invalid goto_pos data: {data}\n")
-            return com.PositionalOutputData([], "Invalid data format").json()
+            return PositionalOutputData([], "Invalid data format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
-            return com.PositionalOutputData([], "Error in goto_pos").json()
+            return PositionalOutputData([], "Error in goto_pos").json()
         else:
-            com.dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
+            dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
             goto_result = await self.platform.goto_pos(manipulator_id, pos, speed)
             return goto_result.json()
 
@@ -236,18 +246,18 @@ class Server:
         :rtype: str
         """
         try:
-            parsed_data: com.DriveToDepthInputDataFormat = json.loads(data)
+            parsed_data: DriveToDepthInputDataFormat = loads(data)
             manipulator_id = parsed_data["manipulator_id"]
             depth = parsed_data["depth"]
             speed = parsed_data["speed"]
         except KeyError:
             print(f"[ERROR]\t\t Invalid drive_to_depth data: {data}\n")
-            return com.DriveToDepthOutputData(-1, "Invalid data " "format").json()
+            return DriveToDepthOutputData(-1, "Invalid data " "format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
-            return com.DriveToDepthOutputData(-1, "Error in drive_to_depth").json()
+            return DriveToDepthOutputData(-1, "Error in drive_to_depth").json()
         else:
-            com.dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} to depth {depth}")
+            dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} to depth {depth}")
             drive_result = await self.platform.drive_to_depth(manipulator_id, depth, speed)
             return drive_result.json()
 
@@ -262,17 +272,17 @@ class Server:
         :rtype: str
         """
         try:
-            parsed_data: com.InsideBrainInputDataFormat = json.loads(data)
+            parsed_data: InsideBrainInputDataFormat = loads(data)
             manipulator_id = parsed_data["manipulator_id"]
             inside = parsed_data["inside"]
         except KeyError:
             print(f"[ERROR]\t\t Invalid set_inside_brain data: {data}\n")
-            return com.StateOutputData(False, "Invalid data format").json()
+            return StateOutputData(False, "Invalid data format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-            return com.StateOutputData(False, "Error in set_inside_brain").json()
+            return StateOutputData(False, "Error in set_inside_brain").json()
         else:
-            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {inside}")
+            dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {inside}")
             return self.platform.set_inside_brain(manipulator_id, inside).json()
 
     async def calibrate(self, _, manipulator_id: str) -> str:
@@ -285,7 +295,7 @@ class Server:
         :return: Error message on error, empty string otherwise.
         :rtype: str
         """
-        com.dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
+        dprint(f"[EVENT]\t\t Calibrate manipulator" f" {manipulator_id}")
 
         return await self.platform.calibrate(manipulator_id, self.sio)
 
@@ -299,7 +309,7 @@ class Server:
         :return: Error message on error, empty string otherwise.
         :rtype: str
         """
-        com.dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
+        dprint(f"[EVENT]\t\t Bypass calibration of manipulator" f" {manipulator_id}")
 
         return self.platform.bypass_calibration(manipulator_id)
 
@@ -314,18 +324,18 @@ class Server:
         :rtype: str
         """
         try:
-            parsed_data: com.CanWriteInputDataFormat = json.loads(data)
+            parsed_data: CanWriteInputDataFormat = loads(data)
             manipulator_id = parsed_data["manipulator_id"]
             can_write = parsed_data["can_write"]
             hours = parsed_data["hours"]
         except KeyError:
             print(f"[ERROR]\t\t Invalid set_can_write data: {data}\n")
-            return com.StateOutputData(False, "Invalid data " "format").json()
+            return StateOutputData(False, "Invalid data " "format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-            return com.StateOutputData(False, "Error in set_can_write").json()
+            return StateOutputData(False, "Error in set_can_write").json()
         else:
-            com.dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {can_write}")
+            dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {can_write}")
             return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio).json()
 
     def stop(self, _) -> bool:
@@ -336,7 +346,7 @@ class Server:
         :return: True if successful, False otherwise.
         :rtype: bool
         """
-        com.dprint("[EVENT]\t\t Stop all manipulators")
+        dprint("[EVENT]\t\t Stop all manipulators")
 
         return self.platform.stop()
 
@@ -379,16 +389,21 @@ class Server:
         elif platform_type == "new_scale_pathfinder":
             self.platform = NewScalePathfinderHandler(pathfinder_port)
         else:
-            sys.exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
+            exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 
         # Preamble
-        print(f"=== Ephys Link v{version} ===")
+        print(ASCII)
+        print(f"v{version}")
+        print()
+        print("This is the Ephys Link server window.")
+        print("You may safely leave it running in the background.")
+        print("To stop the it, close this window or press CTRL + Pause/Break.")
+        print()
 
         # List available manipulators
         print("Available Manipulators:")
         print(self.platform.get_manipulators()["manipulators"])
-
-        print("\n(Shutdown server with CTRL+Pause/Break)\n")
+        print()
 
         # Mark that server is running
         self.is_running = True
