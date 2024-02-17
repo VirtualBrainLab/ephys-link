@@ -18,9 +18,12 @@ from typing import TYPE_CHECKING, Any
 
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
+from packaging import version
+from requests import get
+from requests.exceptions import ConnectionError
 from socketio import AsyncServer
 
-from ephys_link.__about__ import __version__ as version
+from ephys_link.__about__ import __version__
 from ephys_link.common import (
     ASCII,
     CanWriteInputDataFormat,
@@ -391,9 +394,21 @@ class Server:
         else:
             exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
 
-        # Preamble
+        # Preamble.
         print(ASCII)
-        print(f"v{version}")
+        print(f"v{__version__}")
+
+        # Check for newer version.
+        try:
+            version_request = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
+            latest_version = version_request.json()[0]["name"]
+            if version.parse(latest_version) > version.parse(__version__):
+                print(f"New version available: {latest_version}")
+                print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
+        except ConnectionError:
+            pass
+
+        # Explain window.
         print()
         print("This is the Ephys Link server window.")
         print("You may safely leave it running in the background.")
