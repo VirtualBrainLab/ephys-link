@@ -12,6 +12,18 @@ from typing import TypedDict
 # Debugging flag
 DEBUG = False
 
+# Ephys Link ASCII
+ASCII = r"""
+  ______       _                 _      _       _
+ |  ____|     | |               | |    (_)     | |
+ | |__   _ __ | |__  _   _ ___  | |     _ _ __ | | __
+ |  __| | '_ \| '_ \| | | / __| | |    | | '_ \| |/ /
+ | |____| |_) | | | | |_| \__ \ | |____| | | | |   <
+ |______| .__/|_| |_|\__, |___/ |______|_|_| |_|_|\_\
+        | |           __/ |
+        |_|          |___/
+"""
+
 
 def dprint(message: str) -> None:
     """Print message if debug is enabled.
