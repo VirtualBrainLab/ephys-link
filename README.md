@@ -49,6 +49,12 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
 is currently designed to interface with local/desktop instances of Pinpoint. It
 will not work with the web browser versions of Pinpoint at this time.
 
+## Launch from Pinpoint (Recommended)
+
+Pinpoint comes bundled with the correct version of Ephys Link. If you are using Pinpoint on the same computer your
+manipulators are connected to, you can launch the server from within Pinpoint. Follow the instructions in
+the [Pinpoint documentation](https://virtualbrainlab.org/pinpoint/tutorials/tutorial_ephys_link.html#configure-and-launch-ephys-link).
+
 ## Install as Standalone Executable
 
 1. Download the latest executable from
