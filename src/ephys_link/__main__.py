@@ -82,7 +82,7 @@ def main() -> None:
         e_stop.watch()
 
     # Launch with parsed arguments on main thread.
-    server.launch(args.type, args.port, args.pathfinder_port)
+    server.launch(args.type, args.port, args.pathfinder_port, args.ignore_updates)
 
 
 if __name__ == "__main__":
