@@ -92,6 +92,7 @@ dependencies = [
 ]
 [tool.hatch.envs.exe.scripts]
 build = "pyinstaller.exe ephys_link.spec -y"
+build_clean = "pyinstaller.exe ephys_link.spec -y --clean"
 
 [tool.coverage.run]
 source_pkgs = ["ephys_link", "tests"]
