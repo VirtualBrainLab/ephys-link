@@ -13,6 +13,7 @@ parser = ArgumentParser(
     " manipulators in electrophysiology experiments.",
     prog="python -m ephys-link",
 )
+parser.add_argument("-b", "--background", dest="background", action="store_true", help="Skip configuration window.")
 parser.add_argument(
     "-i", "--ignore-updates", dest="ignore_updates", action="store_true", help="Skip (ignore) checking for updates."
 )

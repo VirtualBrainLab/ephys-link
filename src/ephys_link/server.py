@@ -369,8 +369,9 @@ class Server:
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "UNKNOWN_EVENT"
 
-    def launch(self, platform_type: str, server_port: int, pathfinder_port: int | None = None,
-               ignore_updates: bool = False) -> None:
+    def launch(
+        self, platform_type: str, server_port: int, pathfinder_port: int | None = None, ignore_updates: bool = False
+    ) -> None:  # noqa: FBT002
         """Launch the server.
 
         :param platform_type: Parsed argument for platform type.
