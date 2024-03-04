@@ -35,6 +35,7 @@ dependencies = [
     "pyserial==3.5",
     "python-socketio==5.11.1",
     "pythonnet==3.0.3",
+    "requests==2.31.0",
     "wheel==0.42.0",
     "sensapex==1.400.0",
 ]
@@ -91,6 +92,7 @@ dependencies = [
 ]
 [tool.hatch.envs.exe.scripts]
 build = "pyinstaller.exe ephys_link.spec -y"
+build_clean = "pyinstaller.exe ephys_link.spec -y --clean"
 
 [tool.coverage.run]
 source_pkgs = ["ephys_link", "tests"]

@@ -369,7 +369,13 @@ class Server:
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "UNKNOWN_EVENT"
 
-    def launch(self, platform_type: str, server_port: int, pathfinder_port: int | None = None) -> None:
+    def launch(
+        self,
+        platform_type: str,
+        server_port: int,
+        pathfinder_port: int | None = None,
+        ignore_updates: bool = False,  # noqa: FBT002
+    ) -> None:
         """Launch the server.
 
         :param platform_type: Parsed argument for platform type.
@@ -378,6 +384,8 @@ class Server:
         :type server_port: int
         :param pathfinder_port: Port New Scale Pathfinder's server is on.
         :type pathfinder_port: int
+        :param ignore_updates: Flag to ignore checking for updates.
+        :type ignore_updates: bool
         :return: None
         """
 
@@ -399,14 +407,15 @@ class Server:
         print(f"v{__version__}")
 
         # Check for newer version.
-        try:
-            version_request = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
-            latest_version = version_request.json()[0]["name"]
-            if version.parse(latest_version) > version.parse(__version__):
-                print(f"New version available: {latest_version}")
-                print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
-        except ConnectionError:
-            pass
+        if not ignore_updates:
+            try:
+                version_request = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
+                latest_version = version_request.json()[0]["name"]
+                if version.parse(latest_version) > version.parse(__version__):
+                    print(f"New version available: {latest_version}")
+                    print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
+            except ConnectionError:
+                pass
 
         # Explain window.
         print()
