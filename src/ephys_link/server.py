@@ -130,7 +130,7 @@ class Server:
         :return: Version number as defined in :mod:`ephys_link.__about__`.
         :rtype: str
         """
-        return version
+        return __version__
 
     async def get_manipulators(self, _) -> str:
         """Get the list of discoverable manipulators.
