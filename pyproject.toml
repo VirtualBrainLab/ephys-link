@@ -36,7 +36,7 @@ dependencies = [
     "python-socketio==5.11.1",
     "pythonnet==3.0.3",
     "requests==2.31.0",
-    "wheel==0.42.0",
+    "wheel==0.43.0",
     "sensapex==1.400.0",
 ]
 
