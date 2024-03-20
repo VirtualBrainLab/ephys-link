@@ -22,17 +22,12 @@ from packaging import version
 from requests import get
 from requests.exceptions import ConnectionError
 from socketio import AsyncServer
+from vbl_aquarium.models.ephys_link import GotoPositionRequest, PositionalResponse
+from pydantic import ValidationError
 
 from ephys_link.__about__ import __version__
 from ephys_link.common import (
     ASCII,
-    CanWriteInputDataFormat,
-    DriveToDepthInputDataFormat,
-    DriveToDepthOutputData,
-    GotoPositionInputDataFormat,
-    InsideBrainInputDataFormat,
-    PositionalOutputData,
-    StateOutputData,
     dprint,
 )
 from ephys_link.platforms.new_scale_handler import NewScaleHandler
@@ -223,19 +218,16 @@ class Server:
         :rtype: str
         """
         try:
-            parsed_data: GotoPositionInputDataFormat = loads(data)
-            manipulator_id = parsed_data["manipulator_id"]
-            pos = parsed_data["pos"]
-            speed = parsed_data["speed"]
-        except KeyError:
+            goto_request = GotoPositionRequest(**loads(data))
+        except ValidationError as ve:
             print(f"[ERROR]\t\t Invalid goto_pos data: {data}\n")
             return PositionalOutputData([], "Invalid data format").json()
         except Exception as e:
             print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
             return PositionalOutputData([], "Error in goto_pos").json()
         else:
-            dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
-            goto_result = await self.platform.goto_pos(manipulator_id, pos, speed)
+            dprint(f"[EVENT]\t\t Move manipulator {goto_request.manipulator_id} to position {goto_request.position}")
+            goto_result = await self.platform.goto_pos(goto_request.manipulator_id, goto_request.position, goto_request.speed)
             return goto_result.json()
 
     async def drive_to_depth(self, _, data: str) -> str:
