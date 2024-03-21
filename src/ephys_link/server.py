@@ -227,7 +227,7 @@ class Server:
             return PositionalResponse(error="Error in goto_pos").to_string()
         else:
             dprint(f"[EVENT]\t\t Move manipulator {goto_request.manipulator_id} to position {goto_request.position}")
-            goto_result = await self.platform.goto_pos(goto_request.manipulator_id, goto_request.position, goto_request.speed)
+            goto_result = await self.platform.goto_pos(goto_request)
             return goto_result.to_string()
 
     async def drive_to_depth(self, _, data: str) -> str:

@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from sensapex import UMP, UMError
-from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse, ShankCountResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse, ShankCountResponse, GotoPositionRequest
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
@@ -60,8 +60,8 @@ class SensapexHandler(PlatformHandler):
     def _get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         raise NotImplementedError
 
-    async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: float) -> PositionalResponse:
-        return await self.manipulators[manipulator_id].goto_pos(position, speed)
+    async def _goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
+        return await self.manipulators[request.manipulator_id].goto_pos(request)
 
     async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
         return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)

@@ -8,8 +8,8 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse
-from vbl_aquarium.models.unity import Vector4
+from vbl_aquarium.models.ephys_link import PositionalResponse, GotoPositionRequest
+from vbl_aquarium.models.unity import Vector4, Vector3
 
 import ephys_link.common as com
 from ephys_link.platform_manipulator import (
@@ -53,20 +53,18 @@ class UMP3Manipulator(SensapexManipulator):
             print(f"{e}\n")
             return PositionalResponse(error="Error getting position")
 
-    async def goto_pos(self, position: list[float], speed: float) -> com.PositionalOutputData:
+    async def goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
         """Move manipulator to position.
 
-        :param position: The position to move to in mm.
-        :type position: list[float]
-        :param speed: The speed to move at (in mm/s).
-        :type speed: float
+        :param request: The goto request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
         :return: Resulting position in (x, y, z, x) (or an empty array on error) in mm and error message (if any).
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         # Check if able to write
         if not self._can_write:
             print(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
-            return com.PositionalOutputData([], "Manipulator movement canceled")
+            return PositionalResponse(error="Manipulator movement canceled")
 
         # Stop current movement
         if self._is_moving:
@@ -74,26 +72,26 @@ class UMP3Manipulator(SensapexManipulator):
             self._is_moving = False
 
         try:
-            target_position_um = [axis * MM_TO_UM for axis in position[:3]]
+            target_position_um = request.position * MM_TO_UM
 
             # Restrict target position to just depth-axis if inside brain
             if self._inside_brain:
-                d_axis = target_position_um[0]
-                target_position_um = self._device.get_pos()
-                target_position_um[0] = d_axis
+                d_axis = target_position_um.x
+                target_position_um = target_position_um.model_copy(
+                    update={**self.get_pos().position.model_dump(), "x": d_axis})
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command
-            movement = self._device.goto_pos(target_position_um, speed * MM_TO_UM)
+            movement = self._device.goto_pos(target_position_um, request.speed * MM_TO_UM)
 
             # Wait for movement to finish
             while not movement.finished:
                 await asyncio.sleep(POSITION_POLL_DELAY)
 
             # Get position
-            manipulator_final_position = self.get_pos()["position"]
+            final_position = self.get_pos().position
 
             # Mark movement as finished
             self._is_moving = False
@@ -101,23 +99,21 @@ class UMP3Manipulator(SensapexManipulator):
             # Return success unless write was disabled during movement (meaning a stop occurred)
             if not self._can_write:
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
-                return com.PositionalOutputData([], "Manipulator movement canceled")
+                return PositionalResponse(error="Manipulator movement canceled")
 
             # Return error if movement did not reach target.
-            if not all(
-                    abs(manipulator_final_position[i] - position[i]) < self._movement_tolerance
-                    for i in range(len(position))
-            ):
+            if not all(abs(axis) < self._movement_tolerance for axis in final_position - request.position):
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
-                return com.PositionalOutputData([], "Manipulator did not reach target position")
+                com.dprint(f"\t\t\t Expected: {request.position}, Got: {final_position}")
+                return PositionalResponse(error="Manipulator did not reach target position")
 
             # Made it to the target.
-            com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position" f" {manipulator_final_position}\n")
-            return com.PositionalOutputData(manipulator_final_position, "")
+            com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position" f" {final_position}\n")
+            return PositionalResponse(position=final_position)
         except Exception as e:
-            print(f"[ERROR]\t\t Moving manipulator {self._id} to position" f" {position}")
+            print(f"[ERROR]\t\t Moving manipulator {self._id} to position {request.position}")
             print(f"{e}\n")
-            return com.PositionalOutputData([], "Error moving manipulator")
+            return PositionalResponse(error="Error moving manipulator")
 
     async def drive_to_depth(self, depth: float, speed: float) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth.

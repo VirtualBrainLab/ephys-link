@@ -11,7 +11,7 @@ import asyncio
 import threading
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, GotoPositionRequest
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 import ephys_link.common as com
@@ -87,13 +87,11 @@ class NewScaleManipulator(PlatformManipulator):
             print(f"{e}\n")
             return PositionalResponse(error="Error getting position")
 
-    async def goto_pos(self, position: Vector4, speed: float) -> PositionalResponse:
+    async def goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
         """Move manipulator to position.
 
-        :param position: The position to move to in mm.
-        :type position: list[float]
-        :param speed: The speed to move at (in mm/s).
-        :type speed: float
+        :param request: The goto request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
         :return: Resulting position of manipulator in (x, y, z, z) in mm (or an empty array on error)
          and error message (if any).
         :rtype: :class:`ephys_link.common.PositionalOutputData`
@@ -110,20 +108,19 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            requested_position_dict = position.model_dump()
-            target_position_um = [axis * MM_TO_UM for axis in requested_position_dict.values()]
+            target_position_um = request.position * MM_TO_UM
 
             # Restrict target position to just z-axis if inside brain
             if self._inside_brain:
-                z_axis = target_position_um[2]
-                target_position_um = self.get_pos().position.model_dump().values()
-                target_position_um[2] = z_axis
+                z_axis = target_position_um.z
+                target_position_um = target_position_um.model_copy(
+                    update={**self.get_pos().position.model_dump(), "z": z_axis})
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command
-            speed_um = speed * MM_TO_UM
+            speed_um = request.speed * MM_TO_UM
             for i in range(3):
                 self._axes[i].SetCL_Speed(
                     speed_um,
@@ -154,17 +151,16 @@ class NewScaleManipulator(PlatformManipulator):
                 return PositionalResponse(error="Manipulator movement canceled")
 
             # Return error if movement did not reach target.
-            if not all(abs(final_position.model_dump()[axis] - requested_position_dict[axis]) < self._movement_tolerance
-                       for axis in Vector3.model_fields.keys()):
+            if not all(abs(axis) < self._movement_tolerance for axis in final_position - request.position):
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position.")
-                com.dprint(f"\t\t\t Expected: {position}, Got: {final_position}")
+                com.dprint(f"\t\t\t Expected: {request.position}, Got: {final_position}")
                 return PositionalResponse(error="Manipulator did not reach target position")
 
             # Made it to the target.
             com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position" f" {final_position}\n")
             return PositionalResponse(position=final_position)
         except Exception as e:
-            print(f"[ERROR]\t\t Moving manipulator {self._id} to position {position}")
+            print(f"[ERROR]\t\t Moving manipulator {self._id} to position {request.position}")
             print(f"{e}\n")
             return PositionalResponse(error="Error moving manipulator")
 

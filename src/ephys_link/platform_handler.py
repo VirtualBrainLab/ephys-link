@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from vbl_aquarium.models.ephys_link import PositionalResponse, GetManipulatorsResponse, AngularResponse, \
-    ShankCountResponse
+    ShankCountResponse, GotoPositionRequest
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link import common as com
@@ -164,8 +164,8 @@ class PlatformHandler(ABC):
 
             # Convert position to unified space.
             return manipulator_pos.copy(update={**manipulator_pos.model_dump(),
-                                                "position": self._platform_space_to_unified_space(
-                                                    manipulator_pos.position)})
+                "position": self._platform_space_to_unified_space(
+                    manipulator_pos.position)})
         except KeyError:
             # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
@@ -206,39 +206,35 @@ class PlatformHandler(ABC):
         """
         return self._get_shank_count(manipulator_id)
 
-    async def goto_pos(self, manipulator_id: str, position: Vector4, speed: float) -> PositionalResponse:
+    async def goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
         """Move manipulator to position
 
-        :param manipulator_id: The ID of the manipulator to move
-        :type manipulator_id: str
-        :param position: The position to move to in (x, y, z, w) in mm
-        :type position: Vector4
-        :param speed: The speed to move at (in mm/s)
-        :type speed: float
+        :param request: The goto request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
         :return: Resulting position of the manipulator and error message (if any).
         :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
         """
         try:
-            # Check calibration status
-            if not self.manipulators[manipulator_id].get_calibrated():
-                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
+            # Check calibration status.
+            if not self.manipulators[request.manipulator_id].get_calibrated():
+                print(f"[ERROR]\t\t Calibration not complete: {request.manipulator_id}\n")
                 return PositionalResponse(error="Manipulator not calibrated")
 
-            # Check write state
-            if not self.manipulators[manipulator_id].get_can_write():
-                print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
+            # Check write state.
+            if not self.manipulators[request.manipulator_id].get_can_write():
+                print(f"[ERROR]\t\t Cannot write to manipulator: {request.manipulator_id}")
                 return PositionalResponse(error="Cannot write to manipulator")
 
             # Convert position to platform space, move, and convert final position back to
-            # unified space
-            end_position = await self._goto_pos(manipulator_id, self._unified_space_to_platform_space(position), speed)
-            if end_position.error != "":
-                return end_position
-            return PositionalResponse(position=self._platform_space_to_unified_space(end_position.position))
-
+            # unified space.
+            end_position = await self._goto_pos(request.model_copy(
+                update={**request.model_dump(), "position": self._unified_space_to_platform_space(request.position)}))
+            return end_position.model_copy(update={**end_position.model_dump(),
+                                                   "position": self._platform_space_to_unified_space(
+                                                       end_position.position)})
         except KeyError:
-            # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
+            # Manipulator not found in registered manipulators.
+            print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
             return PositionalResponse(error="Manipulator not registered")
 
     async def drive_to_depth(self, manipulator_id: str, depth: float, speed: float) -> com.DriveToDepthOutputData:
@@ -424,7 +420,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: float) -> PositionalResponse:
+    async def _goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
         raise NotImplementedError
 
     @abstractmethod

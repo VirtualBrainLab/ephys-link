@@ -11,7 +11,7 @@ import asyncio
 import threading
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, GotoPositionRequest
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
@@ -59,13 +59,11 @@ class SensapexManipulator(PlatformManipulator):
             print(f"{e}\n")
             return PositionalResponse(error="Error getting position")
 
-    async def goto_pos(self, position: Vector4, speed: float) -> PositionalResponse:
+    async def goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
         """Move manipulator to position.
 
-        :param position: The position to move to in mm
-        :type position: list[float]
-        :param speed: The speed to move at (in mm/s)
-        :type speed: float
+        :param request: The goto request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
         :return: Resulting position in (x, y, z, w) (or an empty array on error) in mm and error message (if any).
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
@@ -80,20 +78,19 @@ class SensapexManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            requested_position_dict = position.model_dump()
-            target_position_um = [axis * MM_TO_UM for axis in requested_position_dict.values()]
+            target_position_um = request.position * MM_TO_UM
 
             # Restrict target position to just depth-axis if inside brain
             if self._inside_brain:
-                d_axis = target_position_um[3]
-                target_position_um = self._device.get_pos()
-                target_position_um[3] = d_axis
+                d_axis = target_position_um.w
+                target_position_um = target_position_um.model_copy(
+                    update={**self.get_pos().position.model_dump(), "w": d_axis})
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command
-            movement = self._device.goto_pos(target_position_um, speed * MM_TO_UM)
+            movement = self._device.goto_pos(target_position_um, request.speed * MM_TO_UM)
 
             # Wait for movement to finish
             while not movement.finished:
@@ -111,18 +108,16 @@ class SensapexManipulator(PlatformManipulator):
                 return PositionalResponse(error="Manipulator movement canceled")
 
             # Return error if movement did not reach target.
-            if not all(
-                    abs(final_position.model_dump()[axis] - requested_position_dict[axis]) < self._movement_tolerance
-                    for axis in Vector4.model_fields.keys()
-            ):
+            if not all(abs(axis) < self._movement_tolerance for axis in final_position - request.position):
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
+                com.dprint(f"\t\t\t Expected: {request.position}, Got: {final_position}")
                 return PositionalResponse(error="Manipulator did not reach target position")
 
             # Made it to the target.
             com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position {final_position}\n")
             return PositionalResponse(position=final_position)
         except Exception as e:
-            print(f"[ERROR]\t\t Moving manipulator {self._id} to position {position}")
+            print(f"[ERROR]\t\t Moving manipulator {self._id} to position {request.position}")
             print(f"{e}\n")
             return PositionalResponse(error="Error moving manipulator")
 
