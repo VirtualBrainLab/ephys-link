@@ -11,6 +11,9 @@ import asyncio
 import threading
 from typing import TYPE_CHECKING
 
+from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.unity import Vector4
+
 import ephys_link.common as com
 from ephys_link.platform_manipulator import (
     HOURS_TO_SECONDS,
@@ -56,7 +59,7 @@ class SensapexManipulator(PlatformManipulator):
             print(f"{e}\n")
             return com.PositionalOutputData([], "Error getting position")
 
-    async def goto_pos(self, position: list[float], speed: float) -> com.PositionalOutputData:
+    async def goto_pos(self, position: Vector4, speed: float) -> PositionalResponse:
         """Move manipulator to position.
 
         :param position: The position to move to in mm
@@ -69,7 +72,7 @@ class SensapexManipulator(PlatformManipulator):
         # Check if able to write
         if not self._can_write:
             print(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
-            return com.PositionalOutputData([], "Manipulator movement canceled")
+            return PositionalResponse(error="Manipulator movement canceled")
 
         # Stop current movement
         if self._is_moving:
@@ -77,7 +80,8 @@ class SensapexManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_position_um = [axis * MM_TO_UM for axis in position]
+            requested_position_dict = position.model_dump()
+            target_position_um = [axis * MM_TO_UM for axis in requested_position_dict.values()]
 
             # Restrict target position to just depth-axis if inside brain
             if self._inside_brain:
@@ -96,7 +100,7 @@ class SensapexManipulator(PlatformManipulator):
                 await asyncio.sleep(POSITION_POLL_DELAY)
 
             # Get position
-            manipulator_final_position = self.get_pos()["position"]
+            final_position = self.get_pos().position
 
             # Mark movement as finished.
             self._is_moving = False
@@ -104,23 +108,23 @@ class SensapexManipulator(PlatformManipulator):
             # Return success unless write was disabled during movement (meaning a stop occurred).
             if not self._can_write:
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
-                return com.PositionalOutputData([], "Manipulator movement canceled")
+                return PositionalResponse(error="Manipulator movement canceled")
 
             # Return error if movement did not reach target.
             if not all(
-                abs(manipulator_final_position[i] - position[i]) < self._movement_tolerance
-                for i in range(len(position))
+                abs(final_position.model_dump()[axis] - requested_position_dict[axis]) < self._movement_tolerance
+                for axis in Vector4.model_fields.keys()
             ):
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
-                return com.PositionalOutputData([], "Manipulator did not reach target position")
+                return PositionalResponse(error="Manipulator did not reach target position")
 
             # Made it to the target.
-            com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position {manipulator_final_position}\n")
-            return com.PositionalOutputData(manipulator_final_position, "")
+            com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position {final_position}\n")
+            return PositionalResponse(position=final_position)
         except Exception as e:
-            print(f"[ERROR]\t\t Moving manipulator {self._id} to position" f" {position}")
+            print(f"[ERROR]\t\t Moving manipulator {self._id} to position {position}")
             print(f"{e}\n")
-            return com.PositionalOutputData([], "Error moving manipulator")
+            return PositionalResponse(error="Error moving manipulator")
 
     async def drive_to_depth(self, depth: float, speed: float) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth.

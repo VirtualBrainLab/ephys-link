@@ -17,6 +17,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.unity import Vector4
+
 from ephys_link import common as com
 
 if TYPE_CHECKING:
@@ -35,7 +38,7 @@ class PlatformHandler(ABC):
         self.num_axes = 4
 
         # Platform axes dimensions in mm
-        self.dimensions = [20, 20, 20, 20]
+        self.dimensions = Vector4(x=20, y=20, z=20, w=20)
 
     # Platform Handler Methods
 
@@ -146,8 +149,8 @@ class PlatformHandler(ABC):
         try:
             # Check calibration status
             if (
-                hasattr(self.manipulators[manipulator_id], "get_calibrated")
-                and not self.manipulators[manipulator_id].get_calibrated()
+                    hasattr(self.manipulators[manipulator_id], "get_calibrated")
+                    and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
                 return com.PositionalOutputData([], "Manipulator not calibrated")
@@ -179,8 +182,8 @@ class PlatformHandler(ABC):
         try:
             # Check calibration status
             if (
-                hasattr(self.manipulators[manipulator_id], "get_calibrated")
-                and not self.manipulators[manipulator_id].get_calibrated()
+                    hasattr(self.manipulators[manipulator_id], "get_calibrated")
+                    and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
                 return com.AngularOutputData([], "Manipulator not calibrated")
@@ -203,40 +206,40 @@ class PlatformHandler(ABC):
         """
         return self._get_shank_count(manipulator_id)
 
-    async def goto_pos(self, manipulator_id: str, position: list[float], speed: float) -> com.PositionalOutputData:
+    async def goto_pos(self, manipulator_id: str, position: Vector4, speed: float) -> PositionalResponse:
         """Move manipulator to position
 
         :param manipulator_id: The ID of the manipulator to move
         :type manipulator_id: str
         :param position: The position to move to in (x, y, z, w) in mm
-        :type position: list[float]
+        :type position: Vector4
         :param speed: The speed to move at (in mm/s)
         :type speed: float
         :return: Resulting position of the manipulator and error message (if any).
-        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
         """
         try:
             # Check calibration status
             if not self.manipulators[manipulator_id].get_calibrated():
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.PositionalOutputData([], "Manipulator not calibrated")
+                return PositionalResponse(error="Manipulator not calibrated")
 
             # Check write state
             if not self.manipulators[manipulator_id].get_can_write():
                 print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
-                return com.PositionalOutputData([], "Cannot write to manipulator")
+                return PositionalResponse(error="Cannot write to manipulator")
 
             # Convert position to platform space, move, and convert final position back to
             # unified space
             end_position = await self._goto_pos(manipulator_id, self._unified_space_to_platform_space(position), speed)
-            if end_position["error"] != "":
+            if end_position.error != "":
                 return end_position
-            return com.PositionalOutputData(self._platform_space_to_unified_space(end_position["position"]), "")
+            return PositionalResponse(position=self._platform_space_to_unified_space(end_position.position))
 
         except KeyError:
             # Manipulator not found in registered manipulators
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
-            return com.PositionalOutputData([], "Manipulator not registered")
+            return PositionalResponse(error="Manipulator not registered")
 
     async def drive_to_depth(self, manipulator_id: str, depth: float, speed: float) -> com.DriveToDepthOutputData:
         """Drive manipulator to depth
@@ -291,8 +294,8 @@ class PlatformHandler(ABC):
         try:
             # Check calibration status
             if (
-                hasattr(self.manipulators[manipulator_id], "get_calibrated")
-                and not self.manipulators[manipulator_id].get_calibrated()
+                    hasattr(self.manipulators[manipulator_id], "get_calibrated")
+                    and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print("[ERROR]\t\t Calibration not complete\n")
                 return com.StateOutputData(False, "Manipulator not calibrated")
@@ -363,11 +366,11 @@ class PlatformHandler(ABC):
             return "Error bypassing calibration"
 
     def set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: str,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         """Set manipulator can_write state (enables/disabled moving manipulator)
 
@@ -421,7 +424,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: float) -> com.PositionalOutputData:
+    async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: float) -> PositionalResponse:
         raise NotImplementedError
 
     @abstractmethod
@@ -450,32 +453,32 @@ class PlatformHandler(ABC):
 
     @abstractmethod
     def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: str,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         raise NotImplementedError
 
     @abstractmethod
-    def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
+    def _platform_space_to_unified_space(self, platform_position: Vector4) -> Vector4:
         """Convert position in platform space to position in unified manipulator space
 
         :param platform_position: Position in platform space (x, y, z, w) in mm
-        :type platform_position: list[float]
+        :type platform_position: Vector4
         :return: Position in unified manipulator space (x, y, z, w) in mm
-        :rtype: list[float]
+        :rtype: Vector4
         """
         raise NotImplementedError
 
     @abstractmethod
-    def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
+    def _unified_space_to_platform_space(self, unified_position: Vector4) -> Vector4:
         """Convert position in unified manipulator space to position in platform space
 
         :param unified_position: Position in unified manipulator space (x, y, z, w) in mm
-        :type unified_position: list[float]
+        :type unified_position: Vector4
         :return: Position in platform space (x, y, z, w) in mm
-        :rtype: list[float]
+        :rtype: Vector4
         """
         raise NotImplementedError

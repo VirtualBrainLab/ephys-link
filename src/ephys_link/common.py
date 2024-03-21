@@ -6,9 +6,6 @@ callback parameters)
 
 from __future__ import annotations
 
-import json
-from typing import TypedDict
-
 # Debugging flag
 DEBUG = False
 
@@ -39,7 +36,7 @@ def dprint(message: str) -> None:
 # Input data formats
 # class GotoPositionInputDataFormat(TypedDict):
 #     """Data format for positional requests.
-# 
+#
 #     :param manipulator_id: ID of the manipulator to move.
 #     :type manipulator_id: str
 #     :param pos: Position to move to in mm (X, Y, Z, W).
@@ -47,28 +44,28 @@ def dprint(message: str) -> None:
 #     :param speed: Speed to move at in mm/s.
 #     :type speed: float
 #     """
-# 
+#
 #     manipulator_id: str
 #     pos: list[float]
 #     speed: float
-# 
-# 
+#
+#
 # class InsideBrainInputDataFormat(TypedDict):
 #     """Data format for setting inside brain state.
-# 
+#
 #     :param manipulator_id: ID of the manipulator to move.
 #     :type manipulator_id: str
 #     :param inside: Whether the manipulator is inside the brain.
 #     :type inside: bool
 #     """
-# 
+#
 #     manipulator_id: str
 #     inside: bool
-# 
-# 
+#
+#
 # class DriveToDepthInputDataFormat(TypedDict):
 #     """Data format for depth driving requests.
-# 
+#
 #     :param manipulator_id: ID of the manipulator to move.
 #     :type manipulator_id: str
 #     :param depth: Depth to drive to in mm.
@@ -76,15 +73,15 @@ def dprint(message: str) -> None:
 #     :param speed: Speed to drive at in mm/s.
 #     :type speed: float
 #     """
-# 
+#
 #     manipulator_id: str
 #     depth: float
 #     speed: float
-# 
-# 
+#
+#
 # class CanWriteInputDataFormat(TypedDict):
 #     """Data format for setting can write state.
-# 
+#
 #     :param manipulator_id: ID of the manipulator to move.
 #     :type manipulator_id: str
 #     :param can_write: Whether the manipulator can write.
@@ -92,16 +89,16 @@ def dprint(message: str) -> None:
 #     :param hours: Number of hours the manipulator can write for.
 #     :type hours: float
 #     """
-# 
+#
 #     manipulator_id: str
 #     can_write: bool
 #     hours: float
-# 
-# 
+#
+#
 # # Output data dictionaries
 # class GetManipulatorsOutputData(dict):
 #     """Output format for get manipulators request.
-# 
+#
 #     :param manipulators: List of manipulator IDs (as strings).
 #     :type manipulators: list
 #     :param num_axes: Number of axes this manipulator has.
@@ -110,11 +107,11 @@ def dprint(message: str) -> None:
 #     :type dimensions: list
 #     :param error: Error message.
 #     :type error: str
-# 
+#
 #     :example: Example generated dictionary
 #         :code:`{"manipulators": ["1", "2"], "num_axes": 4, "dimensions": [20, 20, 20], "error": ""}`
 #     """
-# 
+#
 #     def __init__(self, manipulators: list, num_axes: int, dimensions: list, error: str) -> None:
 #         """Constructor"""
 #         super().__init__(
@@ -123,104 +120,104 @@ def dprint(message: str) -> None:
 #             dimensions=dimensions,
 #             error=error,
 #         )
-# 
+#
 #     def json(self) -> str:
 #         """Return JSON string"""
 #         return json.dumps(self)
-# 
-# 
+#
+#
 # class PositionalOutputData(dict):
 #     """Output format for positional requests.
-# 
+#
 #     :param position: Position in mm (as a list, empty on error) in X, Y, Z, W order.
 #     :type position: list
 #     :param error: Error message.
 #     :type error: str
-# 
+#
 #     :example: Example generated dictionary
 #         :code:`{"position": [10.429, 12.332, 2.131, 12.312], "error": ""}`
 #     """
-# 
+#
 #     def __init__(self, position: list, error: str) -> None:
 #         """Constructor"""
 #         super().__init__(position=position, error=error)
-# 
+#
 #     def json(self) -> str:
 #         """Return JSON string"""
 #         return json.dumps(self)
-# 
-# 
+#
+#
 # class AngularOutputData(dict):
 #     """Output format for manipulator angle requests.
-# 
+#
 #     :param angles: Angles in degrees (as a list, can be empty) in yaw, pitch, roll order.
 #     :type angles: list
 #     :param error: Error message.
 #     :type error: str
 #     """
-# 
+#
 #     def __init__(self, angles: list, error: str) -> None:
 #         """Constructor"""
 #         super().__init__(angles=angles, error=error)
-# 
+#
 #     def json(self) -> str:
 #         """Return JSON string"""
 #         return json.dumps(self)
-# 
-# 
+#
+#
 # class ShankCountOutputData(dict):
 #     """Output format for number of shanks.
-# 
+#
 #     :param shank_count: Number of shanks on the probe (-1 if error).
 #     :type shank_count: int
 #     :param error: Error message.
 #     :type error: str
 #     """
-# 
+#
 #     def __init__(self, shank_count: int, error: str) -> None:
 #         """Constructor"""
 #         super().__init__(shank_count=shank_count, error=error)
-# 
+#
 #     def json(self) -> str:
 #         """Return JSON string"""
 #         return json.dumps(self)
-# 
-# 
+#
+#
 # class DriveToDepthOutputData(dict):
 #     """Output format for depth driving.
-# 
+#
 #     :param depth: Depth in mm (0 on error).
 #     :type depth: float
 #     :param error: Error message.
 #     :type error: str
-# 
+#
 #     :example: Example generated dictionary :code:`{"depth": 1.23, "error": ""}`
 #     """
-# 
+#
 #     def __init__(self, depth: float, error: str) -> None:
 #         """Create drive to depth output data dictionary"""
 #         super().__init__(depth=depth, error=error)
-# 
+#
 #     def json(self) -> str:
 #         """Return JSON string"""
 #         return json.dumps(self)
-# 
-# 
+#
+#
 # class StateOutputData(dict):
 #     """Output format for boolean state requests.
-# 
+#
 #     :param state: State of the event.
 #     :type state: bool
 #     :param error: Error message.
 #     :type error: str
-# 
+#
 #     :example: Example generated dictionary :code:`{"state": True, "error": ""}`
 #     """
-# 
+#
 #     def __init__(self, state: bool, error: str) -> None:
 #         """Create state output data dictionary"""
 #         super().__init__(state=state, error=error)
-# 
+#
 #     def json(self) -> str:
 #         """Return JSON string"""
 #         return json.dumps(self)

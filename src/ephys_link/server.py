@@ -19,11 +19,11 @@ from typing import TYPE_CHECKING, Any
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
 from packaging import version
+from pydantic import ValidationError
 from requests import get
 from requests.exceptions import ConnectionError
 from socketio import AsyncServer
 from vbl_aquarium.models.ephys_link import GotoPositionRequest, PositionalResponse
-from pydantic import ValidationError
 
 from ephys_link.__about__ import __version__
 from ephys_link.common import (
@@ -212,23 +212,23 @@ class Server:
 
         :param _: Socket session ID (unused).
         :type _: str
-        :param data: :class:`ephys_link.common.GotoPositionInputDataFormat` as JSON formatted string.
+        :param data: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest` as JSON formatted string.
         :type data: str
-        :return: :class:`ephys_link.common.PositionalOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.PositionalResponse` as JSON formatted string.
         :rtype: str
         """
         try:
             goto_request = GotoPositionRequest(**loads(data))
         except ValidationError as ve:
-            print(f"[ERROR]\t\t Invalid goto_pos data: {data}\n")
-            return PositionalOutputData([], "Invalid data format").json()
+            print(f"[ERROR]\t\t Invalid goto_pos data: {data}\n{ve}\n")
+            return PositionalResponse(error="Invalid data format").to_string()
         except Exception as e:
             print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
-            return PositionalOutputData([], "Error in goto_pos").json()
+            return PositionalResponse(error="Error in goto_pos").to_string()
         else:
             dprint(f"[EVENT]\t\t Move manipulator {goto_request.manipulator_id} to position {goto_request.position}")
             goto_result = await self.platform.goto_pos(goto_request.manipulator_id, goto_request.position, goto_request.speed)
-            return goto_result.json()
+            return goto_result.to_string()
 
     async def drive_to_depth(self, _, data: str) -> str:
         """Drive to depth.

@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from sensapex import UMP, UMError
+from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
 from ephys_link.platform_handler import PlatformHandler
@@ -58,7 +60,7 @@ class SensapexHandler(PlatformHandler):
     def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
         raise NotImplementedError
 
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
+    async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: float) -> PositionalResponse:
         return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
     async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
@@ -109,40 +111,32 @@ class SensapexHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: str,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
         com.dprint(f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n")
         return com.StateOutputData(can_write, "")
 
-    def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
+    def _platform_space_to_unified_space(self, platform_position: Vector4) -> Vector4:
         # unified   <-  platform
         # +x        <-  +y
         # +y        <-  -z
         # +z        <-  +x
         # +d        <-  +d
 
-        return [
-            platform_position[1],
-            self.dimensions[2] - platform_position[2],
-            platform_position[0],
-            platform_position[3],
-        ]
+        return Vector4(x=platform_position.y, y=self.dimensions.z - platform_position.z, z=platform_position.x,
+                       w=platform_position.w)
 
-    def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
+    def _unified_space_to_platform_space(self, unified_position: Vector4) -> Vector4:
         # platform  <-  unified
         # +x        <-  +z
         # +y        <-  +x
         # +z        <-  -y
         # +d        <-  +d
 
-        return [
-            unified_position[2],
-            unified_position[0],
-            self.dimensions[2] - unified_position[1],
-            unified_position[3],
-        ]
+        return Vector4(x=unified_position.z, y=unified_position.x, z=self.dimensions.z - unified_position.y,
+                       w=unified_position.w)

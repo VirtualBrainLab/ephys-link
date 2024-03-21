@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING
 
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlHostIntf
+from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
@@ -28,7 +30,7 @@ class NewScaleHandler(PlatformHandler):
         super().__init__()
 
         self.num_axes = 3
-        self.dimensions = [15, 15, 15]
+        self.dimensions = Vector3(x=20, y=20, z=20)
 
         self.ctrl = NstCtrlHostIntf()
 
@@ -76,7 +78,7 @@ class NewScaleHandler(PlatformHandler):
     def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
         raise NotImplementedError
 
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
+    async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: int) -> PositionalResponse:
         return await self.manipulators[manipulator_id].goto_pos(position, speed)
 
     async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:

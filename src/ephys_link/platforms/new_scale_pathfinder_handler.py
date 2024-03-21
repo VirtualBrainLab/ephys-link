@@ -13,6 +13,9 @@ from typing import TYPE_CHECKING
 from urllib import request
 from urllib.error import URLError
 
+from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.unity import Vector4
+
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
 
@@ -203,7 +206,7 @@ class NewScalePathfinderHandler(PlatformHandler):
 
         return com.ShankCountOutputData(-1, "Unable to find manipulator")
 
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
+    async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: int) -> PositionalResponse:
         raise NotImplementedError
 
     async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
