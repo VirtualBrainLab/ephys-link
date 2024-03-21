@@ -9,7 +9,7 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from vbl_aquarium.models.ephys_link import PositionalResponse, GotoPositionRequest
-from vbl_aquarium.models.unity import Vector4, Vector3
+from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
 from ephys_link.platform_manipulator import (
@@ -45,9 +45,12 @@ class UMP3Manipulator(SensapexManipulator):
         """
         try:
             position = [axis / MM_TO_UM for axis in self._device.get_pos(1)]
+            
+            # Add the depth axis to the end of the position.
+            position.append(position[0])
 
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
-            return PositionalResponse(position=Vector4(x=position[0], y=position[1], z=position[2], w=position[0]))
+            return PositionalResponse(position=Vector4(**dict(zip(Vector4.model_fields.keys(), position))))
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
             print(f"{e}\n")

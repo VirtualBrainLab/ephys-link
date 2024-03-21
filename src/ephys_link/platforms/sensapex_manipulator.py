@@ -51,9 +51,9 @@ class SensapexManipulator(PlatformManipulator):
         :rtype: :class:`ephys_link.common.PositionalOutputData`
         """
         try:
-            position = [axis / MM_TO_UM for axis in self._device.get_pos(1)]
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
-            return PositionalResponse(position=Vector4(x=position[0], y=position[1], z=position[2], w=position[3]))
+            return PositionalResponse(position=Vector4(
+                **dict(zip(Vector4.model_fields.keys(), [axis / MM_TO_UM for axis in self._device.get_pos(1)]))))
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
             print(f"{e}\n")

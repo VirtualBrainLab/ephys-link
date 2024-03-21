@@ -163,9 +163,9 @@ class PlatformHandler(ABC):
                 return manipulator_pos
 
             # Convert position to unified space.
-            return manipulator_pos.copy(update={**manipulator_pos.model_dump(),
-                "position": self._platform_space_to_unified_space(
-                    manipulator_pos.position)})
+            return manipulator_pos.model_copy(update={**manipulator_pos.model_dump(),
+                                                      "position": self._platform_space_to_unified_space(
+                                                          manipulator_pos.position)})
         except KeyError:
             # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
@@ -230,8 +230,8 @@ class PlatformHandler(ABC):
             end_position = await self._goto_pos(request.model_copy(
                 update={**request.model_dump(), "position": self._unified_space_to_platform_space(request.position)}))
             return end_position.model_copy(update={**end_position.model_dump(),
-                                                   "position": self._platform_space_to_unified_space(
-                                                       end_position.position)})
+                "position": self._platform_space_to_unified_space(
+                    end_position.position)})
         except KeyError:
             # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
