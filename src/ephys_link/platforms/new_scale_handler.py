@@ -11,8 +11,18 @@ from typing import TYPE_CHECKING
 
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlHostIntf
-from vbl_aquarium.models.ephys_link import *
-from vbl_aquarium.models.unity import Vector3, Vector4
+from vbl_aquarium.models.ephys_link import (
+    AngularResponse,
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+    ShankCountResponse,
+)
+from vbl_aquarium.models.unity import Vector4
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler

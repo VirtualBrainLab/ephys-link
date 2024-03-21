@@ -17,7 +17,18 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import *
+from vbl_aquarium.models.ephys_link import (
+    AngularResponse,
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GetManipulatorsResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+    ShankCountResponse,
+)
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link import common as com
@@ -80,8 +91,9 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
             return GetManipulatorsResponse(error="Error getting manipulators")
         else:
-            return GetManipulatorsResponse(manipulators=manipulators, num_axes=self.num_axes,
-                                           dimensions=self.dimensions)
+            return GetManipulatorsResponse(
+                manipulators=manipulators, num_axes=self.num_axes, dimensions=self.dimensions
+            )
 
     def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator.
@@ -148,8 +160,8 @@ class PlatformHandler(ABC):
         try:
             # Check calibration status.
             if (
-                    hasattr(self.manipulators[manipulator_id], "get_calibrated")
-                    and not self.manipulators[manipulator_id].get_calibrated()
+                hasattr(self.manipulators[manipulator_id], "get_calibrated")
+                and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
                 return PositionalResponse(error="Manipulator not calibrated")
@@ -163,7 +175,8 @@ class PlatformHandler(ABC):
 
             # Convert position to unified space.
             return manipulator_pos.model_copy(
-                update={"position": self._platform_space_to_unified_space(manipulator_pos.position)})
+                update={"position": self._platform_space_to_unified_space(manipulator_pos.position)}
+            )
         except KeyError:
             # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
@@ -180,8 +193,8 @@ class PlatformHandler(ABC):
         try:
             # Check calibration status
             if (
-                    hasattr(self.manipulators[manipulator_id], "get_calibrated")
-                    and not self.manipulators[manipulator_id].get_calibrated()
+                hasattr(self.manipulators[manipulator_id], "get_calibrated")
+                and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
                 return AngularResponse(error="Manipulator not calibrated")
@@ -226,9 +239,11 @@ class PlatformHandler(ABC):
             # Convert position to platform space, move, and convert final position back to
             # unified space.
             end_position = await self._goto_pos(
-                request.model_copy(update={"position": self._unified_space_to_platform_space(request.position)}))
+                request.model_copy(update={"position": self._unified_space_to_platform_space(request.position)})
+            )
             return end_position.model_copy(
-                update={"position": self._platform_space_to_unified_space(end_position.position)})
+                update={"position": self._platform_space_to_unified_space(end_position.position)}
+            )
         except KeyError:
             # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
@@ -257,7 +272,8 @@ class PlatformHandler(ABC):
                 request.model_copy(update={"depth": self._unified_space_to_platform_space(Vector4(w=request.depth)).w})
             )
             return end_depth.model_copy(
-                update={"depth": self._platform_space_to_unified_space(Vector4(w=end_depth.depth)).w})
+                update={"depth": self._platform_space_to_unified_space(Vector4(w=end_depth.depth)).w}
+            )
         except KeyError:
             # Manipulator not found in registered manipulators
             print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
@@ -274,8 +290,8 @@ class PlatformHandler(ABC):
         try:
             # Check calibration status
             if (
-                    hasattr(self.manipulators[request.manipulator_id], "get_calibrated")
-                    and not self.manipulators[request.manipulator_id].get_calibrated()
+                hasattr(self.manipulators[request.manipulator_id], "get_calibrated")
+                and not self.manipulators[request.manipulator_id].get_calibrated()
             ):
                 print("[ERROR]\t\t Calibration not complete\n")
                 return BooleanStateResponse(error="Manipulator not calibrated")
@@ -346,8 +362,8 @@ class PlatformHandler(ABC):
             return "Error bypassing calibration"
 
     def set_can_write(
-            self,
-            request: CanWriteRequest,
+        self,
+        request: CanWriteRequest,
     ) -> BooleanStateResponse:
         """Set manipulator can_write state (enables/disabled moving manipulator)
 

@@ -11,7 +11,13 @@ import asyncio
 import threading
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import *
+from vbl_aquarium.models.ephys_link import (
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    PositionalResponse,
+)
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
@@ -23,8 +29,6 @@ from ephys_link.platform_manipulator import (
 )
 
 if TYPE_CHECKING:
-    import socketio
-
     # noinspection PyUnresolvedReferences
     from NstMotorCtrl import NstCtrlAxis
 
@@ -36,11 +40,11 @@ AT_TARGET_FLAG = 0x040000
 
 class NewScaleManipulator(PlatformManipulator):
     def __init__(
-            self,
-            manipulator_id: str,
-            x_axis: NstCtrlAxis,
-            y_axis: NstCtrlAxis,
-            z_axis: NstCtrlAxis,
+        self,
+        manipulator_id: str,
+        x_axis: NstCtrlAxis,
+        y_axis: NstCtrlAxis,
+        z_axis: NstCtrlAxis,
     ) -> None:
         """Construct a new Manipulator object
 
@@ -80,8 +84,13 @@ class NewScaleManipulator(PlatformManipulator):
         try:
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return PositionalResponse(
-                position=Vector4(x=self._x.CurPosition / MM_TO_UM, y=self._y.CurPosition / MM_TO_UM,
-                                 z=self._z.CurPosition / MM_TO_UM, w=self._z.CurPosition / MM_TO_UM))
+                position=Vector4(
+                    x=self._x.CurPosition / MM_TO_UM,
+                    y=self._y.CurPosition / MM_TO_UM,
+                    z=self._z.CurPosition / MM_TO_UM,
+                    w=self._z.CurPosition / MM_TO_UM,
+                )
+            )
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
             print(f"{e}\n")
@@ -114,7 +123,8 @@ class NewScaleManipulator(PlatformManipulator):
             if self._inside_brain:
                 z_axis = target_position_um.z
                 target_position_um = target_position_um.model_copy(
-                    update={**self.get_pos().position.model_dump(), "z": z_axis})
+                    update={**self.get_pos().position.model_dump(), "z": z_axis}
+                )
 
             # Mark movement as started
             self._is_moving = True
@@ -132,9 +142,9 @@ class NewScaleManipulator(PlatformManipulator):
             # Check and wait for completion (while able to write)
             self.query_all_axes()
             while (
-                    not (self._x.CurStatus & AT_TARGET_FLAG)
-                    or not (self._y.CurStatus & AT_TARGET_FLAG)
-                    or not (self._z.CurStatus & AT_TARGET_FLAG)
+                not (self._x.CurStatus & AT_TARGET_FLAG)
+                or not (self._y.CurStatus & AT_TARGET_FLAG)
+                or not (self._z.CurStatus & AT_TARGET_FLAG)
             ) and self._can_write:
                 await asyncio.sleep(POSITION_POLL_DELAY)
                 self.query_all_axes()

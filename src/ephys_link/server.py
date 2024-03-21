@@ -23,7 +23,15 @@ from pydantic import ValidationError
 from requests import get
 from requests.exceptions import ConnectionError
 from socketio import AsyncServer
-from vbl_aquarium.models.ephys_link import *
+from vbl_aquarium.models.ephys_link import (
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+)
 
 from ephys_link.__about__ import __version__
 from ephys_link.common import (
@@ -354,11 +362,11 @@ class Server:
         return "UNKNOWN_EVENT"
 
     def launch(
-            self,
-            platform_type: str,
-            server_port: int,
-            pathfinder_port: int | None = None,
-            ignore_updates: bool = False,  # noqa: FBT002
+        self,
+        platform_type: str,
+        server_port: int,
+        pathfinder_port: int | None = None,
+        ignore_updates: bool = False,  # noqa: FBT002
     ) -> None:
         """Launch the server.
 

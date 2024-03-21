@@ -14,7 +14,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from sensapex import UMP, UMError
-from vbl_aquarium.models.ephys_link import *
+from vbl_aquarium.models.ephys_link import (
+    AngularResponse,
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+    ShankCountResponse,
+)
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
@@ -122,8 +132,12 @@ class SensapexHandler(PlatformHandler):
         # +z        <-  +x
         # +d        <-  +d
 
-        return Vector4(x=platform_position.y, y=self.dimensions.z - platform_position.z, z=platform_position.x,
-                       w=platform_position.w)
+        return Vector4(
+            x=platform_position.y,
+            y=self.dimensions.z - platform_position.z,
+            z=platform_position.x,
+            w=platform_position.w,
+        )
 
     def _unified_space_to_platform_space(self, unified_position: Vector4) -> Vector4:
         # platform  <-  unified
@@ -132,5 +146,6 @@ class SensapexHandler(PlatformHandler):
         # +z        <-  -y
         # +d        <-  +d
 
-        return Vector4(x=unified_position.z, y=unified_position.x, z=self.dimensions.z - unified_position.y,
-                       w=unified_position.w)
+        return Vector4(
+            x=unified_position.z, y=unified_position.x, z=self.dimensions.z - unified_position.y, w=unified_position.w
+        )

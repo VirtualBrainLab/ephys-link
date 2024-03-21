@@ -11,7 +11,13 @@ import asyncio
 import threading
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import *
+from vbl_aquarium.models.ephys_link import (
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    PositionalResponse,
+)
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
@@ -23,7 +29,6 @@ from ephys_link.platform_manipulator import (
 )
 
 if TYPE_CHECKING:
-    import socketio
     from sensapex import SensapexDevice
 
 
@@ -52,8 +57,11 @@ class SensapexManipulator(PlatformManipulator):
         """
         try:
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
-            return PositionalResponse(position=Vector4(
-                **dict(zip(Vector4.model_fields.keys(), [axis / MM_TO_UM for axis in self._device.get_pos(1)]))))
+            return PositionalResponse(
+                position=Vector4(
+                    **dict(zip(Vector4.model_fields.keys(), [axis / MM_TO_UM for axis in self._device.get_pos(1)]))
+                )
+            )
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
             print(f"{e}\n")
@@ -84,7 +92,8 @@ class SensapexManipulator(PlatformManipulator):
             if self._inside_brain:
                 d_axis = target_position_um.w
                 target_position_um = target_position_um.model_copy(
-                    update={**self.get_pos().position.model_dump(), "w": d_axis})
+                    update={**self.get_pos().position.model_dump(), "w": d_axis}
+                )
 
             # Mark movement as started
             self._is_moving = True

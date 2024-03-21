@@ -8,7 +8,12 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import *
+from vbl_aquarium.models.ephys_link import (
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    PositionalResponse,
+)
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
@@ -45,7 +50,7 @@ class UMP3Manipulator(SensapexManipulator):
         """
         try:
             position = [axis / MM_TO_UM for axis in self._device.get_pos(1)]
-            
+
             # Add the depth axis to the end of the position.
             position.append(position[0])
 
@@ -81,7 +86,8 @@ class UMP3Manipulator(SensapexManipulator):
             if self._inside_brain:
                 d_axis = target_position_um.x
                 target_position_um = target_position_um.model_copy(
-                    update={**self.get_pos().position.model_dump(), "x": d_axis})
+                    update={**self.get_pos().position.model_dump(), "x": d_axis}
+                )
 
             # Mark movement as started
             self._is_moving = True
