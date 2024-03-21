@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse, GetManipulatorsResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, GetManipulatorsResponse, AngularResponse
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link import common as com
@@ -170,13 +170,13 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
             return PositionalResponse(error="Manipulator not registered")
 
-    def get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def get_angles(self, manipulator_id: str) -> AngularResponse:
         """Get the current position of a manipulator.
 
         :param manipulator_id: The ID of the manipulator to get the angles of.
         :type manipulator_id: str
         :return: Angular information for the manipulator and error message (if any).
-        :rtype: :class:`ephys_link.common.AngularOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.AngularResponse`
         """
         try:
             # Check calibration status
@@ -185,7 +185,7 @@ class PlatformHandler(ABC):
                     and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.AngularOutputData([], "Manipulator not calibrated")
+                return AngularResponse(error="Manipulator not calibrated")
 
             # Get position
             return self._get_angles(manipulator_id)
@@ -193,7 +193,7 @@ class PlatformHandler(ABC):
         except KeyError:
             # Manipulator not found in registered manipulators
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
-            return com.AngularOutputData([], "Manipulator not registered")
+            return AngularResponse(error="Manipulator not registered")
 
     def get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
         """Get the number of shanks on the probe
@@ -415,7 +415,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def _get_angles(self, manipulator_id: str) -> AngularResponse:
         raise NotImplementedError
 
     @abstractmethod

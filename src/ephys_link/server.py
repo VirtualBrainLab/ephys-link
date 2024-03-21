@@ -181,18 +181,18 @@ class Server:
 
         return self.platform.get_pos(manipulator_id).to_string()
 
-    async def get_angles(self, _, manipulator_id: str):
+    async def get_angles(self, _, manipulator_id: str) -> str:
         """Angles of manipulator request.
 
         :param _: Socket session ID (unused).
         :type _: str
         :param manipulator_id: ID of manipulator to pull angles from.
         :type manipulator_id: str
-        :return: :class:`ephys_link.common.AngularOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.AngularResponse` as JSON formatted string.
         :rtype: str
         """
 
-        return self.platform.get_angles(manipulator_id).json()
+        return self.platform.get_angles(manipulator_id).to_string()
 
     async def get_shank_count(self, _, manipulator_id: str) -> str:
         """Number of shanks of manipulator request.

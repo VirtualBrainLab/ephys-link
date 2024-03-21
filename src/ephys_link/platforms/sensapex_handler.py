@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from sensapex import UMP, UMError
-from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
@@ -54,7 +54,7 @@ class SensapexHandler(PlatformHandler):
     def _get_pos(self, manipulator_id: str) -> PositionalResponse:
         return self.manipulators[manipulator_id].get_pos()
 
-    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def _get_angles(self, manipulator_id: str) -> AngularResponse:
         raise NotImplementedError
 
     def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:

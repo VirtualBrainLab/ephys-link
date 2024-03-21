@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING
 from urllib import request
 from urllib.error import URLError
 
-from vbl_aquarium.models.ephys_link import PositionalResponse
-from vbl_aquarium.models.unity import Vector4
+from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse
+from vbl_aquarium.models.unity import Vector4, Vector3
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
@@ -177,20 +177,15 @@ class NewScalePathfinderHandler(PlatformHandler):
         return PositionalResponse(position=Vector4(x=manipulator_data["Tip_X_ML"], y=manipulator_data["Tip_Y_AP"],
                                                    z=manipulator_data["Tip_Z_DV"], w=0))
 
-    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def _get_angles(self, manipulator_id: str) -> AngularResponse:
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
         # Apply PosteriorAngle to Polar to get the correct angle.
         adjusted_polar = manipulator_data["Polar"] - self.query_data()["PosteriorAngle"]
 
-        return com.AngularOutputData(
-            [
-                adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
-                manipulator_data["Pitch"],
-                manipulator_data.get("ShankOrientation", 0),
-            ],
-            "",
-        )
+        return AngularResponse(angles=Vector3(x=adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
+                                              y=manipulator_data["Pitch"],
+                                              z=manipulator_data.get("ShankOrientation", 0)))
 
     def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
         for probe in self.query_data()["ProbeArray"]:
