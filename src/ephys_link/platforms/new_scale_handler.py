@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlHostIntf
-from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse, ShankCountResponse
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link import common as com
@@ -75,7 +75,7 @@ class NewScaleHandler(PlatformHandler):
     def _get_angles(self, manipulator_id: str) -> AngularResponse:
         raise NotImplementedError
 
-    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def _get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         raise NotImplementedError
 
     async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: int) -> PositionalResponse:

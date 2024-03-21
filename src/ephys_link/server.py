@@ -201,11 +201,11 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to pull number of shanks from.
         :type manipulator_id: str
-        :return: :class:`ephys_link.common.ShankCountOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.ShankCountResponse` as JSON formatted string.
         :rtype: str
         """
 
-        return self.platform.get_shank_count(manipulator_id).json()
+        return self.platform.get_shank_count(manipulator_id).to_string()
 
     async def goto_pos(self, _, data: str) -> str:
         """Move manipulator to position.

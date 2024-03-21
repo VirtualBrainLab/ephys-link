@@ -17,7 +17,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse, GetManipulatorsResponse, AngularResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, GetManipulatorsResponse, AngularResponse, \
+    ShankCountResponse
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link import common as com
@@ -195,13 +196,13 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
             return AngularResponse(error="Manipulator not registered")
 
-    def get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         """Get the number of shanks on the probe
 
         :param manipulator_id: The ID of the manipulator to get the number of shanks of.
         :type manipulator_id: str
         :return: Number of shanks on the probe.
-        :rtype: :class:`ephys_link.common.ShankCountOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.ShankCountResponse`
         """
         return self._get_shank_count(manipulator_id)
 
@@ -419,7 +420,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def _get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         raise NotImplementedError
 
     @abstractmethod

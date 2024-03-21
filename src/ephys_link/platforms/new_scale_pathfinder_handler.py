@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from urllib import request
 from urllib.error import URLError
 
-from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse, ShankCountResponse
 from vbl_aquarium.models.unity import Vector4, Vector3
 
 from ephys_link import common as com
@@ -187,12 +187,12 @@ class NewScalePathfinderHandler(PlatformHandler):
                                               y=manipulator_data["Pitch"],
                                               z=manipulator_data.get("ShankOrientation", 0)))
 
-    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def _get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         for probe in self.query_data()["ProbeArray"]:
             if probe["Id"] == manipulator_id:
-                return com.ShankCountOutputData(probe.get("ShankCount", 1), "")
+                return ShankCountResponse(shank_count=probe.get("ShankCount", 1))
 
-        return com.ShankCountOutputData(-1, "Unable to find manipulator")
+        return ShankCountResponse(error="Unable to find manipulator")
 
     async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: int) -> PositionalResponse:
         raise NotImplementedError
