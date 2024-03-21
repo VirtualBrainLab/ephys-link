@@ -23,7 +23,7 @@ from pydantic import ValidationError
 from requests import get
 from requests.exceptions import ConnectionError
 from socketio import AsyncServer
-from vbl_aquarium.models.ephys_link import GotoPositionRequest, PositionalResponse
+from vbl_aquarium.models.ephys_link import *
 
 from ephys_link.__about__ import __version__
 from ephys_link.common import (
@@ -218,7 +218,7 @@ class Server:
         :rtype: str
         """
         try:
-            goto_request = GotoPositionRequest(**loads(data))
+            request = GotoPositionRequest(**loads(data))
         except ValidationError as ve:
             print(f"[ERROR]\t\t Invalid goto_pos data: {data}\n{ve}\n")
             return PositionalResponse(error="Invalid data format").to_string()
@@ -226,8 +226,8 @@ class Server:
             print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
             return PositionalResponse(error="Error in goto_pos").to_string()
         else:
-            dprint(f"[EVENT]\t\t Move manipulator {goto_request.manipulator_id} to position {goto_request.position}")
-            goto_result = await self.platform.goto_pos(goto_request)
+            dprint(f"[EVENT]\t\t Move manipulator {request.manipulator_id} to position {request.position}")
+            goto_result = await self.platform.goto_pos(request)
             return goto_result.to_string()
 
     async def drive_to_depth(self, _, data: str) -> str:
@@ -235,26 +235,23 @@ class Server:
 
         :param _: Socket session ID (unused).
         :type _: str
-        :param data: :class:`ephys_link.common.DriveToDepthInputDataFormat` as JSON formatted string.
+        :param data: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest` as JSON formatted string.
         :type data: str
-        :return: :class:`ephys_link.common.DriveToDepthOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.DriveToDepthResponse` as JSON formatted string.
         :rtype: str
         """
         try:
-            parsed_data: DriveToDepthInputDataFormat = loads(data)
-            manipulator_id = parsed_data["manipulator_id"]
-            depth = parsed_data["depth"]
-            speed = parsed_data["speed"]
+            request = DriveToDepthRequest(**loads(data))
         except KeyError:
             print(f"[ERROR]\t\t Invalid drive_to_depth data: {data}\n")
-            return DriveToDepthOutputData(-1, "Invalid data " "format").json()
+            return DriveToDepthResponse(error="Invalid data " "format").to_string()
         except Exception as e:
             print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
-            return DriveToDepthOutputData(-1, "Error in drive_to_depth").json()
+            return DriveToDepthResponse(error="Error in drive_to_depth").to_string()
         else:
-            dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} to depth {depth}")
-            drive_result = await self.platform.drive_to_depth(manipulator_id, depth, speed)
-            return drive_result.json()
+            dprint(f"[EVENT]\t\t Drive manipulator {request.manipulator_id} to depth {request.depth}")
+            drive_result = await self.platform.drive_to_depth(request)
+            return drive_result.to_string()
 
     async def set_inside_brain(self, _, data: str) -> str:
         """Set the inside brain state.
@@ -362,11 +359,11 @@ class Server:
         return "UNKNOWN_EVENT"
 
     def launch(
-        self,
-        platform_type: str,
-        server_port: int,
-        pathfinder_port: int | None = None,
-        ignore_updates: bool = False,  # noqa: FBT002
+            self,
+            platform_type: str,
+            server_port: int,
+            pathfinder_port: int | None = None,
+            ignore_updates: bool = False,  # noqa: FBT002
     ) -> None:
         """Launch the server.
 

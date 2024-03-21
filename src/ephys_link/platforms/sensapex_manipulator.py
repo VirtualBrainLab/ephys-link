@@ -11,7 +11,7 @@ import asyncio
 import threading
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse, GotoPositionRequest
+from vbl_aquarium.models.ephys_link import *
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
@@ -121,28 +121,20 @@ class SensapexManipulator(PlatformManipulator):
             print(f"{e}\n")
             return PositionalResponse(error="Error moving manipulator")
 
-    async def drive_to_depth(self, depth: float, speed: float) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         """Drive the manipulator to a certain depth.
 
-        :param depth: The depth to drive to in mm.
-        :type depth: float
-        :param speed: The speed to drive at in mm/s
-        :type speed: float
+        :param request: The drive to depth request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest`
         :return: Resulting depth in mm (or 0 on error) and error message (if any).
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
         # Get position before this movement
-        target_pos = self.get_pos()["position"]
+        target_pos = self.get_pos().position
 
-        target_pos[3] = depth
-        movement_result = await self.goto_pos(target_pos, speed)
-
-        if movement_result["error"] == "":
-            # Return depth on success
-            return com.DriveToDepthOutputData(movement_result["position"][3], "")
-
-        # Return 0 and error message on failure
-        return com.DriveToDepthOutputData(0, movement_result["error"])
+        target_pos = target_pos.model_copy(update={"w": request.depth})
+        movement_result = await self.goto_pos(GotoPositionRequest(**request.model_dump(), position=target_pos))
+        return DriveToDepthResponse(depth=movement_result.position.w, error=movement_result.error)
 
     def set_inside_brain(self, inside: bool) -> None:
         """Set if the manipulator is inside the brain.

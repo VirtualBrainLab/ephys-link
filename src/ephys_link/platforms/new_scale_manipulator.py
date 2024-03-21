@@ -11,8 +11,8 @@ import asyncio
 import threading
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse, GotoPositionRequest
-from vbl_aquarium.models.unity import Vector3, Vector4
+from vbl_aquarium.models.ephys_link import *
+from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
 from ephys_link.platform_manipulator import (
@@ -164,20 +164,18 @@ class NewScaleManipulator(PlatformManipulator):
             print(f"{e}\n")
             return PositionalResponse(error="Error moving manipulator")
 
-    async def drive_to_depth(self, depth: float, speed: float) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         """Drive the manipulator to a certain depth.
 
-        :param depth: The depth to drive to in mm.
-        :type depth: float
-        :param speed: The speed to drive at in mm/s.
-        :type speed: float
+        :param request: The drive to depth request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest`
         :return: Resulting depth of manipulator in mm (or 0 on error) and error message (if any).
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
         # Check if able to write
         if not self._can_write:
-            print(f"[ERROR]\t\t Manipulator {self._id} movement " f"canceled")
-            return com.DriveToDepthOutputData(0, "Manipulator movement canceled")
+            print(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
+            return DriveToDepthResponse(error="Manipulator movement canceled")
 
         # Stop current movement
         if self._is_moving:
@@ -186,13 +184,13 @@ class NewScaleManipulator(PlatformManipulator):
             self._is_moving = False
 
         try:
-            target_depth_um = depth * MM_TO_UM
+            target_depth_um = request.depth * MM_TO_UM
 
             # Mark movement as started
             self._is_moving = True
 
             # Send move command to just z axis
-            speed_um = speed * MM_TO_UM
+            speed_um = request.speed * MM_TO_UM
             self._z.SetCL_Speed(
                 speed_um,
                 speed_um * ACCELERATION_MULTIPLIER,
@@ -207,7 +205,7 @@ class NewScaleManipulator(PlatformManipulator):
                 self._z.QueryPosStatus()
 
             # Get position
-            manipulator_final_position = self.get_pos()["position"]
+            final_depth = self.get_pos().position.w
 
             # Mark movement as finished
             self._is_moving = False
@@ -215,21 +213,22 @@ class NewScaleManipulator(PlatformManipulator):
             # Return success unless write was disabled during movement (meaning a stop occurred)
             if not self._can_write:
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
-                return com.DriveToDepthOutputData(0, "Manipulator movement canceled")
+                return DriveToDepthResponse(error="Manipulator movement canceled")
 
             # Return error if movement did not reach target.
-            if not abs(manipulator_final_position[3] - depth) < self._movement_tolerance:
+            if not abs(final_depth - request.depth) < self._movement_tolerance:
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target depth")
-                return com.DriveToDepthOutputData(0, "Manipulator did not reach target depth")
+                com.dprint(f"\t\t\t Expected: {request.depth}, Got: {final_depth}")
+                return DriveToDepthResponse(error="Manipulator did not reach target depth")
 
             # Made it to the target.
-            com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position" f" {manipulator_final_position}\n")
-            return com.DriveToDepthOutputData(manipulator_final_position[3], "")
+            com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position" f" {final_depth}\n")
+            return DriveToDepthResponse(depth=final_depth)
         except Exception as e:
-            print(f"[ERROR]\t\t Moving manipulator {self._id} to depth {depth}")
+            print(f"[ERROR]\t\t Moving manipulator {self._id} to depth {request.depth}")
             print(f"{e}\n")
             # Return 0 and error message on failure
-            return com.DriveToDepthOutputData(0, "Error driving manipulator")
+            return DriveToDepthResponse(error="Error driving manipulator")
 
     def calibrate(self) -> bool:
         """Calibrate the manipulator.

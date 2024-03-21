@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from urllib import request
 from urllib.error import URLError
 
-from vbl_aquarium.models.ephys_link import PositionalResponse, AngularResponse, ShankCountResponse
+from vbl_aquarium.models.ephys_link import *
 from vbl_aquarium.models.unity import Vector4, Vector3
 
 from ephys_link import common as com

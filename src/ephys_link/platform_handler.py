@@ -17,8 +17,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse, GetManipulatorsResponse, AngularResponse, \
-    ShankCountResponse, GotoPositionRequest
+from vbl_aquarium.models.ephys_link import *
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link import common as com
@@ -163,9 +162,8 @@ class PlatformHandler(ABC):
                 return manipulator_pos
 
             # Convert position to unified space.
-            return manipulator_pos.model_copy(update={**manipulator_pos.model_dump(),
-                                                      "position": self._platform_space_to_unified_space(
-                                                          manipulator_pos.position)})
+            return manipulator_pos.model_copy(
+                update={"position": self._platform_space_to_unified_space(manipulator_pos.position)})
         except KeyError:
             # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
@@ -227,55 +225,43 @@ class PlatformHandler(ABC):
 
             # Convert position to platform space, move, and convert final position back to
             # unified space.
-            end_position = await self._goto_pos(request.model_copy(
-                update={**request.model_dump(), "position": self._unified_space_to_platform_space(request.position)}))
-            return end_position.model_copy(update={**end_position.model_dump(),
-                "position": self._platform_space_to_unified_space(
-                    end_position.position)})
+            end_position = await self._goto_pos(
+                request.model_copy(update={"position": self._unified_space_to_platform_space(request.position)}))
+            return end_position.model_copy(
+                update={"position": self._platform_space_to_unified_space(end_position.position)})
         except KeyError:
             # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
             return PositionalResponse(error="Manipulator not registered")
 
-    async def drive_to_depth(self, manipulator_id: str, depth: float, speed: float) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         """Drive manipulator to depth
 
-        :param manipulator_id: The ID of the manipulator to drive
-        :type manipulator_id: str
-        :param depth: The depth to drive to in mm
-        :type depth: float
-        :param speed: The speed to drive at (in mm/s)
-        :type speed: float
+        :param request: The drive to depth request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest`
         :return: Resulting depth of the manipulator and error message (if any).
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
         try:
             # Check calibration status
-            if not self.manipulators[manipulator_id].get_calibrated():
-                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.DriveToDepthOutputData(0, "Manipulator not calibrated")
+            if not self.manipulators[request.manipulator_id].get_calibrated():
+                print(f"[ERROR]\t\t Calibration not complete: {request.manipulator_id}\n")
+                return DriveToDepthResponse(error="Manipulator not calibrated")
 
             # Check write state
-            if not self.manipulators[manipulator_id].get_can_write():
-                print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
-                return com.DriveToDepthOutputData(0, "Cannot write to manipulator")
+            if not self.manipulators[request.manipulator_id].get_can_write():
+                print(f"[ERROR]\t\t Cannot write to manipulator: {request.manipulator_id}")
+                return DriveToDepthResponse(error="Cannot write to manipulator")
 
             end_depth = await self._drive_to_depth(
-                manipulator_id,
-                self._unified_space_to_platform_space([0, 0, 0, depth])[3],
-                speed,
+                request.model_copy(update={"depth": self._unified_space_to_platform_space(Vector4(w=request.depth)).w})
             )
-            if end_depth["error"] != "":
-                return end_depth
-            return com.DriveToDepthOutputData(
-                self._platform_space_to_unified_space([0, 0, 0, end_depth["depth"]])[3],
-                "",
-            )
-
+            return end_depth.model_copy(
+                update={"depth": self._platform_space_to_unified_space(Vector4(w=end_depth.depth)).w})
         except KeyError:
             # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
-            return com.DriveToDepthOutputData(0, "Manipulator " "not registered")
+            print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
+            return DriveToDepthResponse(error="Manipulator not registered")
 
     def set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
         """Set manipulator inside brain state (restricts motion)
@@ -424,7 +410,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: float) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         raise NotImplementedError
 
     @abstractmethod
