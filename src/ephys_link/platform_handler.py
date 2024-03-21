@@ -269,7 +269,7 @@ class PlatformHandler(ABC):
         :param request: The inside brain request parsed from the server.
         :type request: :class:`vbl_aquarium.models.ephys_link.InsideBrainRequest`
         :return: New inside brain state of the manipulator and error message (if any).
-        :rtype: :class:`ephys_link.common.StateOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
         """
         try:
             # Check calibration status
@@ -347,35 +347,26 @@ class PlatformHandler(ABC):
 
     def set_can_write(
             self,
-            manipulator_id: str,
-            can_write: bool,
-            hours: float,
-            sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
+            request: CanWriteRequest,
+    ) -> BooleanStateResponse:
         """Set manipulator can_write state (enables/disabled moving manipulator)
 
-        :param manipulator_id: The ID of the manipulator to set the state of
-        :type manipulator_id: str
-        :param can_write: True if allowed to move, False if outside
-        :type can_write: bool
-        :param hours: The number of hours to allow writing (0 = forever)
-        :type hours: float
-        :param sio: SocketIO object from server to emit reset event
-        :type sio: :class:`socketio.AsyncServer`
+        :param request: The can write request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.CanWriteRequest`
         :return: New can_write state of the manipulator and error message (if any).
         :rtype: :class:`ephys_link.common.StateOutputData`
         """
         try:
-            return self._set_can_write(manipulator_id, can_write, hours, sio)
+            return self._set_can_write(request)
         except KeyError:
             # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
-            return com.StateOutputData(False, "Manipulator not " "registered")
+            print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
+            return BooleanStateResponse(error="Manipulator not registered")
         except Exception as e:
             # Other error
-            print(f"[ERROR]\t\t Set manipulator {manipulator_id} can_write state")
+            print(f"[ERROR]\t\t Set manipulator {request.manipulator_id} can_write state")
             print(f"{e}\n")
-            return com.StateOutputData(False, "Error setting " "can_write")
+            return BooleanStateResponse(error="Error setting can_write")
 
     # Platform specific methods to override
 
@@ -432,13 +423,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _set_can_write(
-            self,
-            manipulator_id: str,
-            can_write: bool,
-            hours: float,
-            sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
+    def _set_can_write(self, request: CanWriteRequest) -> BooleanStateResponse:
         raise NotImplementedError
 
     @abstractmethod

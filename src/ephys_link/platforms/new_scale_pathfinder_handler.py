@@ -209,13 +209,7 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _bypass_calibration(self, manipulator_id: str) -> str:
         return ""
 
-    def _set_can_write(
-            self,
-            manipulator_id: str,
-            can_write: bool,
-            hours: float,
-            sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
+    def _set_can_write(self, _: CanWriteRequest) -> BooleanStateResponse:
         raise NotImplementedError
 
     def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:

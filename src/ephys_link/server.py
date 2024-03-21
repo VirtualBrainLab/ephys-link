@@ -308,25 +308,22 @@ class Server:
 
         :param _: Socket session ID (unused)
         :type _: str
-        :param data: :class:`ephys_link.common.CanWriteInputDataFormat` as JSON formatted string.
+        :param data: :class:`vbl_aquarium.models.ephys_link.CanWriteRequest` as JSON formatted string.
         :type data: str
-        :return: :class:`ephys_link.common.StateOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse` as JSON formatted string.
         :rtype: str
         """
         try:
-            parsed_data: CanWriteInputDataFormat = loads(data)
-            manipulator_id = parsed_data["manipulator_id"]
-            can_write = parsed_data["can_write"]
-            hours = parsed_data["hours"]
+            request = CanWriteRequest(**loads(data))
         except KeyError:
             print(f"[ERROR]\t\t Invalid set_can_write data: {data}\n")
-            return StateOutputData(False, "Invalid data " "format").json()
+            return BooleanStateResponse(error="Invalid data format").to_string()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-            return StateOutputData(False, "Error in set_can_write").json()
+            return BooleanStateResponse(error="Error in set_can_write").to_string()
         else:
-            dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {can_write}")
-            return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio).json()
+            dprint(f"[EVENT]\t\t Set manipulator {request.manipulator_id} can_write state to {request.can_write}")
+            return self.platform.set_can_write(request).to_string()
 
     def stop(self, _) -> bool:
         """Stop all manipulators.

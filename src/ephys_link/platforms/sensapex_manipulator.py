@@ -155,34 +155,24 @@ class SensapexManipulator(PlatformManipulator):
         """
         return self._can_write
 
-    def set_can_write(self, can_write: bool, hours: float, sio: socketio.AsyncServer) -> None:
+    def set_can_write(self, request: CanWriteRequest) -> None:
         """Set if the manipulator can move.
 
-        :param can_write: True if the manipulator can move, False otherwise.
-        :type can_write: bool
-        :param hours: The number of hours to allow the manipulator to move (0 = forever).
-        :type hours: float
-        :param sio: SocketIO object from server to emit reset event.
-        :type sio: :class:`socketio.AsyncServer`
+        :param request: The can write request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.CanWriteRequest`
         :return: None
         """
-        self._can_write = can_write
+        self._can_write = request.can_write
 
-        if can_write and hours > 0:
+        if request.can_write and request.hours > 0:
             if self._reset_timer:
                 self._reset_timer.cancel()
-            self._reset_timer = threading.Timer(hours * HOURS_TO_SECONDS, self.reset_can_write, [sio])
+            self._reset_timer = threading.Timer(request.hours * HOURS_TO_SECONDS, self.reset_can_write)
             self._reset_timer.start()
 
-    def reset_can_write(self, sio: socketio.AsyncServer) -> None:
-        """Reset the :attr:`can_write` flag.
-
-        :param sio: SocketIO object from server to emit reset event.
-        :type sio: :class:`socketio.AsyncServer`
-        :return: None
-        """
+    def reset_can_write(self) -> None:
+        """Reset the :attr:`can_write` flag."""
         self._can_write = False
-        asyncio.run(sio.emit("write_disabled", self._id))
 
     # Calibration
     def call_calibrate(self) -> None:

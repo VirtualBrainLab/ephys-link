@@ -97,16 +97,10 @@ class NewScaleHandler(PlatformHandler):
         com.dprint(f"[SUCCESS]\t Bypassed calibration for manipulator" f" {manipulator_id}\n")
         return ""
 
-    def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
-        self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
-        com.dprint(f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n")
-        return com.StateOutputData(can_write, "")
+    def _set_can_write(self, request: CanWriteRequest) -> BooleanStateResponse:
+        self.manipulators[request.manipulator_id].set_can_write(request)
+        com.dprint(f"[SUCCESS]\t Set can_write state for manipulator {request.manipulator_id}\n")
+        return BooleanStateResponse(state=request.can_write)
 
     def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
         # unified   <-  platform
