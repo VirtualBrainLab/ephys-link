@@ -44,7 +44,7 @@ class SensapexManipulator(PlatformManipulator):
         self._id = device.dev_id
 
     # Device functions
-    def get_pos(self) -> com.PositionalOutputData:
+    def get_pos(self) -> PositionalResponse:
         """Get the current position of the manipulator and convert it into mm.
 
         :return: Position in (x, y, z, w) (or an empty array on error) in mm and error message (if any).
@@ -53,11 +53,11 @@ class SensapexManipulator(PlatformManipulator):
         try:
             position = [axis / MM_TO_UM for axis in self._device.get_pos(1)]
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
-            return com.PositionalOutputData(position, "")
+            return PositionalResponse(position=Vector4(x=position[0], y=position[1], z=position[2], w=position[3]))
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
             print(f"{e}\n")
-            return com.PositionalOutputData([], "Error getting position")
+            return PositionalResponse(error="Error getting position")
 
     async def goto_pos(self, position: Vector4, speed: float) -> PositionalResponse:
         """Move manipulator to position.
@@ -112,8 +112,8 @@ class SensapexManipulator(PlatformManipulator):
 
             # Return error if movement did not reach target.
             if not all(
-                abs(final_position.model_dump()[axis] - requested_position_dict[axis]) < self._movement_tolerance
-                for axis in Vector4.model_fields.keys()
+                    abs(final_position.model_dump()[axis] - requested_position_dict[axis]) < self._movement_tolerance
+                    for axis in Vector4.model_fields.keys()
             ):
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
                 return PositionalResponse(error="Manipulator did not reach target position")

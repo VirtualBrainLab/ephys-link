@@ -36,11 +36,11 @@ AT_TARGET_FLAG = 0x040000
 
 class NewScaleManipulator(PlatformManipulator):
     def __init__(
-        self,
-        manipulator_id: str,
-        x_axis: NstCtrlAxis,
-        y_axis: NstCtrlAxis,
-        z_axis: NstCtrlAxis,
+            self,
+            manipulator_id: str,
+            x_axis: NstCtrlAxis,
+            y_axis: NstCtrlAxis,
+            z_axis: NstCtrlAxis,
     ) -> None:
         """Construct a new Manipulator object
 
@@ -68,7 +68,7 @@ class NewScaleManipulator(PlatformManipulator):
         for axis in self._axes:
             axis.QueryPosStatus()
 
-    def get_pos(self) -> com.PositionalOutputData:
+    def get_pos(self) -> PositionalResponse:
         """Get the current position of the manipulator and convert it into mm.
 
         :return: Position of manipulator in (x, y, z, z) in mm (or an empty array on error) and error message (if any).
@@ -78,18 +78,14 @@ class NewScaleManipulator(PlatformManipulator):
 
         # Get position data and convert from µm to mm
         try:
-            position = [
-                self._x.CurPosition / MM_TO_UM,
-                self._y.CurPosition / MM_TO_UM,
-                self._z.CurPosition / MM_TO_UM,
-                self._z.CurPosition / MM_TO_UM,
-            ]
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
-            return com.PositionalOutputData(position, "")
+            return PositionalResponse(
+                position=Vector4(x=self._x.CurPosition / MM_TO_UM, y=self._y.CurPosition / MM_TO_UM,
+                                 z=self._z.CurPosition / MM_TO_UM, w=self._z.CurPosition / MM_TO_UM))
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
             print(f"{e}\n")
-            return com.PositionalOutputData([], "Error getting position")
+            return PositionalResponse(error="Error getting position")
 
     async def goto_pos(self, position: Vector4, speed: float) -> PositionalResponse:
         """Move manipulator to position.
@@ -139,9 +135,9 @@ class NewScaleManipulator(PlatformManipulator):
             # Check and wait for completion (while able to write)
             self.query_all_axes()
             while (
-                not (self._x.CurStatus & AT_TARGET_FLAG)
-                or not (self._y.CurStatus & AT_TARGET_FLAG)
-                or not (self._z.CurStatus & AT_TARGET_FLAG)
+                    not (self._x.CurStatus & AT_TARGET_FLAG)
+                    or not (self._y.CurStatus & AT_TARGET_FLAG)
+                    or not (self._z.CurStatus & AT_TARGET_FLAG)
             ) and self._can_write:
                 await asyncio.sleep(POSITION_POLL_DELAY)
                 self.query_all_axes()
@@ -158,7 +154,8 @@ class NewScaleManipulator(PlatformManipulator):
                 return PositionalResponse(error="Manipulator movement canceled")
 
             # Return error if movement did not reach target.
-            if not all(abs(final_position.model_dump()[axis] - requested_position_dict[axis]) < self._movement_tolerance for axis in Vector3.model_fields.keys()):
+            if not all(abs(final_position.model_dump()[axis] - requested_position_dict[axis]) < self._movement_tolerance
+                       for axis in Vector3.model_fields.keys()):
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position.")
                 com.dprint(f"\t\t\t Expected: {position}, Got: {final_position}")
                 return PositionalResponse(error="Manipulator did not reach target position")
@@ -169,7 +166,7 @@ class NewScaleManipulator(PlatformManipulator):
         except Exception as e:
             print(f"[ERROR]\t\t Moving manipulator {self._id} to position {position}")
             print(f"{e}\n")
-            return PositionalResponse(error= "Error moving manipulator")
+            return PositionalResponse(error="Error moving manipulator")
 
     async def drive_to_depth(self, depth: float, speed: float) -> com.DriveToDepthOutputData:
         """Drive the manipulator to a certain depth.

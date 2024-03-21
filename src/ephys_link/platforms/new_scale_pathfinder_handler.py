@@ -165,7 +165,7 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
 
-    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> PositionalResponse:
         """Get the current position of the manipulator in mm
 
         :param manipulator_id: manipulator ID
@@ -174,15 +174,8 @@ class NewScalePathfinderHandler(PlatformHandler):
         """
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
-        return com.PositionalOutputData(
-            [
-                manipulator_data["Tip_X_ML"],
-                manipulator_data["Tip_Y_AP"],
-                manipulator_data["Tip_Z_DV"],
-                0,
-            ],
-            "",
-        )
+        return PositionalResponse(position=Vector4(x=manipulator_data["Tip_X_ML"], y=manipulator_data["Tip_Y_AP"],
+                                                   z=manipulator_data["Tip_Z_DV"], w=0))
 
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
         manipulator_data = self.query_manipulator_data(manipulator_id)
@@ -222,11 +215,11 @@ class NewScalePathfinderHandler(PlatformHandler):
         return ""
 
     def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
+            self,
+            manipulator_id: str,
+            can_write: bool,
+            hours: float,
+            sio: socketio.AsyncServer,
     ) -> com.StateOutputData:
         raise NotImplementedError
 

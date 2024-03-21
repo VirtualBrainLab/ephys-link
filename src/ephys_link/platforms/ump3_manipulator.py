@@ -8,6 +8,9 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
+from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.unity import Vector4
+
 import ephys_link.common as com
 from ephys_link.platform_manipulator import (
     MM_TO_UM,
@@ -34,7 +37,7 @@ class UMP3Manipulator(SensapexManipulator):
         super().__init__(device)
 
     # Device functions
-    def get_pos(self) -> com.PositionalOutputData:
+    def get_pos(self) -> PositionalResponse:
         """Get the current position of the manipulator and convert it into mm.
 
         :return: Position in (x, y, z, x) (or an empty array on error) in mm and error message (if any).
@@ -43,15 +46,12 @@ class UMP3Manipulator(SensapexManipulator):
         try:
             position = [axis / MM_TO_UM for axis in self._device.get_pos(1)]
 
-            # Duplicate x-axis for depth axis
-            position.append(position[0])
-
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
-            return com.PositionalOutputData(position, "")
+            return PositionalResponse(position=Vector4(x=position[0], y=position[1], z=position[2], w=position[0]))
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
             print(f"{e}\n")
-            return com.PositionalOutputData([], "Error getting position")
+            return PositionalResponse(error="Error getting position")
 
     async def goto_pos(self, position: list[float], speed: float) -> com.PositionalOutputData:
         """Move manipulator to position.
@@ -105,8 +105,8 @@ class UMP3Manipulator(SensapexManipulator):
 
             # Return error if movement did not reach target.
             if not all(
-                abs(manipulator_final_position[i] - position[i]) < self._movement_tolerance
-                for i in range(len(position))
+                    abs(manipulator_final_position[i] - position[i]) < self._movement_tolerance
+                    for i in range(len(position))
             ):
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
                 return com.PositionalOutputData([], "Manipulator did not reach target position")

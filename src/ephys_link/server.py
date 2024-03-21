@@ -61,7 +61,7 @@ class Server:
         # Attach server to the web app.
         self.sio.attach(self.app)
 
-        # Declare events
+        # Declare events and assign handlers.
         self.sio.on("connect", self.connect)
         self.sio.on("disconnect", self.disconnect)
         self.sio.on("get_version", self.get_version)
@@ -174,12 +174,12 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to pull position from.
         :type manipulator_id: str
-        :return: :class:`ephys_link.common.PositionalOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.PositionalResponse` as JSON formatted string.
         :rtype: str
         """
         # dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
-        return self.platform.get_pos(manipulator_id).json()
+        return self.platform.get_pos(manipulator_id).to_string()
 
     async def get_angles(self, _, manipulator_id: str):
         """Angles of manipulator request.

@@ -51,7 +51,7 @@ class SensapexHandler(PlatformHandler):
     def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
 
-    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> PositionalResponse:
         return self.manipulators[manipulator_id].get_pos()
 
     def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:

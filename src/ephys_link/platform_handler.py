@@ -33,14 +33,14 @@ class PlatformHandler(ABC):
         """Initialize the manipulator handler with a dictionary of manipulators."""
 
         # Registered manipulators are stored as a dictionary of IDs (string) to
-        # manipulator objects
+        # manipulator objects.
         self.manipulators = {}
         self.num_axes = 4
 
         # Platform axes dimensions in mm
         self.dimensions = Vector4(x=20, y=20, z=20, w=20)
 
-    # Platform Handler Methods
+    # Platform Handler Methods.
 
     def reset(self) -> bool:
         """Reset handler.
@@ -80,7 +80,9 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
             return GetManipulatorsResponse(error="Error getting manipulators")
         else:
-            return GetManipulatorsResponse(manipulators=manipulators, num_axes=self.num_axes, dimensions=self.dimensions)
+            return GetManipulatorsResponse(manipulators=manipulators, num_axes=self.num_axes,
+                                           dimensions=self.dimensions)
+
     def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator.
 
@@ -135,38 +137,38 @@ class PlatformHandler(ABC):
             com.dprint(f"[SUCCESS]\t Unregistered manipulator: {manipulator_id}\n")
             return ""
 
-    def get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def get_pos(self, manipulator_id: str) -> PositionalResponse:
         """Get the current position of a manipulator.
 
         :param manipulator_id: The ID of the manipulator to get the position of.
         :type manipulator_id: str
         :return: Positional information for the manipulator and error message (if any).
-        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
         """
         try:
-            # Check calibration status
+            # Check calibration status.
             if (
                     hasattr(self.manipulators[manipulator_id], "get_calibrated")
                     and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.PositionalOutputData([], "Manipulator not calibrated")
+                return PositionalResponse(error="Manipulator not calibrated")
 
-            # Get position and convert to unified space
+            # Get position and convert to unified space.
             manipulator_pos = self._get_pos(manipulator_id)
 
-            # Shortcut return for Pathfinder
+            # Shortcut return for Pathfinder.
             if self.num_axes == -1:
                 return manipulator_pos
 
-            # Error check and convert position to unified space
-            if manipulator_pos["error"] != "":
-                return manipulator_pos
-            return com.PositionalOutputData(self._platform_space_to_unified_space(manipulator_pos["position"]), "")
+            # Convert position to unified space.
+            return manipulator_pos.copy(update={**manipulator_pos.model_dump(),
+                                                "position": self._platform_space_to_unified_space(
+                                                    manipulator_pos.position)})
         except KeyError:
-            # Manipulator not found in registered manipulators
+            # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
-            return com.PositionalOutputData([], "Manipulator not registered")
+            return PositionalResponse(error="Manipulator not registered")
 
     def get_angles(self, manipulator_id: str) -> com.AngularOutputData:
         """Get the current position of a manipulator.
@@ -409,7 +411,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> PositionalResponse:
         raise NotImplementedError
 
     @abstractmethod
