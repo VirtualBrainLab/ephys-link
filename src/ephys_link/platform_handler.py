@@ -263,37 +263,35 @@ class PlatformHandler(ABC):
             print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
             return DriveToDepthResponse(error="Manipulator not registered")
 
-    def set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
+    def set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
         """Set manipulator inside brain state (restricts motion)
 
-        :param manipulator_id: The ID of the manipulator to set the state of
-        :type manipulator_id: str
-        :param inside: True if inside brain, False if outside
-        :type inside: bool
+        :param request: The inside brain request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.InsideBrainRequest`
         :return: New inside brain state of the manipulator and error message (if any).
         :rtype: :class:`ephys_link.common.StateOutputData`
         """
         try:
             # Check calibration status
             if (
-                    hasattr(self.manipulators[manipulator_id], "get_calibrated")
-                    and not self.manipulators[manipulator_id].get_calibrated()
+                    hasattr(self.manipulators[request.manipulator_id], "get_calibrated")
+                    and not self.manipulators[request.manipulator_id].get_calibrated()
             ):
                 print("[ERROR]\t\t Calibration not complete\n")
-                return com.StateOutputData(False, "Manipulator not calibrated")
+                return BooleanStateResponse(error="Manipulator not calibrated")
 
-            return self._set_inside_brain(manipulator_id, inside)
+            return self._set_inside_brain(request)
 
         except KeyError:
             # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator {manipulator_id} not registered\n")
-            return com.StateOutputData(False, "Manipulator not " "registered")
+            print(f"[ERROR]\t\t Manipulator {request.manipulator_id} not registered\n")
+            return BooleanStateResponse(error="Manipulator not " "registered")
 
         except Exception as e:
             # Other error
-            print(f"[ERROR]\t\t Set manipulator {manipulator_id} inside brain " f"state")
+            print(f"[ERROR]\t\t Set manipulator {request.manipulator_id} inside brain " f"state")
             print(f"{e}\n")
-            return com.StateOutputData(False, "Error setting " "inside brain")
+            return BooleanStateResponse(error="Error setting inside brain")
 
     async def calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         """Calibrate manipulator
@@ -414,7 +412,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
+    def _set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
         raise NotImplementedError
 
     @abstractmethod

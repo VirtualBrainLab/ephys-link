@@ -194,13 +194,13 @@ class NewScalePathfinderHandler(PlatformHandler):
 
         return ShankCountResponse(error="Unable to find manipulator")
 
-    async def _goto_pos(self, manipulator_id: str, position: Vector4, speed: int) -> PositionalResponse:
+    async def _goto_pos(self, _: GotoPositionRequest) -> PositionalResponse:
         raise NotImplementedError
 
-    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(self, _: DriveToDepthRequest) -> DriveToDepthResponse:
         raise NotImplementedError
 
-    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
+    def _set_inside_brain(self, _: InsideBrainRequest) -> BooleanStateResponse:
         raise NotImplementedError
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:

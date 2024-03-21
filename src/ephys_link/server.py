@@ -258,24 +258,22 @@ class Server:
 
         :param _: Socket session ID (unused).
         :type _: str
-        :param data: :class:`ephys_link.common.InsideBrainInputDataFormat` as JSON formatted string.
+        :param data: :class:`vbl_aquarium.models.ephys_link.InsideBrainRequest` as JSON formatted string.
         :type data: str
-        :return: :class:`ephys_link.common.StateOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse` as JSON formatted string.
         :rtype: str
         """
         try:
-            parsed_data: InsideBrainInputDataFormat = loads(data)
-            manipulator_id = parsed_data["manipulator_id"]
-            inside = parsed_data["inside"]
+            request = InsideBrainRequest(**loads(data))
         except KeyError:
             print(f"[ERROR]\t\t Invalid set_inside_brain data: {data}\n")
-            return StateOutputData(False, "Invalid data format").json()
+            return BooleanStateResponse(error="Invalid data format").to_string()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-            return StateOutputData(False, "Error in set_inside_brain").json()
+            return BooleanStateResponse(error="Error in set_inside_brain").to_string()
         else:
-            dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {inside}")
-            return self.platform.set_inside_brain(manipulator_id, inside).json()
+            dprint(f"[EVENT]\t\t Set manipulator {request.manipulator_id} inside brain to {request.inside}")
+            return self.platform.set_inside_brain(request).to_string()
 
     async def calibrate(self, _, manipulator_id: str) -> str:
         """Calibrate manipulator.
