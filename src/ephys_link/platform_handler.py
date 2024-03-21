@@ -17,7 +17,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from vbl_aquarium.models.ephys_link import PositionalResponse
+from vbl_aquarium.models.ephys_link import PositionalResponse, GetManipulatorsResponse
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link import common as com
@@ -68,22 +68,19 @@ class PlatformHandler(ABC):
         else:
             return True
 
-    def get_manipulators(self) -> com.GetManipulatorsOutputData:
+    def get_manipulators(self) -> GetManipulatorsResponse:
         """Get all registered manipulators.
 
         :return: Result of connected manipulators, platform information, and error message (if any).
-        :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse`
         """
-        error = "Error getting manipulators"
         try:
-            devices = self._get_manipulators()
-            error = ""
+            manipulators = self._get_manipulators()
         except Exception as e:
             print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
-            return com.GetManipulatorsOutputData([], self.num_axes, self.dimensions, error)
+            return GetManipulatorsResponse(error="Error getting manipulators")
         else:
-            return com.GetManipulatorsOutputData(devices, self.num_axes, self.dimensions, error)
-
+            return GetManipulatorsResponse(manipulators=manipulators, num_axes=self.num_axes, dimensions=self.dimensions)
     def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator.
 

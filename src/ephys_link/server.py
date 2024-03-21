@@ -132,12 +132,12 @@ class Server:
 
         :param _: Socket session ID (unused).
         :type _: str
-        :return: :class:`ephys_link.common.GetManipulatorsOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse` as JSON formatted string.
         :rtype: str
         """
         dprint("[EVENT]\t\t Get discoverable manipulators")
 
-        return self.platform.get_manipulators().json()
+        return self.platform.get_manipulators().to_string()
 
     async def register_manipulator(self, _, manipulator_id: str) -> str:
         """Register a manipulator with the server.
