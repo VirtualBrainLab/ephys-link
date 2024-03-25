@@ -33,7 +33,7 @@ dependencies = [
     "aiohttp==3.9.3",
     "platformdirs==4.2.0",
     "pyserial==3.5",
-    "python-socketio==5.11.1",
+    "python-socketio==5.11.2",
     "pythonnet==3.0.3",
     "requests==2.31.0",
     "sensapex==1.400.0",
