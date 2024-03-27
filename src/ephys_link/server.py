@@ -418,7 +418,7 @@ class Server:
 
         # List available manipulators
         print("Available Manipulators:")
-        print(self.platform.get_manipulators()["manipulators"])
+        print(self.platform.get_manipulators().manipulators)
         print()
 
         # Mark that server is running

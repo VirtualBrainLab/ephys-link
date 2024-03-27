@@ -20,7 +20,7 @@ from vbl_aquarium.models.ephys_link import (
 )
 from vbl_aquarium.models.unity import Vector4
 
-import ephys_link.common as com
+from ephys_link.common import dprint, vector4_to_array
 from ephys_link.platform_manipulator import (
     HOURS_TO_SECONDS,
     MM_TO_UM,
@@ -99,7 +99,10 @@ class SensapexManipulator(PlatformManipulator):
             self._is_moving = True
 
             # Send move command
-            movement = self._device.goto_pos(target_position_um, request.speed * MM_TO_UM)
+            movement = self._device.goto_pos(
+                vector4_to_array(target_position_um),
+                request.speed * MM_TO_UM,
+            )
 
             # Wait for movement to finish
             while not movement.finished:
@@ -113,17 +116,19 @@ class SensapexManipulator(PlatformManipulator):
 
             # Return success unless write was disabled during movement (meaning a stop occurred).
             if not self._can_write:
-                com.dprint(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
+                dprint(f"[ERROR]\t\t Manipulator {self._id} movement canceled")
                 return PositionalResponse(error="Manipulator movement canceled")
 
             # Return error if movement did not reach target.
-            if not all(abs(axis) < self._movement_tolerance for axis in final_position - request.position):
-                com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
-                com.dprint(f"\t\t\t Expected: {request.position}, Got: {final_position}")
+            if not all(
+                abs(axis) < self._movement_tolerance for axis in vector4_to_array(final_position - request.position)
+            ):
+                dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position")
+                dprint(f"\t\t\t Expected: {request.position}, Got: {final_position}")
                 return PositionalResponse(error="Manipulator did not reach target position")
 
             # Made it to the target.
-            com.dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position {final_position}\n")
+            dprint(f"[SUCCESS]\t Moved manipulator {self._id} to position {final_position}\n")
             return PositionalResponse(position=final_position)
         except Exception as e:
             print(f"[ERROR]\t\t Moving manipulator {self._id} to position {request.position}")
@@ -213,4 +218,4 @@ class SensapexManipulator(PlatformManipulator):
         """
         self._can_write = False
         self._device.stop()
-        com.dprint(f"[SUCCESS]\t Stopped manipulator {self._id}")
+        dprint(f"[SUCCESS]\t Stopped manipulator {self._id}")

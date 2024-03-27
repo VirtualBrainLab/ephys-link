@@ -21,6 +21,7 @@ from vbl_aquarium.models.ephys_link import (
 from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
+from ephys_link.common import vector4_to_array
 from ephys_link.platform_manipulator import (
     HOURS_TO_SECONDS,
     MM_TO_UM,
@@ -137,7 +138,7 @@ class NewScaleManipulator(PlatformManipulator):
                     speed_um * ACCELERATION_MULTIPLIER,
                     speed_um * CUTOFF_MULTIPLIER,
                 )
-                self._axes[i].MoveAbsolute(target_position_um[i])
+                self._axes[i].MoveAbsolute(vector4_to_array(target_position_um)[i])
 
             # Check and wait for completion (while able to write)
             self.query_all_axes()
@@ -161,7 +162,9 @@ class NewScaleManipulator(PlatformManipulator):
                 return PositionalResponse(error="Manipulator movement canceled")
 
             # Return error if movement did not reach target.
-            if not all(abs(axis) < self._movement_tolerance for axis in final_position - request.position):
+            if not all(
+                abs(axis) < self._movement_tolerance for axis in vector4_to_array(final_position - request.position)
+            ):
                 com.dprint(f"[ERROR]\t\t Manipulator {self._id} did not reach target position.")
                 com.dprint(f"\t\t\t Expected: {request.position}, Got: {final_position}")
                 return PositionalResponse(error="Manipulator did not reach target position")
