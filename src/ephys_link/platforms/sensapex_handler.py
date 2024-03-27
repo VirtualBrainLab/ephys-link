@@ -14,6 +14,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from sensapex import UMP, UMError
+from vbl_aquarium.models.ephys_link import (
+    AngularResponse,
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+    ShankCountResponse,
+)
+from vbl_aquarium.models.unity import Vector4
 
 import ephys_link.common as com
 from ephys_link.platform_handler import PlatformHandler
@@ -49,25 +61,25 @@ class SensapexHandler(PlatformHandler):
     def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
 
-    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> PositionalResponse:
         return self.manipulators[manipulator_id].get_pos()
 
-    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def _get_angles(self, manipulator_id: str) -> AngularResponse:
         raise NotImplementedError
 
-    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def _get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         raise NotImplementedError
 
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
-        return await self.manipulators[manipulator_id].goto_pos(position, speed)
+    async def _goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
+        return await self.manipulators[request.manipulator_id].goto_pos(request)
 
-    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
-        return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
+    async def _drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
+        return await self.manipulators[request.manipulator_id].drive_to_depth(request)
 
-    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
-        self.manipulators[manipulator_id].set_inside_brain(inside)
-        com.dprint(f"[SUCCESS]\t Set inside brain state for manipulator:" f" {manipulator_id}\n")
-        return com.StateOutputData(inside, "")
+    def _set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
+        self.manipulators[request.manipulator_id].set_inside_brain(request.inside)
+        com.dprint(f"[SUCCESS]\t Set inside brain state for manipulator: {request.manipulator_id}\n")
+        return BooleanStateResponse(state=request.inside)
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         try:
@@ -108,41 +120,32 @@ class SensapexHandler(PlatformHandler):
         com.dprint(f"[SUCCESS]\t Bypassed calibration for manipulator" f" {manipulator_id}\n")
         return ""
 
-    def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
-        self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
-        com.dprint(f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n")
-        return com.StateOutputData(can_write, "")
+    def _set_can_write(self, request: CanWriteRequest) -> BooleanStateResponse:
+        self.manipulators[request.manipulator_id].set_can_write(request)
+        com.dprint(f"[SUCCESS]\t Set can_write state for manipulator {request.manipulator_id}\n")
+        return BooleanStateResponse(state=request.can_write)
 
-    def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
+    def _platform_space_to_unified_space(self, platform_position: Vector4) -> Vector4:
         # unified   <-  platform
         # +x        <-  +y
         # +y        <-  -z
         # +z        <-  +x
         # +d        <-  +d
 
-        return [
-            platform_position[1],
-            self.dimensions[2] - platform_position[2],
-            platform_position[0],
-            platform_position[3],
-        ]
+        return Vector4(
+            x=platform_position.y,
+            y=self.dimensions.z - platform_position.z,
+            z=platform_position.x,
+            w=platform_position.w,
+        )
 
-    def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
+    def _unified_space_to_platform_space(self, unified_position: Vector4) -> Vector4:
         # platform  <-  unified
         # +x        <-  +z
         # +y        <-  +x
         # +z        <-  -y
         # +d        <-  +d
 
-        return [
-            unified_position[2],
-            unified_position[0],
-            self.dimensions[2] - unified_position[1],
-            unified_position[3],
-        ]
+        return Vector4(
+            x=unified_position.z, y=unified_position.x, z=self.dimensions.z - unified_position.y, w=unified_position.w
+        )

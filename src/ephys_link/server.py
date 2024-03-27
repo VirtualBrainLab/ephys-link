@@ -19,20 +19,23 @@ from typing import TYPE_CHECKING, Any
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
 from packaging import version
+from pydantic import ValidationError
 from requests import get
 from requests.exceptions import ConnectionError
 from socketio import AsyncServer
+from vbl_aquarium.models.ephys_link import (
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+)
 
 from ephys_link.__about__ import __version__
 from ephys_link.common import (
     ASCII,
-    CanWriteInputDataFormat,
-    DriveToDepthInputDataFormat,
-    DriveToDepthOutputData,
-    GotoPositionInputDataFormat,
-    InsideBrainInputDataFormat,
-    PositionalOutputData,
-    StateOutputData,
     dprint,
 )
 from ephys_link.platforms.new_scale_handler import NewScaleHandler
@@ -66,7 +69,7 @@ class Server:
         # Attach server to the web app.
         self.sio.attach(self.app)
 
-        # Declare events
+        # Declare events and assign handlers.
         self.sio.on("connect", self.connect)
         self.sio.on("disconnect", self.disconnect)
         self.sio.on("get_version", self.get_version)
@@ -137,12 +140,12 @@ class Server:
 
         :param _: Socket session ID (unused).
         :type _: str
-        :return: :class:`ephys_link.common.GetManipulatorsOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse` as JSON formatted string.
         :rtype: str
         """
         dprint("[EVENT]\t\t Get discoverable manipulators")
 
-        return self.platform.get_manipulators().json()
+        return self.platform.get_manipulators().to_string()
 
     async def register_manipulator(self, _, manipulator_id: str) -> str:
         """Register a manipulator with the server.
@@ -179,25 +182,25 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to pull position from.
         :type manipulator_id: str
-        :return: :class:`ephys_link.common.PositionalOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.PositionalResponse` as JSON formatted string.
         :rtype: str
         """
         # dprint(f"[EVENT]\t\t Get position of manipulator" f" {manipulator_id}")
 
-        return self.platform.get_pos(manipulator_id).json()
+        return self.platform.get_pos(manipulator_id).to_string()
 
-    async def get_angles(self, _, manipulator_id: str):
+    async def get_angles(self, _, manipulator_id: str) -> str:
         """Angles of manipulator request.
 
         :param _: Socket session ID (unused).
         :type _: str
         :param manipulator_id: ID of manipulator to pull angles from.
         :type manipulator_id: str
-        :return: :class:`ephys_link.common.AngularOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.AngularResponse` as JSON formatted string.
         :rtype: str
         """
 
-        return self.platform.get_angles(manipulator_id).json()
+        return self.platform.get_angles(manipulator_id).to_string()
 
     async def get_shank_count(self, _, manipulator_id: str) -> str:
         """Number of shanks of manipulator request.
@@ -206,87 +209,79 @@ class Server:
         :type _: str
         :param manipulator_id: ID of manipulator to pull number of shanks from.
         :type manipulator_id: str
-        :return: :class:`ephys_link.common.ShankCountOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.ShankCountResponse` as JSON formatted string.
         :rtype: str
         """
 
-        return self.platform.get_shank_count(manipulator_id).json()
+        return self.platform.get_shank_count(manipulator_id).to_string()
 
     async def goto_pos(self, _, data: str) -> str:
         """Move manipulator to position.
 
         :param _: Socket session ID (unused).
         :type _: str
-        :param data: :class:`ephys_link.common.GotoPositionInputDataFormat` as JSON formatted string.
+        :param data: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest` as JSON formatted string.
         :type data: str
-        :return: :class:`ephys_link.common.PositionalOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.PositionalResponse` as JSON formatted string.
         :rtype: str
         """
         try:
-            parsed_data: GotoPositionInputDataFormat = loads(data)
-            manipulator_id = parsed_data["manipulator_id"]
-            pos = parsed_data["pos"]
-            speed = parsed_data["speed"]
-        except KeyError:
-            print(f"[ERROR]\t\t Invalid goto_pos data: {data}\n")
-            return PositionalOutputData([], "Invalid data format").json()
+            request = GotoPositionRequest(**loads(data))
+        except ValidationError as ve:
+            print(f"[ERROR]\t\t Invalid goto_pos data: {data}\n{ve}\n")
+            return PositionalResponse(error="Invalid data format").to_string()
         except Exception as e:
             print(f"[ERROR]\t\t Error in goto_pos: {e}\n")
-            return PositionalOutputData([], "Error in goto_pos").json()
+            return PositionalResponse(error="Error in goto_pos").to_string()
         else:
-            dprint(f"[EVENT]\t\t Move manipulator {manipulator_id} " f"to position {pos}")
-            goto_result = await self.platform.goto_pos(manipulator_id, pos, speed)
-            return goto_result.json()
+            dprint(f"[EVENT]\t\t Move manipulator {request.manipulator_id} to position {request.position}")
+            goto_result = await self.platform.goto_pos(request)
+            return goto_result.to_string()
 
     async def drive_to_depth(self, _, data: str) -> str:
         """Drive to depth.
 
         :param _: Socket session ID (unused).
         :type _: str
-        :param data: :class:`ephys_link.common.DriveToDepthInputDataFormat` as JSON formatted string.
+        :param data: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest` as JSON formatted string.
         :type data: str
-        :return: :class:`ephys_link.common.DriveToDepthOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.DriveToDepthResponse` as JSON formatted string.
         :rtype: str
         """
         try:
-            parsed_data: DriveToDepthInputDataFormat = loads(data)
-            manipulator_id = parsed_data["manipulator_id"]
-            depth = parsed_data["depth"]
-            speed = parsed_data["speed"]
+            request = DriveToDepthRequest(**loads(data))
         except KeyError:
             print(f"[ERROR]\t\t Invalid drive_to_depth data: {data}\n")
-            return DriveToDepthOutputData(-1, "Invalid data " "format").json()
+            return DriveToDepthResponse(error="Invalid data " "format").to_string()
         except Exception as e:
             print(f"[ERROR]\t\t Error in drive_to_depth: {e}\n")
-            return DriveToDepthOutputData(-1, "Error in drive_to_depth").json()
+            return DriveToDepthResponse(error="Error in drive_to_depth").to_string()
         else:
-            dprint(f"[EVENT]\t\t Drive manipulator {manipulator_id} to depth {depth}")
-            drive_result = await self.platform.drive_to_depth(manipulator_id, depth, speed)
-            return drive_result.json()
+            dprint(f"[EVENT]\t\t Drive manipulator {request.manipulator_id} to depth {request.depth}")
+            drive_result = await self.platform.drive_to_depth(request)
+            return drive_result.to_string()
 
     async def set_inside_brain(self, _, data: str) -> str:
         """Set the inside brain state.
 
         :param _: Socket session ID (unused).
         :type _: str
-        :param data: :class:`ephys_link.common.InsideBrainInputDataFormat` as JSON formatted string.
+        :param data: :class:`vbl_aquarium.models.ephys_link.InsideBrainRequest` as JSON formatted string.
         :type data: str
-        :return: :class:`ephys_link.common.StateOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse` as JSON formatted string.
         :rtype: str
         """
         try:
-            parsed_data: InsideBrainInputDataFormat = loads(data)
-            manipulator_id = parsed_data["manipulator_id"]
-            inside = parsed_data["inside"]
+            request = InsideBrainRequest(**loads(data))
         except KeyError:
             print(f"[ERROR]\t\t Invalid set_inside_brain data: {data}\n")
-            return StateOutputData(False, "Invalid data format").json()
+            return BooleanStateResponse(error="Invalid data format").to_string()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-            return StateOutputData(False, "Error in set_inside_brain").json()
+            return BooleanStateResponse(error="Error in set_inside_brain").to_string()
         else:
-            dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} inside brain to {inside}")
-            return self.platform.set_inside_brain(manipulator_id, inside).json()
+            dprint(f"[EVENT]\t\t Set manipulator {request.manipulator_id} inside brain to {request.inside}")
+            return self.platform.set_inside_brain(request).to_string()
 
     async def calibrate(self, _, manipulator_id: str) -> str:
         """Calibrate manipulator.
@@ -321,25 +316,22 @@ class Server:
 
         :param _: Socket session ID (unused)
         :type _: str
-        :param data: :class:`ephys_link.common.CanWriteInputDataFormat` as JSON formatted string.
+        :param data: :class:`vbl_aquarium.models.ephys_link.CanWriteRequest` as JSON formatted string.
         :type data: str
-        :return: :class:`ephys_link.common.StateOutputData` as JSON formatted string.
+        :return: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse` as JSON formatted string.
         :rtype: str
         """
         try:
-            parsed_data: CanWriteInputDataFormat = loads(data)
-            manipulator_id = parsed_data["manipulator_id"]
-            can_write = parsed_data["can_write"]
-            hours = parsed_data["hours"]
+            request = CanWriteRequest(**loads(data))
         except KeyError:
             print(f"[ERROR]\t\t Invalid set_can_write data: {data}\n")
-            return StateOutputData(False, "Invalid data " "format").json()
+            return BooleanStateResponse(error="Invalid data format").to_string()
         except Exception as e:
             print(f"[ERROR]\t\t Error in inside_brain: {e}\n")
-            return StateOutputData(False, "Error in set_can_write").json()
+            return BooleanStateResponse(error="Error in set_can_write").to_string()
         else:
-            dprint(f"[EVENT]\t\t Set manipulator {manipulator_id} can_write state to {can_write}")
-            return self.platform.set_can_write(manipulator_id, can_write, hours, self.sio).json()
+            dprint(f"[EVENT]\t\t Set manipulator {request.manipulator_id} can_write state to {request.can_write}")
+            return self.platform.set_can_write(request).to_string()
 
     def stop(self, _) -> bool:
         """Stop all manipulators.
@@ -426,7 +418,7 @@ class Server:
 
         # List available manipulators
         print("Available Manipulators:")
-        print(self.platform.get_manipulators()["manipulators"])
+        print(self.platform.get_manipulators().manipulators)
         print()
 
         # Mark that server is running

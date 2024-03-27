@@ -13,7 +13,19 @@ from typing import TYPE_CHECKING
 from urllib import request
 from urllib.error import URLError
 
-from ephys_link import common as com
+from vbl_aquarium.models.ephys_link import (
+    AngularResponse,
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+    ShankCountResponse,
+)
+from vbl_aquarium.models.unity import Vector3, Vector4
+
 from ephys_link.platform_handler import PlatformHandler
 
 if TYPE_CHECKING:
@@ -162,7 +174,7 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
 
-    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> PositionalResponse:
         """Get the current position of the manipulator in mm
 
         :param manipulator_id: manipulator ID
@@ -171,45 +183,40 @@ class NewScalePathfinderHandler(PlatformHandler):
         """
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
-        return com.PositionalOutputData(
-            [
-                manipulator_data["Tip_X_ML"],
-                manipulator_data["Tip_Y_AP"],
-                manipulator_data["Tip_Z_DV"],
-                0,
-            ],
-            "",
+        return PositionalResponse(
+            position=Vector4(
+                x=manipulator_data["Tip_X_ML"], y=manipulator_data["Tip_Y_AP"], z=manipulator_data["Tip_Z_DV"], w=0
+            )
         )
 
-    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def _get_angles(self, manipulator_id: str) -> AngularResponse:
         manipulator_data = self.query_manipulator_data(manipulator_id)
 
         # Apply PosteriorAngle to Polar to get the correct angle.
         adjusted_polar = manipulator_data["Polar"] - self.query_data()["PosteriorAngle"]
 
-        return com.AngularOutputData(
-            [
-                adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
-                manipulator_data["Pitch"],
-                manipulator_data.get("ShankOrientation", 0),
-            ],
-            "",
+        return AngularResponse(
+            angles=Vector3(
+                x=adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
+                y=manipulator_data["Pitch"],
+                z=manipulator_data.get("ShankOrientation", 0),
+            )
         )
 
-    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def _get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         for probe in self.query_data()["ProbeArray"]:
             if probe["Id"] == manipulator_id:
-                return com.ShankCountOutputData(probe.get("ShankCount", 1), "")
+                return ShankCountResponse(shank_count=probe.get("ShankCount", 1))
 
-        return com.ShankCountOutputData(-1, "Unable to find manipulator")
+        return ShankCountResponse(error="Unable to find manipulator")
 
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
+    async def _goto_pos(self, _: GotoPositionRequest) -> PositionalResponse:
         raise NotImplementedError
 
-    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(self, _: DriveToDepthRequest) -> DriveToDepthResponse:
         raise NotImplementedError
 
-    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
+    def _set_inside_brain(self, _: InsideBrainRequest) -> BooleanStateResponse:
         raise NotImplementedError
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
@@ -218,13 +225,7 @@ class NewScalePathfinderHandler(PlatformHandler):
     def _bypass_calibration(self, manipulator_id: str) -> str:
         return ""
 
-    def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
+    def _set_can_write(self, _: CanWriteRequest) -> BooleanStateResponse:
         raise NotImplementedError
 
     def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:

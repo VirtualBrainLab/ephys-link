@@ -17,6 +17,20 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from vbl_aquarium.models.ephys_link import (
+    AngularResponse,
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GetManipulatorsResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+    ShankCountResponse,
+)
+from vbl_aquarium.models.unity import Vector4
+
 from ephys_link import common as com
 
 if TYPE_CHECKING:
@@ -30,14 +44,14 @@ class PlatformHandler(ABC):
         """Initialize the manipulator handler with a dictionary of manipulators."""
 
         # Registered manipulators are stored as a dictionary of IDs (string) to
-        # manipulator objects
+        # manipulator objects.
         self.manipulators = {}
         self.num_axes = 4
 
         # Platform axes dimensions in mm
-        self.dimensions = [20, 20, 20, 20]
+        self.dimensions = Vector4(x=20, y=20, z=20, w=20)
 
-    # Platform Handler Methods
+    # Platform Handler Methods.
 
     def reset(self) -> bool:
         """Reset handler.
@@ -65,21 +79,21 @@ class PlatformHandler(ABC):
         else:
             return True
 
-    def get_manipulators(self) -> com.GetManipulatorsOutputData:
+    def get_manipulators(self) -> GetManipulatorsResponse:
         """Get all registered manipulators.
 
         :return: Result of connected manipulators, platform information, and error message (if any).
-        :rtype: :class:`ephys_link.common.GetManipulatorsOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse`
         """
-        error = "Error getting manipulators"
         try:
-            devices = self._get_manipulators()
-            error = ""
+            manipulators = self._get_manipulators()
         except Exception as e:
             print(f"[ERROR]\t\t Getting manipulators: {type(e)}: {e}\n")
-            return com.GetManipulatorsOutputData([], self.num_axes, self.dimensions, error)
+            return GetManipulatorsResponse(error="Error getting manipulators")
         else:
-            return com.GetManipulatorsOutputData(devices, self.num_axes, self.dimensions, error)
+            return GetManipulatorsResponse(
+                manipulators=manipulators, num_axes=self.num_axes, dimensions=self.dimensions
+            )
 
     def register_manipulator(self, manipulator_id: str) -> str:
         """Register a manipulator.
@@ -135,46 +149,46 @@ class PlatformHandler(ABC):
             com.dprint(f"[SUCCESS]\t Unregistered manipulator: {manipulator_id}\n")
             return ""
 
-    def get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def get_pos(self, manipulator_id: str) -> PositionalResponse:
         """Get the current position of a manipulator.
 
         :param manipulator_id: The ID of the manipulator to get the position of.
         :type manipulator_id: str
         :return: Positional information for the manipulator and error message (if any).
-        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
         """
         try:
-            # Check calibration status
+            # Check calibration status.
             if (
                 hasattr(self.manipulators[manipulator_id], "get_calibrated")
                 and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.PositionalOutputData([], "Manipulator not calibrated")
+                return PositionalResponse(error="Manipulator not calibrated")
 
-            # Get position and convert to unified space
+            # Get position and convert to unified space.
             manipulator_pos = self._get_pos(manipulator_id)
 
-            # Shortcut return for Pathfinder
+            # Shortcut return for Pathfinder.
             if self.num_axes == -1:
                 return manipulator_pos
 
-            # Error check and convert position to unified space
-            if manipulator_pos["error"] != "":
-                return manipulator_pos
-            return com.PositionalOutputData(self._platform_space_to_unified_space(manipulator_pos["position"]), "")
+            # Convert position to unified space.
+            return manipulator_pos.model_copy(
+                update={"position": self._platform_space_to_unified_space(manipulator_pos.position)}
+            )
         except KeyError:
-            # Manipulator not found in registered manipulators
+            # Manipulator not found in registered manipulators.
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
-            return com.PositionalOutputData([], "Manipulator not registered")
+            return PositionalResponse(error="Manipulator not registered")
 
-    def get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def get_angles(self, manipulator_id: str) -> AngularResponse:
         """Get the current position of a manipulator.
 
         :param manipulator_id: The ID of the manipulator to get the angles of.
         :type manipulator_id: str
         :return: Angular information for the manipulator and error message (if any).
-        :rtype: :class:`ephys_link.common.AngularOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.AngularResponse`
         """
         try:
             # Check calibration status
@@ -183,7 +197,7 @@ class PlatformHandler(ABC):
                 and not self.manipulators[manipulator_id].get_calibrated()
             ):
                 print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.AngularOutputData([], "Manipulator not calibrated")
+                return AngularResponse(error="Manipulator not calibrated")
 
             # Get position
             return self._get_angles(manipulator_id)
@@ -191,124 +205,109 @@ class PlatformHandler(ABC):
         except KeyError:
             # Manipulator not found in registered manipulators
             print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}")
-            return com.AngularOutputData([], "Manipulator not registered")
+            return AngularResponse(error="Manipulator not registered")
 
-    def get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         """Get the number of shanks on the probe
 
         :param manipulator_id: The ID of the manipulator to get the number of shanks of.
         :type manipulator_id: str
         :return: Number of shanks on the probe.
-        :rtype: :class:`ephys_link.common.ShankCountOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.ShankCountResponse`
         """
         return self._get_shank_count(manipulator_id)
 
-    async def goto_pos(self, manipulator_id: str, position: list[float], speed: float) -> com.PositionalOutputData:
+    async def goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
         """Move manipulator to position
 
-        :param manipulator_id: The ID of the manipulator to move
-        :type manipulator_id: str
-        :param position: The position to move to in (x, y, z, w) in mm
-        :type position: list[float]
-        :param speed: The speed to move at (in mm/s)
-        :type speed: float
+        :param request: The goto request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
         :return: Resulting position of the manipulator and error message (if any).
-        :rtype: :class:`ephys_link.common.PositionalOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
         """
         try:
-            # Check calibration status
-            if not self.manipulators[manipulator_id].get_calibrated():
-                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.PositionalOutputData([], "Manipulator not calibrated")
+            # Check calibration status.
+            if not self.manipulators[request.manipulator_id].get_calibrated():
+                print(f"[ERROR]\t\t Calibration not complete: {request.manipulator_id}\n")
+                return PositionalResponse(error="Manipulator not calibrated")
 
-            # Check write state
-            if not self.manipulators[manipulator_id].get_can_write():
-                print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
-                return com.PositionalOutputData([], "Cannot write to manipulator")
+            # Check write state.
+            if not self.manipulators[request.manipulator_id].get_can_write():
+                print(f"[ERROR]\t\t Cannot write to manipulator: {request.manipulator_id}")
+                return PositionalResponse(error="Cannot write to manipulator")
 
             # Convert position to platform space, move, and convert final position back to
-            # unified space
-            end_position = await self._goto_pos(manipulator_id, self._unified_space_to_platform_space(position), speed)
-            if end_position["error"] != "":
-                return end_position
-            return com.PositionalOutputData(self._platform_space_to_unified_space(end_position["position"]), "")
-
+            # unified space.
+            end_position = await self._goto_pos(
+                request.model_copy(update={"position": self._unified_space_to_platform_space(request.position)})
+            )
+            return end_position.model_copy(
+                update={"position": self._platform_space_to_unified_space(end_position.position)}
+            )
         except KeyError:
-            # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
-            return com.PositionalOutputData([], "Manipulator not registered")
+            # Manipulator not found in registered manipulators.
+            print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
+            return PositionalResponse(error="Manipulator not registered")
 
-    async def drive_to_depth(self, manipulator_id: str, depth: float, speed: float) -> com.DriveToDepthOutputData:
+    async def drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         """Drive manipulator to depth
 
-        :param manipulator_id: The ID of the manipulator to drive
-        :type manipulator_id: str
-        :param depth: The depth to drive to in mm
-        :type depth: float
-        :param speed: The speed to drive at (in mm/s)
-        :type speed: float
+        :param request: The drive to depth request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest`
         :return: Resulting depth of the manipulator and error message (if any).
         :rtype: :class:`ephys_link.common.DriveToDepthOutputData`
         """
         try:
             # Check calibration status
-            if not self.manipulators[manipulator_id].get_calibrated():
-                print(f"[ERROR]\t\t Calibration not complete: {manipulator_id}\n")
-                return com.DriveToDepthOutputData(0, "Manipulator not calibrated")
+            if not self.manipulators[request.manipulator_id].get_calibrated():
+                print(f"[ERROR]\t\t Calibration not complete: {request.manipulator_id}\n")
+                return DriveToDepthResponse(error="Manipulator not calibrated")
 
             # Check write state
-            if not self.manipulators[manipulator_id].get_can_write():
-                print(f"[ERROR]\t\t Cannot write to manipulator: {manipulator_id}")
-                return com.DriveToDepthOutputData(0, "Cannot write to manipulator")
+            if not self.manipulators[request.manipulator_id].get_can_write():
+                print(f"[ERROR]\t\t Cannot write to manipulator: {request.manipulator_id}")
+                return DriveToDepthResponse(error="Cannot write to manipulator")
 
             end_depth = await self._drive_to_depth(
-                manipulator_id,
-                self._unified_space_to_platform_space([0, 0, 0, depth])[3],
-                speed,
+                request.model_copy(update={"depth": self._unified_space_to_platform_space(Vector4(w=request.depth)).w})
             )
-            if end_depth["error"] != "":
-                return end_depth
-            return com.DriveToDepthOutputData(
-                self._platform_space_to_unified_space([0, 0, 0, end_depth["depth"]])[3],
-                "",
+            return end_depth.model_copy(
+                update={"depth": self._platform_space_to_unified_space(Vector4(w=end_depth.depth)).w}
             )
-
         except KeyError:
             # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
-            return com.DriveToDepthOutputData(0, "Manipulator " "not registered")
+            print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
+            return DriveToDepthResponse(error="Manipulator not registered")
 
-    def set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
+    def set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
         """Set manipulator inside brain state (restricts motion)
 
-        :param manipulator_id: The ID of the manipulator to set the state of
-        :type manipulator_id: str
-        :param inside: True if inside brain, False if outside
-        :type inside: bool
+        :param request: The inside brain request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.InsideBrainRequest`
         :return: New inside brain state of the manipulator and error message (if any).
-        :rtype: :class:`ephys_link.common.StateOutputData`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
         """
         try:
             # Check calibration status
             if (
-                hasattr(self.manipulators[manipulator_id], "get_calibrated")
-                and not self.manipulators[manipulator_id].get_calibrated()
+                hasattr(self.manipulators[request.manipulator_id], "get_calibrated")
+                and not self.manipulators[request.manipulator_id].get_calibrated()
             ):
                 print("[ERROR]\t\t Calibration not complete\n")
-                return com.StateOutputData(False, "Manipulator not calibrated")
+                return BooleanStateResponse(error="Manipulator not calibrated")
 
-            return self._set_inside_brain(manipulator_id, inside)
+            return self._set_inside_brain(request)
 
         except KeyError:
             # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator {manipulator_id} not registered\n")
-            return com.StateOutputData(False, "Manipulator not " "registered")
+            print(f"[ERROR]\t\t Manipulator {request.manipulator_id} not registered\n")
+            return BooleanStateResponse(error="Manipulator not " "registered")
 
         except Exception as e:
             # Other error
-            print(f"[ERROR]\t\t Set manipulator {manipulator_id} inside brain " f"state")
+            print(f"[ERROR]\t\t Set manipulator {request.manipulator_id} inside brain " f"state")
             print(f"{e}\n")
-            return com.StateOutputData(False, "Error setting " "inside brain")
+            return BooleanStateResponse(error="Error setting inside brain")
 
     async def calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         """Calibrate manipulator
@@ -364,35 +363,26 @@ class PlatformHandler(ABC):
 
     def set_can_write(
         self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
+        request: CanWriteRequest,
+    ) -> BooleanStateResponse:
         """Set manipulator can_write state (enables/disabled moving manipulator)
 
-        :param manipulator_id: The ID of the manipulator to set the state of
-        :type manipulator_id: str
-        :param can_write: True if allowed to move, False if outside
-        :type can_write: bool
-        :param hours: The number of hours to allow writing (0 = forever)
-        :type hours: float
-        :param sio: SocketIO object from server to emit reset event
-        :type sio: :class:`socketio.AsyncServer`
+        :param request: The can write request parsed from the server.
+        :type request: :class:`vbl_aquarium.models.ephys_link.CanWriteRequest`
         :return: New can_write state of the manipulator and error message (if any).
         :rtype: :class:`ephys_link.common.StateOutputData`
         """
         try:
-            return self._set_can_write(manipulator_id, can_write, hours, sio)
+            return self._set_can_write(request)
         except KeyError:
             # Manipulator not found in registered manipulators
-            print(f"[ERROR]\t\t Manipulator not registered: {manipulator_id}\n")
-            return com.StateOutputData(False, "Manipulator not " "registered")
+            print(f"[ERROR]\t\t Manipulator not registered: {request.manipulator_id}\n")
+            return BooleanStateResponse(error="Manipulator not registered")
         except Exception as e:
             # Other error
-            print(f"[ERROR]\t\t Set manipulator {manipulator_id} can_write state")
+            print(f"[ERROR]\t\t Set manipulator {request.manipulator_id} can_write state")
             print(f"{e}\n")
-            return com.StateOutputData(False, "Error setting " "can_write")
+            return BooleanStateResponse(error="Error setting can_write")
 
     # Platform specific methods to override
 
@@ -409,27 +399,27 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> PositionalResponse:
         raise NotImplementedError
 
     @abstractmethod
-    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def _get_angles(self, manipulator_id: str) -> AngularResponse:
         raise NotImplementedError
 
     @abstractmethod
-    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def _get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         raise NotImplementedError
 
     @abstractmethod
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: float) -> com.PositionalOutputData:
+    async def _goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
         raise NotImplementedError
 
     @abstractmethod
-    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: float) -> com.DriveToDepthOutputData:
+    async def _drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         raise NotImplementedError
 
     @abstractmethod
-    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
+    def _set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
         raise NotImplementedError
 
     @abstractmethod
@@ -449,33 +439,27 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
+    def _set_can_write(self, request: CanWriteRequest) -> BooleanStateResponse:
         raise NotImplementedError
 
     @abstractmethod
-    def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
+    def _platform_space_to_unified_space(self, platform_position: Vector4) -> Vector4:
         """Convert position in platform space to position in unified manipulator space
 
         :param platform_position: Position in platform space (x, y, z, w) in mm
-        :type platform_position: list[float]
+        :type platform_position: Vector4
         :return: Position in unified manipulator space (x, y, z, w) in mm
-        :rtype: list[float]
+        :rtype: Vector4
         """
         raise NotImplementedError
 
     @abstractmethod
-    def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
+    def _unified_space_to_platform_space(self, unified_position: Vector4) -> Vector4:
         """Convert position in unified manipulator space to position in platform space
 
         :param unified_position: Position in unified manipulator space (x, y, z, w) in mm
-        :type unified_position: list[float]
+        :type unified_position: Vector4
         :return: Position in platform space (x, y, z, w) in mm
-        :rtype: list[float]
+        :rtype: Vector4
         """
         raise NotImplementedError

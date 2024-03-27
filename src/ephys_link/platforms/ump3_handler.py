@@ -8,6 +8,8 @@ This is a subclass of :class:`ephys_link.platforms.sensapex_handler`.
 
 from __future__ import annotations
 
+from vbl_aquarium.models.unity import Vector4
+
 from ephys_link.platforms.sensapex_handler import SensapexHandler
 from ephys_link.platforms.ump3_manipulator import UMP3Manipulator
 
@@ -17,7 +19,7 @@ class UMP3Handler(SensapexHandler):
         super().__init__()
 
         self.num_axes = 3
-        self.dimensions = [20, 20, 20]
+        self.dimensions = Vector4(x=20, y=20, z=20, w=0)
 
     def _register_manipulator(self, manipulator_id: str) -> None:
         if not manipulator_id.isnumeric():

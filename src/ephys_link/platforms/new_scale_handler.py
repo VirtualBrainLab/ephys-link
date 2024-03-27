@@ -11,6 +11,18 @@ from typing import TYPE_CHECKING
 
 # noinspection PyUnresolvedReferences
 from NstMotorCtrl import NstCtrlHostIntf
+from vbl_aquarium.models.ephys_link import (
+    AngularResponse,
+    BooleanStateResponse,
+    CanWriteRequest,
+    DriveToDepthRequest,
+    DriveToDepthResponse,
+    GotoPositionRequest,
+    InsideBrainRequest,
+    PositionalResponse,
+    ShankCountResponse,
+)
+from vbl_aquarium.models.unity import Vector4
 
 from ephys_link import common as com
 from ephys_link.platform_handler import PlatformHandler
@@ -28,7 +40,7 @@ class NewScaleHandler(PlatformHandler):
         super().__init__()
 
         self.num_axes = 3
-        self.dimensions = [15, 15, 15]
+        self.dimensions = Vector4(x=20, y=20, z=20, w=0)
 
         self.ctrl = NstCtrlHostIntf()
 
@@ -67,25 +79,25 @@ class NewScaleHandler(PlatformHandler):
     def _unregister_manipulator(self, manipulator_id: str) -> None:
         del self.manipulators[manipulator_id]
 
-    def _get_pos(self, manipulator_id: str) -> com.PositionalOutputData:
+    def _get_pos(self, manipulator_id: str) -> PositionalResponse:
         return self.manipulators[manipulator_id].get_pos()
 
-    def _get_angles(self, manipulator_id: str) -> com.AngularOutputData:
+    def _get_angles(self, manipulator_id: str) -> AngularResponse:
         raise NotImplementedError
 
-    def _get_shank_count(self, manipulator_id: str) -> com.ShankCountOutputData:
+    def _get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         raise NotImplementedError
 
-    async def _goto_pos(self, manipulator_id: str, position: list[float], speed: int) -> com.PositionalOutputData:
-        return await self.manipulators[manipulator_id].goto_pos(position, speed)
+    async def _goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
+        return await self.manipulators[request.manipulator_id].goto_pos(request)
 
-    async def _drive_to_depth(self, manipulator_id: str, depth: float, speed: int) -> com.DriveToDepthOutputData:
-        return await self.manipulators[manipulator_id].drive_to_depth(depth, speed)
+    async def _drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
+        return await self.manipulators[request.manipulator_id].drive_to_depth(request)
 
-    def _set_inside_brain(self, manipulator_id: str, inside: bool) -> com.StateOutputData:
-        self.manipulators[manipulator_id].set_inside_brain(inside)
-        com.dprint(f"[SUCCESS]\t Set inside brain state for manipulator:" f" {manipulator_id}\n")
-        return com.StateOutputData(inside, "")
+    def _set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
+        self.manipulators[request.manipulator_id].set_inside_brain(request.inside)
+        com.dprint(f"[SUCCESS]\t Set inside brain state for manipulator: {request.manipulator_id}\n")
+        return BooleanStateResponse(state=request.inside)
 
     async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
         return "" if self.manipulators[manipulator_id].calibrate() else "Error calling calibrate"
@@ -95,16 +107,10 @@ class NewScaleHandler(PlatformHandler):
         com.dprint(f"[SUCCESS]\t Bypassed calibration for manipulator" f" {manipulator_id}\n")
         return ""
 
-    def _set_can_write(
-        self,
-        manipulator_id: str,
-        can_write: bool,
-        hours: float,
-        sio: socketio.AsyncServer,
-    ) -> com.StateOutputData:
-        self.manipulators[manipulator_id].set_can_write(can_write, hours, sio)
-        com.dprint(f"[SUCCESS]\t Set can_write state for manipulator" f" {manipulator_id}\n")
-        return com.StateOutputData(can_write, "")
+    def _set_can_write(self, request: CanWriteRequest) -> BooleanStateResponse:
+        self.manipulators[request.manipulator_id].set_can_write(request)
+        com.dprint(f"[SUCCESS]\t Set can_write state for manipulator {request.manipulator_id}\n")
+        return BooleanStateResponse(state=request.can_write)
 
     def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
         # unified   <-  platform
