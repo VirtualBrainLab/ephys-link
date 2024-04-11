@@ -40,7 +40,7 @@ class NewScaleHandler(PlatformHandler):
         super().__init__()
 
         self.num_axes = 3
-        self.dimensions = Vector4(x=20, y=20, z=20, w=0)
+        self.dimensions = Vector4(x=15, y=15, z=15, w=0)
 
         self.ctrl = NstCtrlHostIntf()
 
