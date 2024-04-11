@@ -112,30 +112,30 @@ class NewScaleHandler(PlatformHandler):
         com.dprint(f"[SUCCESS]\t Set can_write state for manipulator {request.manipulator_id}\n")
         return BooleanStateResponse(state=request.can_write)
 
-    def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
+    def _platform_space_to_unified_space(self, platform_position: Vector4) -> Vector4:
         # unified   <-  platform
         # +x        <-  -x
         # +y        <-  +z
         # +z        <-  +y
         # +d        <-  -d
 
-        return [
-            self.dimensions[0] - platform_position[0],
-            platform_position[2],
-            platform_position[1],
-            self.dimensions[2] - platform_position[3],
-        ]
+        return Vector4(
+            x=self.dimensions.x - platform_position.x,
+            y=platform_position.z,
+            z=platform_position.y,
+            w=self.dimensions.z - platform_position.w,
+        )
 
-    def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
+    def _unified_space_to_platform_space(self, unified_position: Vector4) -> Vector4:
         # platform  <-  unified
         # +x        <-  -x
         # +y        <-  +z
         # +z        <-  +y
         # +d        <-  -d
 
-        return [
-            self.dimensions[0] - unified_position[0],
-            unified_position[2],
-            unified_position[1],
-            self.dimensions[2] - unified_position[3],
-        ]
+        return Vector4(
+            x=self.dimensions.x - unified_position.x,
+            y=unified_position.z,
+            z=unified_position.y,
+            w=self.dimensions.z - unified_position.w,
+        )
