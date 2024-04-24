@@ -3,6 +3,7 @@
 Most functionality will be implemented on the platform handler side. This is mostly
 for enforcing implementation of the stop method and hold common properties.
 """
+
 from abc import ABC, abstractmethod
 
 # Constants
