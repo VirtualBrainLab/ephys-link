@@ -11,10 +11,12 @@ every event, the server does the following:
 
 from __future__ import annotations
 
+import json
 from json import loads
 from signal import SIGINT, SIGTERM, signal
 from sys import exit
 from typing import TYPE_CHECKING, Any
+from uuid import uuid4
 
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
@@ -22,7 +24,9 @@ from packaging import version
 from pydantic import ValidationError
 from requests import get
 from requests.exceptions import ConnectionError
-from socketio import AsyncServer
+
+# from socketio import AsyncServer
+from socketio import AsyncClient
 from vbl_aquarium.models.ephys_link import (
     BooleanStateResponse,
     CanWriteRequest,
@@ -50,8 +54,10 @@ if TYPE_CHECKING:
 class Server:
     def __init__(self):
         # Server and Socketio
-        self.sio = AsyncServer()
+        # self.sio = AsyncServer()
+        self.sio = AsyncClient()
         self.app = web.Application()
+        self.pinpoint_id = str(uuid4())[:8]
 
         # Is there a client connected?
         self.is_connected = False
@@ -67,11 +73,12 @@ class Server:
         signal(SIGINT, self.close_server)
 
         # Attach server to the web app.
-        self.sio.attach(self.app)
+        # self.sio.attach(self.app)
 
         # Declare events and assign handlers.
-        self.sio.on("connect", self.connect)
-        self.sio.on("disconnect", self.disconnect)
+        # self.sio.on("connect", self.connect)
+        # self.sio.on("disconnect", self.disconnect)
+        self.sio.on("get_pinpoint_id", self.get_pinpoint_id)
         self.sio.on("get_version", self.get_version)
         self.sio.on("get_manipulators", self.get_manipulators)
         self.sio.on("register_manipulator", self.register_manipulator)
@@ -88,41 +95,49 @@ class Server:
         self.sio.on("stop", self.stop)
         self.sio.on("*", self.catch_all)
 
-    async def connect(self, sid, _, __) -> bool:
-        """Acknowledge connection to the server.
-
-        :param sid: Socket session ID.
-        :type sid: str
-        :param _: WSGI formatted dictionary with request info (unused).
-        :type _: dict
-        :param __: Authentication details (unused).
-        :type __: dict
-        :return: False on error to refuse connection. True otherwise.
-        :rtype: bool
-        """
-        print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
-
-        if not self.is_connected:
-            print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
-            self.is_connected = True
-            return True
-
-        print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
-        return False
-
-    async def disconnect(self, sid) -> None:
-        """Acknowledge disconnection from the server.
-
-        :param sid: Socket session ID.
-        :type sid: str
-        :return: None
-        """
-        print(f"[DISCONNECTION]:\t {sid}\n")
-
-        self.platform.reset()
-        self.is_connected = False
+    # async def connect(self, sid, _, __) -> bool:
+    #     """Acknowledge connection to the server.
+    # 
+    #     :param sid: Socket session ID.
+    #     :type sid: str
+    #     :param _: WSGI formatted dictionary with request info (unused).
+    #     :type _: dict
+    #     :param __: Authentication details (unused).
+    #     :type __: dict
+    #     :return: False on error to refuse connection. True otherwise.
+    #     :rtype: bool
+    #     """
+    #     print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
+    # 
+    #     if not self.is_connected:
+    #         print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
+    #         self.is_connected = True
+    #         return True
+    # 
+    #     print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
+    #     return False
+    # 
+    # async def disconnect(self, sid) -> None:
+    #     """Acknowledge disconnection from the server.
+    # 
+    #     :param sid: Socket session ID.
+    #     :type sid: str
+    #     :return: None
+    #     """
+    #     print(f"[DISCONNECTION]:\t {sid}\n")
+    # 
+    #     self.platform.reset()
+    #     self.is_connected = False
 
     # Events
+
+    async def get_pinpoint_id(self) -> str:
+        """Get the pinpoint ID.
+
+        :return: Pinpoint ID and whether the client is a requester.
+        :rtype: tuple[str, bool]
+        """
+        return json.dumps({"pinpoint_id": self.pinpoint_id, "is_requester": False}) 
 
     @staticmethod
     async def get_version(_) -> str:
@@ -361,7 +376,7 @@ class Server:
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "UNKNOWN_EVENT"
 
-    def launch(
+    async def launch(
         self,
         platform_type: str,
         server_port: int,
@@ -423,7 +438,9 @@ class Server:
 
         # Mark that server is running
         self.is_running = True
-        web.run_app(self.app, port=server_port)
+        # web.run_app(self.app, port=server_port)
+        await self.sio.connect("http://localhost:3000")
+        await self.sio.wait()
 
     def close_server(self, _, __) -> None:
         """Close the server."""

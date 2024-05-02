@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from asyncio import run
 from sys import argv
 
 from ephys_link import common as com
@@ -83,7 +84,7 @@ def main() -> None:
         e_stop.watch()
 
     # Launch with parsed arguments on main thread.
-    server.launch(args.type, args.port, args.pathfinder_port, args.ignore_updates)
+    run(server.launch(args.type, args.port, args.pathfinder_port, args.ignore_updates))
 
 
 if __name__ == "__main__":
