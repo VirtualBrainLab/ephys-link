@@ -16,7 +16,6 @@ from json import loads
 from signal import SIGINT, SIGTERM, signal
 from sys import exit
 from typing import TYPE_CHECKING, Any
-from uuid import uuid4
 
 from aiohttp import web
 from aiohttp.web_runner import GracefulExit
@@ -57,7 +56,7 @@ class Server:
         # self.sio = AsyncServer()
         self.sio = AsyncClient()
         self.app = web.Application()
-        self.pinpoint_id = str(uuid4())[:8]
+        self.pinpoint_id = "abcde" # str(uuid4())[:8]
 
         # Is there a client connected?
         self.is_connected = False
@@ -97,7 +96,7 @@ class Server:
 
     # async def connect(self, sid, _, __) -> bool:
     #     """Acknowledge connection to the server.
-    # 
+    #
     #     :param sid: Socket session ID.
     #     :type sid: str
     #     :param _: WSGI formatted dictionary with request info (unused).
@@ -108,24 +107,24 @@ class Server:
     #     :rtype: bool
     #     """
     #     print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
-    # 
+    #
     #     if not self.is_connected:
     #         print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
     #         self.is_connected = True
     #         return True
-    # 
+    #
     #     print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
     #     return False
-    # 
+    #
     # async def disconnect(self, sid) -> None:
     #     """Acknowledge disconnection from the server.
-    # 
+    #
     #     :param sid: Socket session ID.
     #     :type sid: str
     #     :return: None
     #     """
     #     print(f"[DISCONNECTION]:\t {sid}\n")
-    # 
+    #
     #     self.platform.reset()
     #     self.is_connected = False
 
@@ -137,7 +136,7 @@ class Server:
         :return: Pinpoint ID and whether the client is a requester.
         :rtype: tuple[str, bool]
         """
-        return json.dumps({"pinpoint_id": self.pinpoint_id, "is_requester": False}) 
+        return json.dumps({"pinpoint_id": self.pinpoint_id, "is_requester": False})
 
     @staticmethod
     async def get_version(_) -> str:
@@ -148,6 +147,8 @@ class Server:
         :return: Version number as defined in :mod:`ephys_link.__about__`.
         :rtype: str
         """
+        dprint("[EVENT]\t\t Get version")
+
         return __version__
 
     async def get_manipulators(self, _) -> str:
