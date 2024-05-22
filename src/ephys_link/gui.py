@@ -160,4 +160,4 @@ class GUI:
             e_stop = EmergencyStop(server, self._serial.get())
             e_stop.watch()
 
-        server.launch(self._type.get(), self._port.get(), self._pathfinder_port.get())
+        server.launch(self._type.get(), "", self._port.get(), self._pathfinder_port.get())

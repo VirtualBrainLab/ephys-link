@@ -17,15 +17,14 @@ from signal import SIGINT, SIGTERM, signal
 from sys import exit
 from typing import TYPE_CHECKING, Any
 
-from aiohttp import web
+from aiohttp import ClientSession, web
 from aiohttp.web_runner import GracefulExit
 from packaging import version
 from pydantic import ValidationError
-from requests import get
 from requests.exceptions import ConnectionError
 
 # from socketio import AsyncServer
-from socketio import AsyncClient
+from socketio import AsyncClient, AsyncServer
 from vbl_aquarium.models.ephys_link import (
     BooleanStateResponse,
     CanWriteRequest,
@@ -51,12 +50,24 @@ if TYPE_CHECKING:
 
 
 class Server:
-    def __init__(self):
-        # Server and Socketio
-        # self.sio = AsyncServer()
-        self.sio = AsyncClient()
-        self.app = web.Application()
-        self.pinpoint_id = "abcde" # str(uuid4())[:8]
+    def __init__(self, proxy_mode: bool) -> None:
+        """Set up the server.
+
+        :param proxy_mode: Flag to enable proxy mode.
+        :type proxy_mode: bool
+        """
+
+        # Proxy mode flag.
+        self.proxy_mode = proxy_mode
+
+        # Server and Socketio setup.
+        if self.proxy_mode:
+            self.sio = AsyncClient()
+            self.pinpoint_id = "abcde"  # str(uuid4())[:8]
+
+        else:
+            self.sio = AsyncServer()
+            self.app = web.Application()
 
         # Is there a client connected?
         self.is_connected = False
@@ -71,12 +82,12 @@ class Server:
         signal(SIGTERM, self.close_server)
         signal(SIGINT, self.close_server)
 
-        # Attach server to the web app.
-        # self.sio.attach(self.app)
-
         # Declare events and assign handlers.
-        # self.sio.on("connect", self.connect)
-        # self.sio.on("disconnect", self.disconnect)
+        if not self.proxy_mode:
+            self.sio.attach(self.app)
+            self.sio.on("connect", self.connect)
+            self.sio.on("disconnect", self.disconnect)
+
         self.sio.on("get_pinpoint_id", self.get_pinpoint_id)
         self.sio.on("get_version", self.get_version)
         self.sio.on("get_manipulators", self.get_manipulators)
@@ -94,41 +105,42 @@ class Server:
         self.sio.on("stop", self.stop)
         self.sio.on("*", self.catch_all)
 
-    # async def connect(self, sid, _, __) -> bool:
-    #     """Acknowledge connection to the server.
-    #
-    #     :param sid: Socket session ID.
-    #     :type sid: str
-    #     :param _: WSGI formatted dictionary with request info (unused).
-    #     :type _: dict
-    #     :param __: Authentication details (unused).
-    #     :type __: dict
-    #     :return: False on error to refuse connection. True otherwise.
-    #     :rtype: bool
-    #     """
-    #     print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
-    #
-    #     if not self.is_connected:
-    #         print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
-    #         self.is_connected = True
-    #         return True
-    #
-    #     print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
-    #     return False
-    #
-    # async def disconnect(self, sid) -> None:
-    #     """Acknowledge disconnection from the server.
-    #
-    #     :param sid: Socket session ID.
-    #     :type sid: str
-    #     :return: None
-    #     """
-    #     print(f"[DISCONNECTION]:\t {sid}\n")
-    #
-    #     self.platform.reset()
-    #     self.is_connected = False
+    # Server events.
+    async def connect(self, sid, _, __) -> bool:
+        """Acknowledge connection to the server.
 
-    # Events
+        :param sid: Socket session ID.
+        :type sid: str
+        :param _: WSGI formatted dictionary with request info (unused).
+        :type _: dict
+        :param __: Authentication details (unused).
+        :type __: dict
+        :return: False on error to refuse connection. True otherwise.
+        :rtype: bool
+        """
+        print(f"[CONNECTION REQUEST]:\t\t {sid}\n")
+
+        if not self.is_connected:
+            print(f"[CONNECTION GRANTED]:\t\t {sid}\n")
+            self.is_connected = True
+            return True
+
+        print(f"[CONNECTION DENIED]:\t\t {sid}: another client is already connected\n")
+        return False
+
+    async def disconnect(self, sid) -> None:
+        """Acknowledge disconnection from the server.
+
+        :param sid: Socket session ID.
+        :type sid: str
+        :return: None
+        """
+        print(f"[DISCONNECTION]:\t {sid}\n")
+
+        self.platform.reset()
+        self.is_connected = False
+
+    # Ephys Link Events
 
     async def get_pinpoint_id(self) -> str:
         """Get the pinpoint ID.
@@ -380,6 +392,7 @@ class Server:
     async def launch(
         self,
         platform_type: str,
+        proxy_address: str,
         server_port: int,
         pathfinder_port: int | None = None,
         ignore_updates: bool = False,  # noqa: FBT002
@@ -388,6 +401,8 @@ class Server:
 
         :param platform_type: Parsed argument for platform type.
         :type platform_type: str
+        :param proxy_address: Parsed argument for proxy address.
+        :type proxy_address: str
         :param server_port: HTTP port to serve the server.
         :type server_port: int
         :param pathfinder_port: Port New Scale Pathfinder's server is on.
@@ -417,11 +432,13 @@ class Server:
         # Check for newer version.
         if not ignore_updates:
             try:
-                version_request = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
-                latest_version = version_request.json()[0]["name"]
-                if version.parse(latest_version) > version.parse(__version__):
-                    print(f"New version available: {latest_version}")
-                    print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
+                async with ClientSession() as session, session.get(
+                    "https://api.github.com/repos/VirtualBrainLab/ephys-link/tags"
+                ) as response:
+                    latest_version = (await response.json())[0]["name"]
+                    if version.parse(latest_version) > version.parse(__version__):
+                        print(f"New version available: {latest_version}")
+                        print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
             except ConnectionError:
                 pass
 
@@ -429,7 +446,7 @@ class Server:
         print()
         print("This is the Ephys Link server window.")
         print("You may safely leave it running in the background.")
-        print("To stop the it, close this window or press CTRL + Pause/Break.")
+        print("To stop it, close this window or press CTRL + Pause/Break.")
         print()
 
         # List available manipulators
@@ -439,9 +456,18 @@ class Server:
 
         # Mark that server is running
         self.is_running = True
-        # web.run_app(self.app, port=server_port)
-        await self.sio.connect("http://localhost:3000")
-        await self.sio.wait()
+
+        if self.proxy_mode:
+            # Verify that the server was initialized correctly.
+            if type(self.sio) is not AsyncClient:
+                error = "Server was not initialized to a Client for proxy mode!"
+                raise ValueError(error)
+            # noinspection PyUnresolvedReferences,HttpUrlsUsage
+            await self.sio.connect(f"http://{proxy_address}:{server_port}")
+            # noinspection PyUnresolvedReferences
+            await self.sio.wait()
+        else:
+            web.run_app(self.app, port=server_port)
 
     def close_server(self, _, __) -> None:
         """Close the server."""
