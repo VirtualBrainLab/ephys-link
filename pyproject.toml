@@ -35,7 +35,7 @@ dependencies = [
     "pyserial==3.5",
     "python-socketio==5.11.2",
     "pythonnet==3.0.3",
-    "requests==2.31.0",
+    "requests==2.32.0",
     "sensapex==1.400.0",
     "vbl-aquarium==0.0.14"
 ]
