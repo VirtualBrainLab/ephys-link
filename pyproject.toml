@@ -37,7 +37,7 @@ dependencies = [
     "pythonnet==3.0.3",
     "requests==2.31.0",
     "sensapex==1.400.0",
-    "vbl-aquarium==0.0.12"
+    "vbl-aquarium==0.0.14"
 ]
 
 [project.urls]

@@ -28,30 +28,30 @@ class UMP3Handler(SensapexHandler):
 
         self.manipulators[manipulator_id] = UMP3Manipulator(self.ump.get_device(int(manipulator_id)))
 
-    def _platform_space_to_unified_space(self, platform_position: list[float]) -> list[float]:
+    def _platform_space_to_unified_space(self, platform_position: Vector4) -> Vector4:
         # unified   <-  platform
         # +x        <-  +y
         # +y        <-  -x
         # +z        <-  -z
         # +d        <-  +d/x
 
-        return [
-            platform_position[1],
-            self.dimensions[0] - platform_position[0],
-            self.dimensions[2] - platform_position[2],
-            platform_position[3],
-        ]
+        return Vector4(
+            x=platform_position.y,
+            y=self.dimensions.x - platform_position.x,
+            z=self.dimensions.z - platform_position.z,
+            w=platform_position.w,
+        )
 
-    def _unified_space_to_platform_space(self, unified_position: list[float]) -> list[float]:
+    def _unified_space_to_platform_space(self, unified_position: Vector4) -> Vector4:
         # platform  <-  unified
         # +x        <-  -y
         # +y        <-  +x
         # +z        <-  -z
         # +d/x      <-  +d
 
-        return [
-            self.dimensions[1] - unified_position[1],
-            unified_position[0],
-            self.dimensions[2] - unified_position[2],
-            unified_position[3],
-        ]
+        return Vector4(
+            x=self.dimensions.y - unified_position.y,
+            y=unified_position.x,
+            z=self.dimensions.z - unified_position.z,
+            w=unified_position.w,
+        )
