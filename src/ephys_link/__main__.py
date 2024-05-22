@@ -75,7 +75,7 @@ def main() -> None:
         return None
 
     # Otherwise, create Server from CLI.
-    server = Server(args.use_proxy)
+    server = Server()
 
     # Continue with CLI if not.
     com.DEBUG = args.debug
@@ -86,7 +86,12 @@ def main() -> None:
         e_stop.watch()
 
     # Launch with parsed arguments on main thread.
-    run(server.launch(args.type, args.proxy_address, args.port, args.pathfinder_port, args.ignore_updates))
+    if args.use_proxy:
+        run(
+            server.launch_for_proxy(args.proxy_address, args.port, args.type, args.pathfinder_port, args.ignore_updates)
+        )
+    else:
+        server.launch(args.type, args.port, args.pathfinder_port, args.ignore_updates)
 
 
 if __name__ == "__main__":

@@ -55,7 +55,9 @@ class UMP3Manipulator(SensapexManipulator):
             position.append(position[0])
 
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
-            return PositionalResponse(position=Vector4(**dict(zip(Vector4.model_fields.keys(), position))))
+            return PositionalResponse(
+                position=Vector4(**dict(zip(Vector4.model_fields.keys(), position, strict=False)))
+            )
         except Exception as e:
             print(f"[ERROR]\t\t Getting position of manipulator {self._id}")
             print(f"{e}\n")
