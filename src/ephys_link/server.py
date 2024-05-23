@@ -16,8 +16,7 @@ from json import dumps, loads
 from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING, Any
 
-from aiohttp import ClientConnectionError
-from aiohttp import ClientSession
+from aiohttp import ClientConnectionError, ClientSession
 from aiohttp.web import Application, run_app
 from aiohttp.web_runner import GracefulExit
 from packaging.version import parse
