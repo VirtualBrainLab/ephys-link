@@ -35,7 +35,6 @@ dependencies = [
     "pyserial==3.5",
     "python-socketio==5.11.2",
     "pythonnet==3.0.3",
-    "requests==2.32.0",
     "sensapex==1.400.0",
     "vbl-aquarium==0.0.14"
 ]
@@ -88,10 +87,11 @@ check = "mypy --install-types --non-interactive {args:src/ephys_link tests}"
 [tool.hatch.envs.exe]
 python = "3.12"
 dependencies = [
-    "pyinstaller==6.3.0",
+    "pyinstaller",
 ]
 [tool.hatch.envs.exe.scripts]
-build = "pyinstaller.exe ephys_link.spec -y"
+build = "pyinstaller.exe ephys_link.spec -y -- -d"
+build_onefile = "pyinstaller.exe ephys_link.spec -y"
 build_clean = "pyinstaller.exe ephys_link.spec -y --clean"
 
 [tool.coverage.run]

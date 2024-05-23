@@ -16,12 +16,12 @@ from json import dumps, loads
 from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING, Any
 
+from aiohttp import ClientConnectionError
 from aiohttp import ClientSession
 from aiohttp.web import Application, run_app
 from aiohttp.web_runner import GracefulExit
 from packaging.version import parse
 from pydantic import ValidationError
-from requests.exceptions import ConnectionError
 
 # from socketio import AsyncServer
 from socketio import AsyncClient, AsyncServer
@@ -391,7 +391,7 @@ class Server:
                         print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
 
                 await session.close()
-            except ConnectionError:
+            except ClientConnectionError:
                 pass
 
         # Explain window.

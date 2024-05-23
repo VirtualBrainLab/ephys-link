@@ -2,6 +2,12 @@
 
 from ephys_link.__about__ import __version__ as version
 
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+parser.add_argument("-d", "--dir", action="store_true", help="Outputs a directory")
+options = parser.parse_args()
+
 a = Analysis(
     ['src\\ephys_link\\__main__.py'],
     pathex=[],
@@ -37,3 +43,6 @@ exe = EXE(
     entitlements_file=None,
     icon='assets\\icon.ico',
 )
+
+if options.dir:
+    coll = COLLECT(exe, a.binaries, name=f"EphysLink-v{version}")
