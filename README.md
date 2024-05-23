@@ -86,7 +86,7 @@ Import the modules you need and launch the server.
 from ephys_link.server import Server
 
 server = Server()
-server.launch("sensapex", 8081)
+server.launch("sensapex", args.proxy_address, 8081)
 ```
 
 ## Install for Development

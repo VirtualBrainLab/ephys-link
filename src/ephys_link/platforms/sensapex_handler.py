@@ -95,7 +95,7 @@ class SensapexHandler(PlatformHandler):
                 cur_pos = self.manipulators[manipulator_id].get_pos()["position"]
 
                 # Check difference between current and target position
-                for prev, cur in zip([10000, 10000, 10000, 10000], cur_pos):
+                for prev, cur in zip([10000, 10000, 10000, 10000], cur_pos, strict=False):
                     if abs(prev - cur) > 1:
                         still_working = True
                         break

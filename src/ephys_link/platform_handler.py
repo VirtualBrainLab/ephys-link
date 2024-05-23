@@ -34,7 +34,7 @@ from vbl_aquarium.models.unity import Vector4
 from ephys_link import common as com
 
 if TYPE_CHECKING:
-    import socketio
+    from socketio import AsyncClient, AsyncServer
 
 
 class PlatformHandler(ABC):
@@ -309,7 +309,7 @@ class PlatformHandler(ABC):
             print(f"{e}\n")
             return BooleanStateResponse(error="Error setting inside brain")
 
-    async def calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
+    async def calibrate(self, manipulator_id: str, sio: AsyncClient | AsyncServer) -> str:
         """Calibrate manipulator
 
         :param manipulator_id: ID of manipulator to calibrate
@@ -423,7 +423,7 @@ class PlatformHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def _calibrate(self, manipulator_id: str, sio: socketio.AsyncServer) -> str:
+    async def _calibrate(self, manipulator_id: str, sio: AsyncClient | AsyncServer) -> str:
         """Calibrate manipulator
 
         :param manipulator_id: ID of manipulator to calibrate

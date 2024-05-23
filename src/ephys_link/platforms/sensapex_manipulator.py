@@ -59,7 +59,13 @@ class SensapexManipulator(PlatformManipulator):
             # com.dprint(f"[SUCCESS]\t Got position of manipulator {self._id}\n")
             return PositionalResponse(
                 position=Vector4(
-                    **dict(zip(Vector4.model_fields.keys(), [axis / MM_TO_UM for axis in self._device.get_pos(1)]))
+                    **dict(
+                        zip(
+                            Vector4.model_fields.keys(),
+                            [axis / MM_TO_UM for axis in self._device.get_pos(1)],
+                            strict=False,
+                        )
+                    )
                 )
             )
         except Exception as e:

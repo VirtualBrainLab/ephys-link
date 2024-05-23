@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from asyncio import run
 from sys import argv
 
 from ephys_link import common as com
@@ -26,13 +27,15 @@ parser.add_argument(
     help='Manipulator type (i.e. "sensapex", "new_scale", or "new_scale_pathfinder"). Default: "sensapex".',
 )
 parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="Enable debug mode.")
+parser.add_argument("-x", "--use-proxy", dest="use_proxy", action="store_true", help="Enable proxy mode.")
+parser.add_argument("-a", "--proxy-address", type=str, dest="proxy_address", help="Proxy IP address.")
 parser.add_argument(
     "-p",
     "--port",
     type=int,
     default=8081,
     dest="port",
-    help="Port to serve on. Default: 8081 (avoids conflict with other HTTP servers).",
+    help="TCP/IP port to use. Default: 8081 (avoids conflict with other HTTP servers).",
 )
 parser.add_argument(
     "--pathfinder_port",
@@ -83,7 +86,12 @@ def main() -> None:
         e_stop.watch()
 
     # Launch with parsed arguments on main thread.
-    server.launch(args.type, args.port, args.pathfinder_port, args.ignore_updates)
+    if args.use_proxy:
+        run(
+            server.launch_for_proxy(args.proxy_address, args.port, args.type, args.pathfinder_port, args.ignore_updates)
+        )
+    else:
+        server.launch(args.type, args.port, args.pathfinder_port, args.ignore_updates)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ name = "ephys-link"
 dynamic = ["version"]
 description = "A Python Socket.IO server that allows any Socket.IO-compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
-requires-python = ">=3.8, <3.13"
+requires-python = ">=3.10, <3.13"
 license = "GPL-3.0-only"
 keywords = ["socket-io", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "neurotech", "virtualbrainlab", "new-scale"]
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
@@ -35,7 +35,6 @@ dependencies = [
     "pyserial==3.5",
     "python-socketio==5.11.2",
     "pythonnet==3.0.3",
-    "requests==2.32.0",
     "sensapex==1.400.0",
     "vbl-aquarium==0.0.14"
 ]
@@ -61,7 +60,7 @@ python = "3.12"
 dependencies = [
     "coverage[toml]>=6.5",
     "pytest",
-    "python-socketio[client]==5.11.2",
+    "python-socketio[asyncio_client]==5.11.2",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
@@ -88,10 +87,11 @@ check = "mypy --install-types --non-interactive {args:src/ephys_link tests}"
 [tool.hatch.envs.exe]
 python = "3.12"
 dependencies = [
-    "pyinstaller==6.3.0",
+    "pyinstaller",
 ]
 [tool.hatch.envs.exe.scripts]
-build = "pyinstaller.exe ephys_link.spec -y"
+build = "pyinstaller.exe ephys_link.spec -y -- -d"
+build_onefile = "pyinstaller.exe ephys_link.spec -y"
 build_clean = "pyinstaller.exe ephys_link.spec -y --clean"
 
 [tool.coverage.run]

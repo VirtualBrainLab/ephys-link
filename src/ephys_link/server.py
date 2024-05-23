@@ -11,18 +11,19 @@ every event, the server does the following:
 
 from __future__ import annotations
 
-from json import loads
+from asyncio import get_event_loop
+from json import dumps, loads
 from signal import SIGINT, SIGTERM, signal
-from sys import exit
 from typing import TYPE_CHECKING, Any
 
-from aiohttp import web
+from aiohttp import ClientConnectionError, ClientSession
+from aiohttp.web import Application, run_app
 from aiohttp.web_runner import GracefulExit
-from packaging import version
+from packaging.version import parse
 from pydantic import ValidationError
-from requests import get
-from requests.exceptions import ConnectionError
-from socketio import AsyncServer
+
+# from socketio import AsyncServer
+from socketio import AsyncClient, AsyncServer
 from vbl_aquarium.models.ephys_link import (
     BooleanStateResponse,
     CanWriteRequest,
@@ -48,46 +49,31 @@ if TYPE_CHECKING:
 
 
 class Server:
-    def __init__(self):
-        # Server and Socketio
-        self.sio = AsyncServer()
-        self.app = web.Application()
+    def __init__(self) -> None:
+        """Declare and setup server object. Launching is done is a separate function."""
 
+        # Server object.
+        self.sio: AsyncClient | AsyncServer | None = None
+
+        # Web application object.
+        self.app: Application | None = None
+
+        # Proxy server ID.
+        self.pinpoint_id: str = ""
+
+        # Manipulator platform handler.
+        self.platform: PlatformHandler | None = None
         # Is there a client connected?
         self.is_connected = False
 
         # Is the server running?
         self.is_running = False
 
-        # Current platform handler (defaults to Sensapex).
-        self.platform: PlatformHandler = SensapexHandler()
-
         # Register server exit handlers.
         signal(SIGTERM, self.close_server)
         signal(SIGINT, self.close_server)
 
-        # Attach server to the web app.
-        self.sio.attach(self.app)
-
-        # Declare events and assign handlers.
-        self.sio.on("connect", self.connect)
-        self.sio.on("disconnect", self.disconnect)
-        self.sio.on("get_version", self.get_version)
-        self.sio.on("get_manipulators", self.get_manipulators)
-        self.sio.on("register_manipulator", self.register_manipulator)
-        self.sio.on("unregister_manipulator", self.unregister_manipulator)
-        self.sio.on("get_pos", self.get_pos)
-        self.sio.on("get_angles", self.get_angles)
-        self.sio.on("get_shank_count", self.get_shank_count)
-        self.sio.on("goto_pos", self.goto_pos)
-        self.sio.on("drive_to_depth", self.drive_to_depth)
-        self.sio.on("set_inside_brain", self.set_inside_brain)
-        self.sio.on("calibrate", self.calibrate)
-        self.sio.on("bypass_calibration", self.bypass_calibration)
-        self.sio.on("set_can_write", self.set_can_write)
-        self.sio.on("stop", self.stop)
-        self.sio.on("*", self.catch_all)
-
+    # Server events.
     async def connect(self, sid, _, __) -> bool:
         """Acknowledge connection to the server.
 
@@ -122,7 +108,15 @@ class Server:
         self.platform.reset()
         self.is_connected = False
 
-    # Events
+    # Ephys Link Events
+
+    async def get_pinpoint_id(self) -> str:
+        """Get the pinpoint ID.
+
+        :return: Pinpoint ID and whether the client is a requester.
+        :rtype: tuple[str, bool]
+        """
+        return dumps({"pinpoint_id": self.pinpoint_id, "is_requester": False})
 
     @staticmethod
     async def get_version(_) -> str:
@@ -133,6 +127,8 @@ class Server:
         :return: Version number as defined in :mod:`ephys_link.__about__`.
         :rtype: str
         """
+        dprint("[EVENT]\t\t Get version")
+
         return __version__
 
     async def get_manipulators(self, _) -> str:
@@ -361,38 +357,21 @@ class Server:
         print(f"[UNKNOWN EVENT]:\t {data}")
         return "UNKNOWN_EVENT"
 
-    def launch(
-        self,
-        platform_type: str,
-        server_port: int,
-        pathfinder_port: int | None = None,
-        ignore_updates: bool = False,  # noqa: FBT002
-    ) -> None:
-        """Launch the server.
-
-        :param platform_type: Parsed argument for platform type.
-        :type platform_type: str
-        :param server_port: HTTP port to serve the server.
-        :type server_port: int
-        :param pathfinder_port: Port New Scale Pathfinder's server is on.
-        :type pathfinder_port: int
-        :param ignore_updates: Flag to ignore checking for updates.
-        :type ignore_updates: bool
-        :return: None
-        """
-
+    # Server functions
+    async def launch_setup(self, platform_type: str, pathfinder_port: int, ignore_updates) -> None:
         # Import correct manipulator handler
-        if platform_type == "sensapex":
-            # Already assigned (was the default)
-            pass
-        elif platform_type == "ump3":
-            self.platform = UMP3Handler()
-        elif platform_type == "new_scale":
-            self.platform = NewScaleHandler()
-        elif platform_type == "new_scale_pathfinder":
-            self.platform = NewScalePathfinderHandler(pathfinder_port)
-        else:
-            exit(f"[ERROR]\t\t Invalid manipulator type: {platform_type}")
+        match platform_type:
+            case "sensapex":
+                self.platform = SensapexHandler()
+            case "ump3":
+                self.platform = UMP3Handler()
+            case "new_scale":
+                self.platform = NewScaleHandler()
+            case "new_scale_pathfinder":
+                self.platform = NewScalePathfinderHandler(pathfinder_port)
+            case _:
+                error = f"[ERROR]\t\t Invalid manipulator type: {platform_type}"
+                raise ValueError(error)
 
         # Preamble.
         print(ASCII)
@@ -401,19 +380,24 @@ class Server:
         # Check for newer version.
         if not ignore_updates:
             try:
-                version_request = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
-                latest_version = version_request.json()[0]["name"]
-                if version.parse(latest_version) > version.parse(__version__):
-                    print(f"New version available: {latest_version}")
-                    print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
-            except ConnectionError:
+                async with (
+                    ClientSession() as session,
+                    session.get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags") as response,
+                ):
+                    latest_version = (await response.json())[0]["name"]
+                    if parse(latest_version) > parse(__version__):
+                        print(f"New version available: {latest_version}")
+                        print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
+
+                await session.close()
+            except ClientConnectionError:
                 pass
 
         # Explain window.
         print()
         print("This is the Ephys Link server window.")
         print("You may safely leave it running in the background.")
-        print("To stop the it, close this window or press CTRL + Pause/Break.")
+        print("To stop it, close this window or press CTRL + Pause/Break.")
         print()
 
         # List available manipulators
@@ -421,9 +405,94 @@ class Server:
         print(self.platform.get_manipulators().manipulators)
         print()
 
+    async def launch_for_proxy(
+        self, proxy_address: str, port: int, platform_type: str, pathfinder_port: int | None, ignore_updates: bool
+    ) -> None:
+        """Launch the server in proxy mode.
+
+        :param proxy_address: Proxy IP address.
+        :type proxy_address: str
+        :param port: Port to serve the server.
+        :type port: int
+        :param platform_type: Parsed argument for platform type.
+        :type platform_type: str
+        :param pathfinder_port: Port New Scale Pathfinder's server is on.
+        :type pathfinder_port: int
+        :param ignore_updates: Flag to ignore checking for updates.
+        :type ignore_updates: bool
+        :return: None
+        """
+
+        # Launch setup
+        await self.launch_setup(platform_type, pathfinder_port, ignore_updates)
+
+        # Create AsyncClient.
+        self.sio = AsyncClient()
+        self.pinpoint_id = "abcde"  # str(uuid4())[:8]
+
+        # Bind events.
+        self.bind_events()
+
+        # Connect and mark that server is running.
+        await self.sio.connect(f"http://{proxy_address}:{port}")
+        self.is_running = True
+        await self.sio.wait()
+
+    def launch(
+        self,
+        platform_type: str,
+        port: int,
+        pathfinder_port: int | None,
+        ignore_updates: bool,
+    ) -> None:
+        """Launch the server.
+
+        :param platform_type: Parsed argument for platform type.
+        :type platform_type: str
+        :param port: HTTP port to serve the server.
+        :type port: int
+        :param pathfinder_port: Port New Scale Pathfinder's server is on.
+        :type pathfinder_port: int
+        :param ignore_updates: Flag to ignore checking for updates.
+        :type ignore_updates: bool
+        :return: None
+        """
+
+        # Launch setup (synchronously)
+        get_event_loop().run_until_complete(self.launch_setup(platform_type, pathfinder_port, ignore_updates))
+
+        # Create AsyncServer
+        self.sio = AsyncServer()
+        self.app = Application()
+        self.sio.attach(self.app)
+
+        # Bind events
+        self.sio.on("connect", self.connect)
+        self.sio.on("disconnect", self.disconnect)
+        self.bind_events()
+
         # Mark that server is running
         self.is_running = True
-        web.run_app(self.app, port=server_port)
+        run_app(self.app, port=port)
+
+    def bind_events(self) -> None:
+        """Bind Ephys Link events to the server."""
+        self.sio.on("get_pinpoint_id", self.get_pinpoint_id)
+        self.sio.on("get_version", self.get_version)
+        self.sio.on("get_manipulators", self.get_manipulators)
+        self.sio.on("register_manipulator", self.register_manipulator)
+        self.sio.on("unregister_manipulator", self.unregister_manipulator)
+        self.sio.on("get_pos", self.get_pos)
+        self.sio.on("get_angles", self.get_angles)
+        self.sio.on("get_shank_count", self.get_shank_count)
+        self.sio.on("goto_pos", self.goto_pos)
+        self.sio.on("drive_to_depth", self.drive_to_depth)
+        self.sio.on("set_inside_brain", self.set_inside_brain)
+        self.sio.on("calibrate", self.calibrate)
+        self.sio.on("bypass_calibration", self.bypass_calibration)
+        self.sio.on("set_can_write", self.set_can_write)
+        self.sio.on("stop", self.stop)
+        self.sio.on("*", self.catch_all)
 
     def close_server(self, _, __) -> None:
         """Close the server."""
