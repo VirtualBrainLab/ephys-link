@@ -33,7 +33,7 @@ dependencies = [
     "aiohttp==3.9.5",
     "platformdirs==4.2.2",
     "pyserial==3.5",
-    "python-socketio==5.11.2",
+    "python-socketio[asyncio_client]==5.11.2",
     "pythonnet==3.0.3",
     "sensapex==1.400.0",
     "vbl-aquarium==0.0.14"
@@ -60,7 +60,6 @@ python = "3.12"
 dependencies = [
     "coverage[toml]>=6.5",
     "pytest",
-    "python-socketio[asyncio_client]==5.11.2",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
