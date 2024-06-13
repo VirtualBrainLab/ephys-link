@@ -15,6 +15,7 @@ from asyncio import get_event_loop
 from json import dumps, loads
 from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING, Any
+from uuid import uuid4
 
 from aiohttp import ClientConnectionError, ClientSession
 from aiohttp.web import Application, run_app
@@ -428,7 +429,7 @@ class Server:
 
         # Create AsyncClient.
         self.sio = AsyncClient()
-        self.pinpoint_id = "abcde"  # str(uuid4())[:8]
+        self.pinpoint_id = str(uuid4())[:8]
 
         # Bind events.
         self.bind_events()
@@ -436,6 +437,7 @@ class Server:
         # Connect and mark that server is running.
         await self.sio.connect(f"http://{proxy_address}:{port}")
         self.is_running = True
+        print(f"Pinpoint ID: {self.pinpoint_id}")
         await self.sio.wait()
 
     def launch(

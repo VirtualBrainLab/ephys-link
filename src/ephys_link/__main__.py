@@ -28,7 +28,14 @@ parser.add_argument(
 )
 parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="Enable debug mode.")
 parser.add_argument("-x", "--use-proxy", dest="use_proxy", action="store_true", help="Enable proxy mode.")
-parser.add_argument("-a", "--proxy-address", type=str, dest="proxy_address", help="Proxy IP address.")
+parser.add_argument(
+    "-a",
+    "--proxy-address",
+    type=str,
+    default="proxy2.virtualbrainlab.org",
+    dest="proxy_address",
+    help="Proxy IP address.",
+)
 parser.add_argument(
     "-p",
     "--port",
