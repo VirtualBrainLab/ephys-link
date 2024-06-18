@@ -36,7 +36,7 @@ dependencies = [
     "python-socketio[asyncio_client]==5.11.2",
     "pythonnet==3.0.3",
     "sensapex==1.400.0",
-    "vbl-aquarium==0.0.14"
+    "vbl-aquarium==0.0.15"
 ]
 
 [project.urls]
@@ -59,6 +59,7 @@ exclude = ["/.github", "/.idea"]
 python = "3.12"
 dependencies = [
     "coverage[toml]>=6.5",
+    "mypy>=1.0.0",
     "pytest",
 ]
 [tool.hatch.envs.default.scripts]
@@ -72,16 +73,10 @@ cov = [
     "test-cov",
     "cov-report",
 ]
+types = "mypy --strict --install-types --non-interactive {args:src/ephys_link tests}"
 
 #[[tool.hatch.envs.all.matrix]]
 #python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
-
-[tool.hatch.envs.types]
-dependencies = [
-    "mypy>=1.0.0",
-]
-[tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/ephys_link tests}"
 
 [tool.hatch.envs.exe]
 python = "3.12"
