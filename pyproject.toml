@@ -84,7 +84,7 @@ dependencies = [
     "pyinstaller",
 ]
 [tool.hatch.envs.exe.scripts]
-build = "pyinstaller.exe ephys_link.spec -y -- -d"
+build = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
 build_onefile = "pyinstaller.exe ephys_link.spec -y"
 build_clean = "pyinstaller.exe ephys_link.spec -y --clean"
 
