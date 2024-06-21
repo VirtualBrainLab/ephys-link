@@ -36,7 +36,7 @@ dependencies = [
     "python-socketio[asyncio_client]==5.11.2",
     "pythonnet==3.0.3",
     "sensapex==1.400.0",
-    "vbl-aquarium==0.0.15"
+    "vbl-aquarium==0.0.16"
 ]
 
 [project.urls]
@@ -73,7 +73,7 @@ cov = [
     "test-cov",
     "cov-report",
 ]
-types = "mypy --strict --install-types --non-interactive {args:src/ephys_link tests}"
+types = "mypy --strict --install-types --non-interactive --ignore-missing-imports {args:src/ephys_link tests}"
 
 #[[tool.hatch.envs.all.matrix]]
 #python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
