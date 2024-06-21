@@ -1,3 +1,4 @@
+from asyncio import run
 from json import dumps, load
 from os import makedirs
 from os.path import exists
@@ -24,15 +25,27 @@ class GUI:
         self._root = Tk()
 
         # Create default settings dictionary
-        settings = {"type": "sensapex", "debug": False, "port": 8081, "pathfinder_port": 8080, "serial": "no-e-stop"}
+        settings = {
+            "ignore_updates": False,
+            "type": "sensapex",
+            "debug": False,
+            "proxy": False,
+            "proxy_address": "proxy2.virtualbrainlab.org",
+            "port": 8081,
+            "pathfinder_port": 8080,
+            "serial": "no-e-stop",
+        }
 
         # Read settings.
         if exists(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}"):
             with open(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}") as settings_file:
                 settings = load(settings_file)
 
+        self._ignore_updates = BooleanVar(value=settings["ignore_updates"])
         self._type = StringVar(value=settings["type"])
         self._debug = BooleanVar(value=settings["debug"])
+        self._proxy = BooleanVar(value=settings["proxy"])
+        self._proxy_address = StringVar(value=settings["proxy_address"])
         self._port = IntVar(value=settings["port"])
         self._pathfinder_port = IntVar(value=settings["pathfinder_port"])
         self._serial = StringVar(value=settings["serial"])
@@ -61,15 +74,41 @@ class GUI:
         server_serving_settings = ttk.LabelFrame(mainframe, text="Serving Settings", padding=3)
         server_serving_settings.grid(column=0, row=0, sticky="news")
 
-        # IP.
-        ttk.Label(server_serving_settings, text="IP:", anchor=E, justify=RIGHT).grid(column=0, row=0, sticky="we")
+        # Local IP.
+        ttk.Label(server_serving_settings, text="Local IP:", anchor=E, justify=RIGHT).grid(column=0, row=0, sticky="we")
         ttk.Label(server_serving_settings, text=gethostbyname(gethostname())).grid(column=1, row=0, sticky="we")
 
-        # Port.
-        ttk.Label(server_serving_settings, text="Port:", anchor=E, justify=RIGHT).grid(column=0, row=1, sticky="we")
-        ttk.Entry(server_serving_settings, textvariable=self._port, width=5, justify=CENTER).grid(
-            column=1, row=1, sticky="we"
+        # Proxy.
+        ttk.Label(server_serving_settings, text="Use Proxy:", anchor=E, justify=RIGHT).grid(
+            column=0, row=1, sticky="we"
         )
+        ttk.Checkbutton(
+            server_serving_settings,
+            variable=self._proxy,
+        ).grid(column=1, row=1, sticky="we")
+
+        # Proxy address.
+        ttk.Label(server_serving_settings, text="Proxy Address:", anchor=E, justify=RIGHT).grid(
+            column=0, row=2, sticky="we"
+        )
+        ttk.Entry(server_serving_settings, textvariable=self._proxy_address, justify=CENTER).grid(
+            column=1, row=2, sticky="we"
+        )
+
+        # Port.
+        ttk.Label(server_serving_settings, text="Port:", anchor=E, justify=RIGHT).grid(column=0, row=3, sticky="we")
+        ttk.Entry(server_serving_settings, textvariable=self._port, width=5, justify=CENTER).grid(
+            column=1, row=3, sticky="we"
+        )
+
+        # Ignore updates.
+        ttk.Label(server_serving_settings, text="Ignore Updates:", anchor=E, justify=RIGHT).grid(
+            column=0, row=4, sticky="we"
+        )
+        ttk.Checkbutton(
+            server_serving_settings,
+            variable=self._ignore_updates,
+        ).grid(column=1, row=4, sticky="we")
 
         # ---
 
@@ -141,8 +180,11 @@ class GUI:
 
         # Save settings.
         settings = {
+            "ignore_updates": self._ignore_updates.get(),
             "type": self._type.get(),
             "debug": self._debug.get(),
+            "proxy": self._proxy.get(),
+            "proxy_address": self._proxy_address.get(),
             "port": self._port.get(),
             "pathfinder_port": self._pathfinder_port.get(),
             "serial": self._serial.get(),
@@ -160,4 +202,16 @@ class GUI:
             e_stop = EmergencyStop(server, self._serial.get())
             e_stop.watch()
 
-        server.launch(self._type.get(), self._port.get(), self._pathfinder_port.get())
+        # Launch with parsed arguments on main thread.
+        if self._proxy.get():
+            run(
+                server.launch_for_proxy(
+                    self._proxy_address.get(),
+                    self._port.get(),
+                    self._type.get(),
+                    self._pathfinder_port.get(),
+                    self._ignore_updates.get(),
+                )
+            )
+        else:
+            server.launch(self._type.get(), self._port.get(), self._pathfinder_port.get(), self._ignore_updates.get())
