@@ -12,7 +12,7 @@ every event, the server does the following:
 from __future__ import annotations
 
 from asyncio import get_event_loop
-from json import dumps, loads
+from json import loads
 from signal import SIGINT, SIGTERM, signal
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
