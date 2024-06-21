@@ -34,6 +34,7 @@ from vbl_aquarium.models.ephys_link import (
     InsideBrainRequest,
     PositionalResponse,
 )
+from vbl_aquarium.models.proxy import PinpointIdResponse
 
 from ephys_link.__about__ import __version__
 from ephys_link.common import (
@@ -117,7 +118,7 @@ class Server:
         :return: Pinpoint ID and whether the client is a requester.
         :rtype: tuple[str, bool]
         """
-        return dumps({"pinpoint_id": self.pinpoint_id, "is_requester": False})
+        return PinpointIdResponse(pinpoint_id=self.pinpoint_id, is_requester=False).to_string()
 
     @staticmethod
     async def get_version(_) -> str:
