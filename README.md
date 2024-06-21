@@ -93,15 +93,17 @@ server.launch("sensapex", args.proxy_address, 8081)
 
 1. Clone the repository.
 2. Install [Hatch](https://hatch.pypa.io/latest/install/)
-3. Install the latest Microsoft Visual C++ (MSVC v143+ x86/64) and the Windows SDK (10/11)
-   via [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
-4. In a terminal, navigate to the repository's root directory and run
+3. In a terminal, navigate to the repository's root directory and run
 
    ```bash
    hatch shell
    ```
 
 This will create a virtual environment, install Python 12 (if not found), and install the package in editable mode.
+
+If you encounter any dependency issues (particularly with `aiohttp`), try installing the latest Microsoft Visual C++
+(MSVC v143+ x86/64) and the Windows SDK (10/11)
+via [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
 
 # Documentation and More Information
 
