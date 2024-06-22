@@ -1,6 +1,7 @@
 from ephys_link.front_end.cli import CLI
 
-# Parse arguments.
-cli = CLI()
-args = cli.parse_args()
-print(args)
+def main() -> None:
+    """Ephys Link entry point
+    
+    Get's the options and launches the appropriate interface.
+    """
