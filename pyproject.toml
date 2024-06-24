@@ -33,10 +33,10 @@ dependencies = [
     "aiohttp==3.9.5",
     "platformdirs==4.2.2",
     "pyserial==3.5",
-    "python-socketio[asyncio_client]==5.11.2",
+    "python-socketio[asyncio_client]==5.11.3",
     "pythonnet==3.0.3",
     "sensapex==1.400.0",
-    "vbl-aquarium==0.0.15"
+    "vbl-aquarium==0.0.17"
 ]
 
 [project.urls]
