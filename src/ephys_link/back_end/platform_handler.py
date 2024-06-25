@@ -12,9 +12,9 @@ from vbl_aquarium.models.ephys_link import (
     ShankCountResponse,
 )
 
+from ephys_link.__main__ import console
 from ephys_link.back_end.base_commands import BaseCommands
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
-from ephys_link.util.console import Console
 
 if TYPE_CHECKING:
     from ephys_link.platforms.base_bindings import BaseBindings
@@ -23,21 +23,17 @@ if TYPE_CHECKING:
 class PlatformHandler(BaseCommands):
     """Handler for platform commands."""
 
-    def __init__(self, platform_type: str, console: Console) -> None:
+    def __init__(self, platform_type: str) -> None:
         """Initialize platform handler.
 
         :param platform_type: Platform type to initialize bindings from.
         :type platform_type: str
-        :param console: Console for logging.
-        :type console: :class:`ephys_link.util.console.Console`
         """
 
         # Define bindings based on platform type.
         match platform_type:
             case "ump-4":
                 self._bindings: BaseBindings = Ump4Bindings()
-
-        self._console = console
 
     async def get_manipulators(self) -> GetManipulatorsResponse:
         try:
@@ -48,7 +44,7 @@ class PlatformHandler(BaseCommands):
                 error="",
             )
         except Exception as e:
-            self._console.err_print(f"Get Manipulators: {type(e)}: {e}")
+            console.err_print(f"Get Manipulators: {type(e)}: {e}")
             return GetManipulatorsResponse(error=str(e))
 
     async def get_pos(self, manipulator_id: str) -> PositionalResponse:
