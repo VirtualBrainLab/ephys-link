@@ -28,7 +28,7 @@ class BaseCommands(ABC):
         """Get a list of available manipulators on the current handler.
 
         :returns: List of manipulator IDs, number of axes, dimensions of manipulators, and an error message if any.
-        :rtype: :py:class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse`
         """
 
     @abstractmethod
@@ -38,7 +38,7 @@ class BaseCommands(ABC):
         :param manipulator_id: Manipulator ID.
         :type manipulator_id: str
         :returns: Current position of the manipulator and an error message if any.
-        :rtype: :py:class:`vbl_aquarium.models.ephys_link.PositionalResponse`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
         """
 
     @abstractmethod
@@ -48,7 +48,7 @@ class BaseCommands(ABC):
         :param manipulator_id: Manipulator ID.
         :type manipulator_id: str
         :returns: Current angles of the manipulator and an error message if any.
-        :rtype: :py:class:`vbl_aquarium.models.ephys_link.AngularResponse`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.AngularResponse`
         """
 
     @abstractmethod
@@ -58,7 +58,7 @@ class BaseCommands(ABC):
         :param manipulator_id: Manipulator ID.
         :type manipulator_id: str
         :returns: Number of shanks on the manipulator and an error message if any.
-        :rtype: :py:class:`vbl_aquarium.models.ephys_link.ShankCountResponse`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.ShankCountResponse`
         """
 
     @abstractmethod
@@ -66,9 +66,9 @@ class BaseCommands(ABC):
         """Move a manipulator to a specified translation position in unified coordinates (mm).
 
         :param request: Request to move a manipulator to a specified position.
-        :type request: :py:class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
+        :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
         :returns: Final position of the manipulator and an error message if any.
-        :rtype: :py:class:`vbl_aquarium.models.ephys_link.Position
+        :rtype: :class:`vbl_aquarium.models.ephys_link.Position
         """
 
     @abstractmethod
@@ -76,9 +76,9 @@ class BaseCommands(ABC):
         """Move a manipulator's depth translation stage to a specific value (mm).
 
         :param request: Request to move a manipulator to a specified depth.
-        :type request: :py:class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest`
+        :type request: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest`
         :returns: Final depth of the manipulator and an error message if any.
-        :rtype: :py:class:`vbl_aquarium.models.ephys_link.DriveToDepthResponse`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.DriveToDepthResponse`
         """
 
     @abstractmethod
@@ -88,9 +88,9 @@ class BaseCommands(ABC):
         This should restrict the manipulator's movement to just the depth axis.
 
         :param request: Request to set a manipulator's inside brain state.
-        :type request: :py:class:`vbl_aquarium.models.ephys_link.InsideBrainRequest`
+        :type request: :class:`vbl_aquarium.models.ephys_link.InsideBrainRequest`
         :returns: Inside brain state of the manipulator and an error message if any.
-        :rtype: :py:class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
         """
 
     @abstractmethod
@@ -108,5 +108,5 @@ class BaseCommands(ABC):
         """Stop all manipulators.
 
         :returns: Success state and an error message if any.
-        :rtype: :py:class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
+        :rtype: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
         """
