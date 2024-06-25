@@ -1,6 +1,6 @@
 """Command-line interface for the Electrophysiology Manipulator Link.
 
-Declaration of the CLI with options and getters for the parsed arguments.
+Usage: instantiate CLI and call parse_args() to get the parsed arguments.
 """
 
 from argparse import ArgumentParser
@@ -11,6 +11,11 @@ from ephys_link.__about__ import __version__ as version
 
 
 class CLI:
+    """Command-line interface for the Electrophysiology Manipulator Link.
+
+    Configures the CLI parser and options.
+    """
+
     def __init__(self) -> None:
         """Initialize CLI parser."""
 
@@ -35,7 +40,7 @@ class CLI:
             type=str,
             dest="type",
             default="ump-4",
-            help='Manipulator type (i.e. "ump-4", "ump-3", "new_scale", or "pathfinder_mpm"). Default: "ump-4".',
+            help='Manipulator type (i.e. "ump-4", "ump-3", "new-scale", or "pathfinder-mpm"). Default: "ump-4".',
         )
         self._parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="Enable debug mode.")
         self._parser.add_argument("-x", "--use-proxy", dest="use_proxy", action="store_true", help="Enable proxy mode.")
@@ -56,7 +61,7 @@ class CLI:
             help="TCP/IP port to use. Default: 8081 (avoids conflict with other HTTP servers).",
         )
         self._parser.add_argument(
-            "--mpm_port",
+            "--mpm-port",
             type=int,
             default=8080,
             dest="mpm_port",
