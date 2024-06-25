@@ -1,4 +1,4 @@
-"""Ephys Link entry point
+"""Ephys Link entry point.
 
 Responsible for gathering launch options, instantiating the appropriate interface, and starting the application.
 
@@ -8,10 +8,11 @@ Usage: call main() to start.
 from sys import argv
 
 from ephys_link.front_end.cli import CLI
+from ephys_link.front_end.gui import GUI
 
 
 def main() -> None:
-    """Ephys Link entry point
+    """Ephys Link entry point.
 
     1. Get options via CLI or GUI.
     2. Instantiate the Platform Handler with the appropriate platform bindings.
@@ -20,12 +21,11 @@ def main() -> None:
     """
 
     # 1. Get options via CLI or GUI (if no CLI options are provided).
-    # TODO: add GUI options.
-    options = CLI().parse_args() if len(argv) > 1 else None
+    options = CLI().parse_args() if len(argv) > 1 else GUI().get_options()
 
     # 2. Instantiate the Platform Handler with the appropriate platform bindings.
     print(options)
 
+
 if __name__ == "__main__":
     main()
-

@@ -40,7 +40,7 @@ class CLI:
             type=str,
             dest="type",
             default="ump-4",
-            help='Manipulator type (i.e. "ump-4", "ump-3", "new-scale", or "pathfinder-mpm"). Default: "ump-4".',
+            help='Manipulator type (i.e. "ump-4", "ump-3", "pathfinder-mpm", or "new-scale"). Default: "ump-4".',
         )
         self._parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="Enable debug mode.")
         self._parser.add_argument("-x", "--use-proxy", dest="use_proxy", action="store_true", help="Enable proxy mode.")
