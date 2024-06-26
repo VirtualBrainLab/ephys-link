@@ -28,29 +28,28 @@ class Console:
         :type msg: str
         """
         print(f"{Back.RED}{Style.BRIGHT} ERROR {Style.RESET_ALL}\t\t{Fore.RED}{msg}")
-    
+
     @staticmethod
     def pretty_exception(exception: Exception) -> str:
         """Pretty print an exception.
-        
+
         :param exception: Exception to pretty print.
         :type exception: Exception
         :return: Pretty printed exception.
         :rtype: str
         """
         return f"{type(exception).__name__}: {exception}"
-    
+
     @staticmethod
-    def exception_error_print(label: str, exception: Exception) -> None:
+    def exception_error_print(source_label: str, exception: Exception) -> None:
         """Print an error message with exception details to the console.
-        
-        :param label: Label for the error message.
-        :type label: str
+
+        :param source_label: Label for the error message.
+        :type source_label: str
         :param exception: Exception to print.
         :type exception: Exception
         """
-        Console.exception_error_print(f"{label}: {Console.pretty_exception(exception)}")
-    
+        Console.error_print(f"{source_label}: {Console.pretty_exception(exception)}")
 
     def debug_print(self, msg: str) -> None:
         """Print a debug message to the console.

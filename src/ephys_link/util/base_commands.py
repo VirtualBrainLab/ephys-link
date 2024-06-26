@@ -27,7 +27,7 @@ class BaseCommands(ABC):
     async def get_manipulators(self) -> GetManipulatorsResponse:
         """Get a list of available manipulators on the current handler.
 
-        :returns: List of manipulator IDs, number of axes, dimensions of manipulators, and an error message if any.
+        :returns: List of manipulator IDs, number of axes, dimensions of manipulators (mm), and an error message if any.
         :rtype: :class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse`
         """
 
@@ -68,7 +68,7 @@ class BaseCommands(ABC):
         :param request: Request to move a manipulator to a specified position.
         :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
         :returns: Final position of the manipulator and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.Position
+        :rtype: :class:`vbl_aquarium.models.ephys_link.Position`
         """
 
     @abstractmethod

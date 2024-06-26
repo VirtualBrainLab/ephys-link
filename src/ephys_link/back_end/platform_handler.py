@@ -13,8 +13,8 @@ from vbl_aquarium.models.ephys_link import (
 )
 
 from ephys_link.__main__ import console
-from ephys_link.util.base_commands import BaseCommands
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
+from ephys_link.util.base_commands import BaseCommands
 
 if TYPE_CHECKING:
     from ephys_link.util.base_bindings import BaseBindings
@@ -34,9 +34,9 @@ class PlatformHandler(BaseCommands):
         match platform_type:
             case "ump-4":
                 self._bindings: BaseBindings = Ump4Bindings()
-        
+
         # Record which IDs are inside the brain.
-        self._inside_brain = set()
+        self._inside_brain: set[str] = set()
 
     async def get_manipulators(self) -> GetManipulatorsResponse:
         try:
@@ -69,16 +69,29 @@ class PlatformHandler(BaseCommands):
 
     async def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         try:
-            return ShankCountResponse(
-                shank_count=self._bindings.get_shank_count(manipulator_id)
-            )
+            return ShankCountResponse(shank_count=self._bindings.get_shank_count(manipulator_id))
         except Exception as e:
             console.exception_error_print("Get Shank Count", e)
             return ShankCountResponse(error=console.pretty_exception(e))
-                
 
     async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
-        pass
+        try:
+            # Disallow setting manipulator position while inside the brain.
+            if request.manipulator_id in self._inside_brain:
+                error_message = 'Can not move manipulator while inside the brain. Set depth ("set_depth") instead.'
+                console.error_print(error_message)
+                return PositionalResponse(error=error_message)
+
+            return PositionalResponse(
+                position=await self._bindings.set_position(
+                    request.manipulator_id,
+                    self._bindings.unified_space_to_platform_space(request.position),
+                    request.position,
+                )
+            )
+        except Exception as e:
+            console.exception_error_print("Set Position", e)
+            return PositionalResponse(error=console.pretty_exception(e))
 
     async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         pass
@@ -96,14 +109,14 @@ class PlatformHandler(BaseCommands):
 
     async def calibrate(self, manipulator_id: str) -> str:
         try:
-            return self._bindings.calibrate(manipulator_id)
+            return await self._bindings.calibrate(manipulator_id)
         except Exception as e:
             console.exception_error_print("Calibrate", e)
             return console.pretty_exception(e)
 
     async def stop(self) -> str:
         try:
-            return self._bindings.stop()
+            return await self._bindings.stop()
         except Exception as e:
             console.exception_error_print("Stop", e)
-            return BooleanStateResponse(error=console.pretty_exception(e))
+            return console.pretty_exception(e)
