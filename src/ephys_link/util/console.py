@@ -28,6 +28,17 @@ class Console:
         :type msg: str
         """
         print(f"{Back.RED}{Style.BRIGHT} ERROR {Style.RESET_ALL}\t\t{Fore.RED}{msg}")
+    
+    @staticmethod
+    def err_print(label: str, exception: Exception) -> None:
+        """Print an error message with exception details to the console.
+        
+        :param label: Label for the error message.
+        :type label: str
+        :param exception: Exception to print.
+        :type exception: Exception
+        """
+        Console.err_print(f"{label}: {type(exception)}: {exception}")
 
     def debug_print(self, msg: str) -> None:
         """Print a debug message to the console.

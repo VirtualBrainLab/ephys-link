@@ -13,11 +13,11 @@ from vbl_aquarium.models.ephys_link import (
 )
 
 from ephys_link.__main__ import console
-from ephys_link.back_end.base_commands import BaseCommands
+from ephys_link.util.base_commands import BaseCommands
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
 
 if TYPE_CHECKING:
-    from ephys_link.platforms.base_bindings import BaseBindings
+    from ephys_link.util.base_bindings import BaseBindings
 
 
 class PlatformHandler(BaseCommands):
@@ -44,7 +44,7 @@ class PlatformHandler(BaseCommands):
                 error="",
             )
         except Exception as e:
-            console.err_print(f"Get Manipulators: {type(e)}: {e}")
+            console.err_print("Get Manipulators", e)
             return GetManipulatorsResponse(error=str(e))
 
     async def get_pos(self, manipulator_id: str) -> PositionalResponse:
@@ -56,7 +56,7 @@ class PlatformHandler(BaseCommands):
                 error="",
             )
         except Exception as e:
-            console.err_print(f"Get Position: {type(e)}: {e}")
+            console.err_print("Get Position", e)
             return PositionalResponse(error=str(e))
 
     async def get_angles(self, manipulator_id: str) -> AngularResponse:

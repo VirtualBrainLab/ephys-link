@@ -1,4 +1,4 @@
-from ephys_link.platforms.base_bindings import BaseBindings
+from ephys_link.util.base_bindings import BaseBindings
 
 
 class Ump4Bindings(BaseBindings):
