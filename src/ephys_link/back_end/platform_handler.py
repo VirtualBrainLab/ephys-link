@@ -48,7 +48,16 @@ class PlatformHandler(BaseCommands):
             return GetManipulatorsResponse(error=str(e))
 
     async def get_pos(self, manipulator_id: str) -> PositionalResponse:
-        pass
+        try:
+            raw_position = self._bindings.get_pos(manipulator_id)
+            
+            return PositionalResponse(
+                position=self._bindings.platform_space_to_unified_space(raw_position),
+                error="",
+            )
+        except Exception as e:
+            console.err_print(f"Get Position: {type(e)}: {e}")
+            return PositionalResponse(error=str(e))
 
     async def get_angles(self, manipulator_id: str) -> AngularResponse:
         pass
