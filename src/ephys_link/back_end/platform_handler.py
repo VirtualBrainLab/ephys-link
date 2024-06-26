@@ -30,6 +30,8 @@ class PlatformHandler(BaseCommands):
         :type platform_type: str
         """
 
+        self._platform_type = platform_type
+
         # Define bindings based on platform type.
         match platform_type:
             case "ump-4":
@@ -37,6 +39,9 @@ class PlatformHandler(BaseCommands):
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
+
+    async def get_platform_type(self) -> str:
+        return self._platform_type
 
     async def get_manipulators(self) -> GetManipulatorsResponse:
         try:

@@ -24,6 +24,14 @@ class BaseCommands(ABC):
     """Base class to enforce commands Ephys Link will support."""
 
     @abstractmethod
+    async def get_platform_type(self) -> str:
+        """Get the manipulator platform type connected to Ephys Link.
+
+        :returns: Platform type config identifier (see CLI options for examples).
+        :rtype: str
+        """
+
+    @abstractmethod
     async def get_manipulators(self) -> GetManipulatorsResponse:
         """Get a list of available manipulators on the current handler.
 
