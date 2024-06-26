@@ -11,7 +11,10 @@ from vbl_aquarium.models.unity import Vector3, Vector4
 
 
 class BaseBindings(ABC):
-    """Base class to enforce bindings manipulator platforms will support."""
+    """Base class to enforce bindings manipulator platforms will support.
+
+    No need to catch exceptions as the Platform Handler will catch them.
+    """
 
     @abstractmethod
     async def get_manipulators(self) -> list[str]:
@@ -48,7 +51,7 @@ class BaseBindings(ABC):
 
         :param manipulator_id: Manipulator ID.
         :type manipulator_id: str
-        :returns: Current position of the manipulator (mm).
+        :returns: Current position of the manipulator in platform space (mm).
         :rtype: Vector4
         """
 
@@ -73,6 +76,14 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
+    async def get_movement_tolerance(self) -> float:
+        """Get the tolerance for how close the final position must be to the target position in a movement.
+
+        :returns: Movement tolerance.
+        :rtype: float
+        """
+
+    @abstractmethod
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
         """Set the position of a manipulator.
 
@@ -82,7 +93,7 @@ class BaseBindings(ABC):
 
         :param manipulator_id: Manipulator ID.
         :type manipulator_id: str
-        :param position: Position to set the manipulator to (mm).
+        :param position: Platform space position to set the manipulator to (mm).
         :type position: Vector4
         :param speed: Speed to move the manipulator to the position (mm/s).
         :type speed: float
@@ -91,22 +102,8 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def calibrate(self, manipulator_id: str) -> str:
-        """Calibrate a manipulator.
-
-        :param manipulator_id: Manipulator ID.
-        :type manipulator_id: str
-        :returns: Error message (if any).
-        :rtype: str
-        """
-
-    @abstractmethod
-    async def stop(self) -> str:
-        """Stop all manipulators.
-
-        :returns: Error message (if any).
-        :rtype: str
-        """
+    async def stop(self) -> None:
+        """Stop all manipulators."""
 
     @abstractmethod
     async def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:

@@ -11,10 +11,12 @@ from vbl_aquarium.models.ephys_link import (
     PositionalResponse,
     ShankCountResponse,
 )
+from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__main__ import console
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
 from ephys_link.util.base_commands import BaseCommands
+from ephys_link.util.common import vector4_to_array
 
 if TYPE_CHECKING:
     from ephys_link.util.base_bindings import BaseBindings
@@ -87,13 +89,27 @@ class PlatformHandler(BaseCommands):
                 console.error_print(error_message)
                 return PositionalResponse(error=error_message)
 
-            return PositionalResponse(
-                position=await self._bindings.set_position(
-                    manipulator_id=request.manipulator_id,
-                    position=self._bindings.unified_space_to_platform_space(request.position),
-                    speed=request.speed,
-                )
+            # Move to the new position.
+            final_platform_position = await self._bindings.set_position(
+                manipulator_id=request.manipulator_id,
+                position=await self._bindings.unified_space_to_platform_space(request.position),
+                speed=request.speed,
             )
+            final_unified_position = await self._bindings.platform_space_to_unified_space(final_platform_position)
+
+            # Return error if movement did not reach target within tolerance.
+            for index, axis in enumerate(vector4_to_array(final_unified_position - request.position)):
+                # End once index is greater than the number of axes.
+                if index >= await self._bindings.get_num_axes():
+                    break
+
+                # Check if the axis is within the movement tolerance.
+                if abs(axis) > await self._bindings.get_movement_tolerance():
+                    error_message = f"Manipulator {request.manipulator_id} did not reach target position on axis {Vector4.dict.keys()[index]}"
+                    console.error_print(error_message)
+                    return PositionalResponse(error=error_message)
+
+            return PositionalResponse(position=final_unified_position)
         except Exception as e:
             console.exception_error_print("Set Position", e)
             return PositionalResponse(error=console.pretty_exception(e))
@@ -130,16 +146,11 @@ class PlatformHandler(BaseCommands):
             console.exception_error_print("Set Inside Brain", e)
             return BooleanStateResponse(error=console.pretty_exception(e))
 
-    async def calibrate(self, manipulator_id: str) -> str:
-        try:
-            return await self._bindings.calibrate(manipulator_id)
-        except Exception as e:
-            console.exception_error_print("Calibrate", e)
-            return console.pretty_exception(e)
-
     async def stop(self) -> str:
         try:
-            return await self._bindings.stop()
+            await self._bindings.stop()
         except Exception as e:
             console.exception_error_print("Stop", e)
             return console.pretty_exception(e)
+        else:
+            return ""

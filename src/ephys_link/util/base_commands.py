@@ -102,16 +102,6 @@ class BaseCommands(ABC):
         """
 
     @abstractmethod
-    async def calibrate(self, manipulator_id: str) -> str:
-        """Calibrate a manipulator.
-
-        :param manipulator_id: Manipulator ID.
-        :type manipulator_id: str
-        :returns: Error message if any.
-        :rtype: str
-        """
-
-    @abstractmethod
     async def stop(self) -> str:
         """Stop all manipulators.
 
