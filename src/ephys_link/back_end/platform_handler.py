@@ -34,6 +34,9 @@ class PlatformHandler(BaseCommands):
         match platform_type:
             case "ump-4":
                 self._bindings: BaseBindings = Ump4Bindings()
+        
+        # Record which IDs are inside the brain.
+        self._inside_brain = set()
 
     async def get_manipulators(self) -> GetManipulatorsResponse:
         try:
@@ -41,41 +44,66 @@ class PlatformHandler(BaseCommands):
                 manipulators=self._bindings.get_manipulators(),
                 num_axes=self._bindings.get_num_axes(),
                 dimensions=self._bindings.get_dimensions(),
-                error="",
             )
         except Exception as e:
-            console.err_print("Get Manipulators", e)
-            return GetManipulatorsResponse(error=str(e))
+            console.exception_error_print("Get Manipulators", e)
+            return GetManipulatorsResponse(error=console.pretty_exception(e))
 
-    async def get_pos(self, manipulator_id: str) -> PositionalResponse:
+    async def get_position(self, manipulator_id: str) -> PositionalResponse:
         try:
-            raw_position = self._bindings.get_pos(manipulator_id)
-            
             return PositionalResponse(
-                position=self._bindings.platform_space_to_unified_space(raw_position),
-                error="",
+                position=self._bindings.platform_space_to_unified_space(self._bindings.get_position(manipulator_id)),
             )
         except Exception as e:
-            console.err_print("Get Position", e)
+            console.exception_error_print("Get Position", e)
             return PositionalResponse(error=str(e))
 
     async def get_angles(self, manipulator_id: str) -> AngularResponse:
-        pass
+        try:
+            return AngularResponse(
+                angles=self._bindings.get_angles(manipulator_id),
+            )
+        except Exception as e:
+            console.exception_error_print("Get Angles", e)
+            return AngularResponse(error=console.pretty_exception(e))
 
     async def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
+        try:
+            return ShankCountResponse(
+                shank_count=self._bindings.get_shank_count(manipulator_id)
+            )
+        except Exception as e:
+            console.exception_error_print("Get Shank Count", e)
+            return ShankCountResponse(error=console.pretty_exception(e))
+                
+
+    async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
         pass
 
-    async def goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
-        pass
-
-    async def drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
+    async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         pass
 
     async def set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
-        pass
+        try:
+            if request.inside:
+                self._inside_brain.add(request.manipulator_id)
+            else:
+                self._inside_brain.discard(request.manipulator_id)
+            return BooleanStateResponse(state=request.inside)
+        except Exception as e:
+            console.exception_error_print("Set Inside Brain", e)
+            return BooleanStateResponse(error=console.pretty_exception(e))
 
     async def calibrate(self, manipulator_id: str) -> str:
-        pass
+        try:
+            return self._bindings.calibrate(manipulator_id)
+        except Exception as e:
+            console.exception_error_print("Calibrate", e)
+            return console.pretty_exception(e)
 
-    async def stop(self) -> BooleanStateResponse:
-        pass
+    async def stop(self) -> str:
+        try:
+            return self._bindings.stop()
+        except Exception as e:
+            console.exception_error_print("Stop", e)
+            return BooleanStateResponse(error=console.pretty_exception(e))

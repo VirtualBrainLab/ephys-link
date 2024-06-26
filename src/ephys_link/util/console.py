@@ -21,7 +21,7 @@ class Console:
         init(autoreset=True)
 
     @staticmethod
-    def err_print(msg: str) -> None:
+    def error_print(msg: str) -> None:
         """Print an error message to the console.
 
         :param msg: Error message to print.
@@ -30,7 +30,18 @@ class Console:
         print(f"{Back.RED}{Style.BRIGHT} ERROR {Style.RESET_ALL}\t\t{Fore.RED}{msg}")
     
     @staticmethod
-    def err_print(label: str, exception: Exception) -> None:
+    def pretty_exception(exception: Exception) -> str:
+        """Pretty print an exception.
+        
+        :param exception: Exception to pretty print.
+        :type exception: Exception
+        :return: Pretty printed exception.
+        :rtype: str
+        """
+        return f"{type(exception).__name__}: {exception}"
+    
+    @staticmethod
+    def exception_error_print(label: str, exception: Exception) -> None:
         """Print an error message with exception details to the console.
         
         :param label: Label for the error message.
@@ -38,7 +49,8 @@ class Console:
         :param exception: Exception to print.
         :type exception: Exception
         """
-        Console.err_print(f"{label}: {type(exception)}: {exception}")
+        Console.exception_error_print(f"{label}: {Console.pretty_exception(exception)}")
+    
 
     def debug_print(self, msg: str) -> None:
         """Print a debug message to the console.

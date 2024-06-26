@@ -1,13 +1,13 @@
-"""Base binding methods for Ephys Link manipulator platforms.
+"""Binding methods for Ephys Link manipulator platforms.
 
-Definition of the methods a platform bindings class must implement to be used by Ephys Link.
+Definition of the methods a platform binding class must implement to be used by Ephys Link.
 
 Usage: Implement the BaseBindings class when defining a platform binding to ensure it supports the necessary methods.
 """
 
 from abc import ABC, abstractmethod
 
-from vbl_aquarium.models.unity import Vector4
+from vbl_aquarium.models.unity import Vector4, Vector3
 
 
 class BaseBindings(ABC):
@@ -40,16 +40,72 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def get_pos(self, manipulator_id: str) -> Vector4:
+    async def get_position(self, manipulator_id: str) -> Vector4:
         """Get the current position of a manipulator.
 
-        These will be the raw values from the manipulator, so they may need to be converted to unified space.
+        These will be the raw values from the manipulator in mm, so they may need to be converted to unified space.
         For 3-axis manipulators, copy the position of the axis parallel to the probe into w.
         
         :param manipulator_id: Manipulator ID.
         :type manipulator_id: str
-        :returns: Current position of the manipulator.
+        :returns: Current position of the manipulator (mm).
         :rtype: Vector4
+        """
+    
+    @abstractmethod
+    async def get_angles(self, manipulator_id: str) -> Vector3:
+        """Get the current rotation angles of a manipulator in Yaw, Pitch, Roll (degrees).
+        
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :returns: Current angles of the manipulator.
+        :rtype: Vector3
+        """
+    
+    @abstractmethod
+    async def get_shank_count(self, manipulator_id: str) -> int:
+        """Get the number of shanks on a manipulator.
+        
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :returns: Number of shanks on the manipulator.
+        :rtype: int
+        """
+    
+    @abstractmethod
+    async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
+        """Set the position of a manipulator.
+        
+        This will directly set the position in the original platform space.
+        Unified space coordinates will need to be converted to platform space.
+        For 3-axis manipulators, the first 3 values of the position will be used.
+        
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :param position: Position to set the manipulator to.
+        :type position: Vector4
+        :param speed: Speed to move the manipulator to the position in mm/s.
+        :type speed: float
+        :returns: Final position of the manipulator in platform space (mm).
+        :rtype: Vector4
+        """
+    
+    @abstractmethod
+    async def calibrate(self, manipulator_id: str) -> str:
+        """Calibrate a manipulator.
+        
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :returns: Error message (if any).
+        :rtype: str
+        """
+    
+    @abstractmethod
+    async def stop(self) -> str:
+        """Stop all manipulators.
+        
+        :returns: Error message (if any).
+        :rtype: str
         """
     
     @abstractmethod

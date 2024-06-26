@@ -32,7 +32,7 @@ class BaseCommands(ABC):
         """
 
     @abstractmethod
-    async def get_pos(self, manipulator_id: str) -> PositionalResponse:
+    async def get_position(self, manipulator_id: str) -> PositionalResponse:
         """Get the current translation position of a manipulator in unified coordinates (mm).
 
         :param manipulator_id: Manipulator ID.
@@ -62,7 +62,7 @@ class BaseCommands(ABC):
         """
 
     @abstractmethod
-    async def goto_pos(self, request: GotoPositionRequest) -> PositionalResponse:
+    async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
         """Move a manipulator to a specified translation position in unified coordinates (mm).
 
         :param request: Request to move a manipulator to a specified position.
@@ -72,7 +72,7 @@ class BaseCommands(ABC):
         """
 
     @abstractmethod
-    async def drive_to_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
+    async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         """Move a manipulator's depth translation stage to a specific value (mm).
 
         :param request: Request to move a manipulator to a specified depth.
@@ -104,9 +104,9 @@ class BaseCommands(ABC):
         """
 
     @abstractmethod
-    async def stop(self) -> BooleanStateResponse:
+    async def stop(self) -> str:
         """Stop all manipulators.
 
-        :returns: Success state and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
+        :returns: Error message if any.
+        :rtype: str
         """
