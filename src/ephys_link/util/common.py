@@ -1,6 +1,6 @@
 """Commonly used utility functions and constants."""
 
-from vbl_aquarium.models.generic import Vector4
+from vbl_aquarium.models.unity import Vector4
 
 # Ephys Link ASCII
 ASCII = r"""

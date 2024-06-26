@@ -7,7 +7,7 @@ Usage: Implement the BaseBindings class when defining a platform binding to ensu
 
 from abc import ABC, abstractmethod
 
-from vbl_aquarium.models.generic import Vector3, Vector4
+from vbl_aquarium.models.unity import Vector3, Vector4
 
 
 class BaseBindings(ABC):
@@ -113,6 +113,9 @@ class BaseBindings(ABC):
         """Convert platform space coordinates to unified space coordinates.
 
         This is an axes-swapping transformation.
+
+        Unified coordinate space is the standard left-handed cartesian coordinate system
+        with an additional depth axis pointing from the base of the probe to the tip.
 
         :param platform_space: Platform space coordinates.
         :type platform_space: Vector4

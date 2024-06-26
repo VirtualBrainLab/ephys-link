@@ -84,9 +84,9 @@ class PlatformHandler(BaseCommands):
 
             return PositionalResponse(
                 position=await self._bindings.set_position(
-                    request.manipulator_id,
-                    self._bindings.unified_space_to_platform_space(request.position),
-                    request.position,
+                    manipulator_id=request.manipulator_id,
+                    position=self._bindings.unified_space_to_platform_space(request.position),
+                    speed=request.speed,
                 )
             )
         except Exception as e:
@@ -94,7 +94,25 @@ class PlatformHandler(BaseCommands):
             return PositionalResponse(error=console.pretty_exception(e))
 
     async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
-        pass
+        try:
+            # Create a position based on the new depth.
+            current_platform_position = await self._bindings.get_position(request.manipulator_id)
+            current_unified_position = await self._bindings.platform_space_to_unified_space(current_platform_position)
+            target_unified_position = current_unified_position.model_copy(update={"w": request.depth})
+            target_platform_position = await self._bindings.unified_space_to_platform_space(target_unified_position)
+
+            # Move to the new depth.
+            final_platform_position = await self._bindings.set_position(
+                manipulator_id=request.manipulator_id,
+                position=target_platform_position,
+                speed=request.speed,
+            )
+            final_unified_position = await self._bindings.platform_space_to_unified_space(final_platform_position)
+
+            return DriveToDepthResponse(depth=final_unified_position.w)
+        except Exception as e:
+            console.exception_error_print("Set Depth", e)
+            return DriveToDepthResponse(error=console.pretty_exception(e))
 
     async def set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
         try:
