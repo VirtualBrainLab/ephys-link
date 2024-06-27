@@ -1,3 +1,4 @@
+# ruff: noqa: BLE001
 """Manipulator platform handler.
 
 Responsible for performing the various manipulator commands.

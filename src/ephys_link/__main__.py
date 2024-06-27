@@ -32,6 +32,10 @@ def main() -> None:
     # 3. Instantiate the Platform Handler with the appropriate platform bindings.
     # platform_handler = PlatformHandler(options.type)
 
+    # 4. Instantiate the Emergency Stop service.
+
+    # 5. Start the server.
+
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,4 @@
+# ruff: noqa: T201
 """Console class for printing messages to the console.
 
 Configure the console to print error and debug messages.
@@ -9,7 +10,7 @@ from colorama import Back, Fore, Style, init
 
 
 class Console:
-    def __init__(self, enable_debug: bool) -> None:
+    def __init__(self, *, enable_debug: bool) -> None:
         """Initialize console properties.
 
         :param enable_debug: Enable debug mode.

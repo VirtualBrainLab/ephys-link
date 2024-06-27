@@ -108,4 +108,4 @@ exclude_lines = [
 ]
 
 [tool.ruff.lint]
-extend-ignore = ["T201", "PLW0603", "BLE001", "FBT001", "ARG002", "S310"]
+extend-ignore = ["BLE001"]

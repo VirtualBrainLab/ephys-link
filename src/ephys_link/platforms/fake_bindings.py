@@ -34,13 +34,13 @@ class FakeBindings(BaseBindings):
     async def get_angles(self, manipulator_id: str) -> Vector3:
         return self._angles[int(manipulator_id)]
 
-    async def get_shank_count(self, manipulator_id: str) -> int:
+    async def get_shank_count(self, _: str) -> int:
         return 1
 
     async def get_movement_tolerance(self) -> float:
         return 0.001
 
-    async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
+    async def set_position(self, manipulator_id: str, position: Vector4, _: float) -> Vector4:
         self._positions[int(manipulator_id)] = position
         return position
 
