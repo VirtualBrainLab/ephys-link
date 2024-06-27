@@ -5,6 +5,8 @@ from pathlib import Path
 
 from vbl_aquarium.models.unity import Vector4
 
+from ephys_link.util.console import Console
+
 # Ephys Link ASCII.
 ASCII = r"""
  ______       _                 _      _       _
@@ -19,6 +21,9 @@ ASCII = r"""
 
 # Absolute path to the resources folder.
 RESOURCES_PATH = join(str(Path(__file__).parent.absolute()), "resources")
+
+# Console instance.
+console: Console
 
 # Unit conversions
 

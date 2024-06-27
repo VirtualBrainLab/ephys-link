@@ -13,10 +13,9 @@ from vbl_aquarium.models.ephys_link import (
 )
 from vbl_aquarium.models.unity import Vector4
 
-from ephys_link.__main__ import console
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
 from ephys_link.util.base_commands import BaseCommands
-from ephys_link.util.common import vector4_to_array
+from ephys_link.util.common import console, vector4_to_array
 
 if TYPE_CHECKING:
     from ephys_link.util.base_bindings import BaseBindings

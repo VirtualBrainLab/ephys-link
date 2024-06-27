@@ -7,13 +7,10 @@ Usage: call main() to start.
 
 from sys import argv
 
-from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.front_end.cli import CLI
 from ephys_link.front_end.gui import GUI
+from ephys_link.util import common
 from ephys_link.util.console import Console
-
-# Global access.
-console: Console
 
 
 def main() -> None:
@@ -30,11 +27,10 @@ def main() -> None:
     options = CLI().parse_args() if len(argv) > 1 else GUI().get_options()
 
     # 2. Instantiate the Console and make it globally accessible.
-    global console
-    console = Console(enable_debug=options.debug)
+    common.console = Console(enable_debug=options.debug)
 
     # 3. Instantiate the Platform Handler with the appropriate platform bindings.
-    platform_handler = PlatformHandler(options.type)
+    # platform_handler = PlatformHandler(options.type)
 
 
 if __name__ == "__main__":

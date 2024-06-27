@@ -167,6 +167,12 @@ class GUI:
             variable=self._type,
             value="new-scale",
         ).grid(column=0, row=3, sticky="we")
+        ttk.Radiobutton(
+            platform_type_settings,
+            text="Fake Platform",
+            variable=self._type,
+            value="fake",
+        ).grid(column=0, row=4, sticky="we")
 
         # ---
 
