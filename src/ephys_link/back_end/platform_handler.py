@@ -32,6 +32,7 @@ class PlatformHandler(BaseCommands):
         :type platform_type: str
         """
 
+        # Store the platform type.
         self._platform_type = platform_type
 
         # Define bindings based on platform type.
@@ -47,39 +48,47 @@ class PlatformHandler(BaseCommands):
 
     async def get_manipulators(self) -> GetManipulatorsResponse:
         try:
-            return GetManipulatorsResponse(
-                manipulators=self._bindings.get_manipulators(),
-                num_axes=self._bindings.get_num_axes(),
-                dimensions=self._bindings.get_dimensions(),
-            )
+            manipulators = await self._bindings.get_manipulators()
+            num_axes = await self._bindings.get_num_axes()
+            dimensions = await self._bindings.get_dimensions()
         except Exception as e:
             console.exception_error_print("Get Manipulators", e)
             return GetManipulatorsResponse(error=console.pretty_exception(e))
+        else:
+            return GetManipulatorsResponse(
+                manipulators=manipulators,
+                num_axes=num_axes,
+                dimensions=dimensions,
+            )
 
     async def get_position(self, manipulator_id: str) -> PositionalResponse:
         try:
-            return PositionalResponse(
-                position=self._bindings.platform_space_to_unified_space(self._bindings.get_position(manipulator_id)),
+            unified_position = await self._bindings.platform_space_to_unified_space(
+                await self._bindings.get_position(manipulator_id)
             )
         except Exception as e:
             console.exception_error_print("Get Position", e)
             return PositionalResponse(error=str(e))
+        else:
+            return PositionalResponse(position=unified_position)
 
     async def get_angles(self, manipulator_id: str) -> AngularResponse:
         try:
-            return AngularResponse(
-                angles=self._bindings.get_angles(manipulator_id),
-            )
+            angles = await self._bindings.get_angles(manipulator_id)
         except Exception as e:
             console.exception_error_print("Get Angles", e)
             return AngularResponse(error=console.pretty_exception(e))
+        else:
+            return AngularResponse(angles=angles)
 
     async def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         try:
-            return ShankCountResponse(shank_count=self._bindings.get_shank_count(manipulator_id))
+            shank_count = await self._bindings.get_shank_count(manipulator_id)
         except Exception as e:
             console.exception_error_print("Get Shank Count", e)
             return ShankCountResponse(error=console.pretty_exception(e))
+        else:
+            return ShankCountResponse(shank_count=shank_count)
 
     async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
         try:
@@ -108,11 +117,11 @@ class PlatformHandler(BaseCommands):
                     error_message = f"Manipulator {request.manipulator_id} did not reach target position on axis {Vector4.dict.keys()[index]}"
                     console.error_print(error_message)
                     return PositionalResponse(error=error_message)
-
-            return PositionalResponse(position=final_unified_position)
         except Exception as e:
             console.exception_error_print("Set Position", e)
             return PositionalResponse(error=console.pretty_exception(e))
+        else:
+            return PositionalResponse(position=final_unified_position)
 
     async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         try:
@@ -129,11 +138,11 @@ class PlatformHandler(BaseCommands):
                 speed=request.speed,
             )
             final_unified_position = await self._bindings.platform_space_to_unified_space(final_platform_position)
-
-            return DriveToDepthResponse(depth=final_unified_position.w)
         except Exception as e:
             console.exception_error_print("Set Depth", e)
             return DriveToDepthResponse(error=console.pretty_exception(e))
+        else:
+            return DriveToDepthResponse(depth=final_unified_position.w)
 
     async def set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
         try:
@@ -141,10 +150,11 @@ class PlatformHandler(BaseCommands):
                 self._inside_brain.add(request.manipulator_id)
             else:
                 self._inside_brain.discard(request.manipulator_id)
-            return BooleanStateResponse(state=request.inside)
         except Exception as e:
             console.exception_error_print("Set Inside Brain", e)
             return BooleanStateResponse(error=console.pretty_exception(e))
+        else:
+            return BooleanStateResponse(state=request.inside)
 
     async def stop(self) -> str:
         try:
