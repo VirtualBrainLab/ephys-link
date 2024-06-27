@@ -13,7 +13,6 @@ class Ump4Bindings(BaseBindings):
 
     def __init__(self) -> None:
         """Initialize UMP-4 bindings."""
-        super().__init__()
 
         # Establish connection to Sensapex API (exit if connection fails).
         UMP.set_library_path(RESOURCES_PATH)
