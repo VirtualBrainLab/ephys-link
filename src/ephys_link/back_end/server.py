@@ -17,11 +17,15 @@ from vbl_aquarium.models.ephys_link import (
 
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.util.base_commands import BaseCommands
+from ephys_link.util.console import Console
 
 
 class Server(BaseCommands):
-    def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler):
+    def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler, console: Console) -> None:
         """Initialize server fields based on options and platform handler."""
+
+        # Store console.
+        self._console = console
 
         # Initialize based on proxy usage.
         if options.use_proxy:
@@ -30,9 +34,62 @@ class Server(BaseCommands):
         else:
             self._sio = AsyncServer()
             self._app = Application()
+            self._sio.attach(self._app)
+
+            # Bind connection events.
+            self._sio.on("connect", self.connect)
+            self._sio.on("disconnect", self.disconnect)
 
         # Platform handler.
         self.platform_handler = platform_handler
+
+        # Store connected client.
+        self._client_sid: str = ""
+
+        # Bind events.
+        self._sio.on("get_platform_type", self.get_platform_type)
+        self._sio.on("get_manipulators", self.get_manipulators)
+        self._sio.on("get_position", self.get_position)
+        self._sio.on("get_angles", self.get_angles)
+        self._sio.on("get_shank_count", self.get_shank_count)
+        self._sio.on("set_position", self.set_position)
+        self._sio.on("set_depth", self.set_depth)
+        self._sio.on("set_inside_brain", self.set_inside_brain)
+        self._sio.on("stop", self.stop)
+
+    async def connect(self, sid: str, _, __) -> bool:
+        """Handle connections to the server
+
+        :param sid: Socket session ID.
+        :type sid: str
+        :param _: Request info (unused).
+        :type _: dict
+        :param __: Authentication info (unused).
+        :type __: dict
+        :returns: False on error to refuse connection, True otherwise.
+        :rtype: bool
+        """
+        self._console.info_print("CONNECTION REQUEST", sid)
+
+        if self._client_sid == "":
+            self._client_sid = sid
+            self._console.info_print("CONNECTION GRANTED", sid)
+            return True
+
+        self._console.error_print(f"CONNECTION REFUSED to {sid}. Client {self._client_sid} already connected.")
+        return False
+
+    async def disconnect(self, sid: str) -> None:
+        """Handle disconnections from the server
+
+        :param sid: Socket session ID.
+        :type sid: str
+        """
+        self._console.info_print("DISCONNECTED", sid)
+        if self._client_sid == sid:
+            self._client_sid = ""
+        else:
+            self._console.error_print(f"Client {sid} disconnected without being connected.")
 
     async def get_platform_type(self) -> str:
         pass
