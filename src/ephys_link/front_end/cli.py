@@ -20,7 +20,8 @@ class CLI:
         """Initialize CLI parser."""
 
         self._parser = ArgumentParser(
-            description="Electrophysiology Manipulator Link: a Socket.IO interface for manipulators in electrophysiology experiments.",
+            description="Electrophysiology Manipulator Link:"
+            " a Socket.IO interface for manipulators in electrophysiology experiments.",
             prog="python -m ephys-link",
         )
 
@@ -42,8 +43,20 @@ class CLI:
             default="ump-4",
             help='Manipulator type (i.e. "ump-4", "ump-3", "pathfinder-mpm", "new-scale", "fake"). Default: "ump-4".',
         )
-        self._parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="Enable debug mode.")
-        self._parser.add_argument("-x", "--use-proxy", dest="use_proxy", action="store_true", help="Enable proxy mode.")
+        self._parser.add_argument(
+            "-d",
+            "--debug",
+            dest="debug",
+            action="store_true",
+            help="Enable debug mode.",
+        )
+        self._parser.add_argument(
+            "-x",
+            "--use-proxy",
+            dest="use_proxy",
+            action="store_true",
+            help="Enable proxy mode.",
+        )
         self._parser.add_argument(
             "-a",
             "--proxy-address",

@@ -1,3 +1,11 @@
+"""Manipulator platform handler.
+
+Responsible for performing the various manipulator commands.
+Instantiates the appropriate bindings based on the platform type and uses them to perform the commands.
+
+Usage: Instantiate PlatformHandler with the platform type and call the desired command.
+"""
+
 from typing import TYPE_CHECKING
 
 from vbl_aquarium.models.ephys_link import (
@@ -113,7 +121,10 @@ class PlatformHandler(BaseCommands):
 
                 # Check if the axis is within the movement tolerance.
                 if abs(axis) > await self._bindings.get_movement_tolerance():
-                    error_message = f"Manipulator {request.manipulator_id} did not reach target position on axis {Vector4.dict.keys()[index]}"
+                    error_message = (
+                        f"Manipulator {request.manipulator_id} did not reach target"
+                        f" position on axis {list(Vector4.model_fields.keys())[index]}"
+                    )
                     console.error_print(error_message)
                     return PositionalResponse(error=error_message)
         except Exception as e:

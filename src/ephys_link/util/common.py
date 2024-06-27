@@ -19,7 +19,7 @@ ASCII = r"""
        |_|          |___/
 """
 
-# Absolute path to the resources folder.
+# Absolute path to the resource folder.
 RESOURCES_PATH = join(str(Path(__file__).parent.absolute()), "resources")
 
 # Console instance.
@@ -81,9 +81,9 @@ def array_to_vector4(array: list[float]) -> Vector4:
     :rtype: :class:`vbl_aquarium.models.unity.Vector4`
     """
 
-    def get_element(array: list[float], index: int) -> float:
+    def get_element(this_array: list[float], index: int) -> float:
         try:
-            return array[index]
+            return this_array[index]
         except IndexError:
             return 0.0
 

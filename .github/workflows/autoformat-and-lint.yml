@@ -1,4 +1,4 @@
-name: Autoformat and Lint
+name: Auto Format and Lint
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   autoformat-and-lint:
-    name: Autoformat and Lint
+    name: Auto Format and Lint
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
@@ -37,7 +37,7 @@ jobs:
       - name: ✅ Commit code format changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Autoformat code"
+          commit_message: "Auto format code"
           skip_fetch: true
           skip_checkout: true
 

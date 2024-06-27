@@ -1,3 +1,8 @@
+"""Bindings for Sensapex uMp-4 platform.
+
+Usage: Instantiate Ump4Bindings to interact with the Sensapex uMp-4 platform.
+"""
+
 from asyncio import get_running_loop
 
 from sensapex import UMP, SensapexDevice
@@ -34,6 +39,7 @@ class Ump4Bindings(BaseBindings):
     async def get_position(self, manipulator_id: str) -> Vector4:
         return array_to_vector4(self._get_device(manipulator_id).get_pos(1))
 
+    # noinspection PyTypeChecker
     async def get_angles(self, manipulator_id: str) -> Vector3:
         """uMp-4 does not support getting angles so raise an error.
 
@@ -42,6 +48,7 @@ class Ump4Bindings(BaseBindings):
         error_message = "UMP-4 does not support getting angles"
         raise AttributeError(error_message)
 
+    # noinspection PyTypeChecker
     async def get_shank_count(self, manipulator_id: str) -> int:
         """uMp-4 does not support getting shank count so raise an error.
 
