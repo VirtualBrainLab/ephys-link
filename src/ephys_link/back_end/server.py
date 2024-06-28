@@ -3,10 +3,7 @@ from collections.abc import Callable, Coroutine
 from json import JSONDecodeError, dumps, loads
 from typing import Any
 
-from aiohttp.web import Application
-from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.util.common import check_for_updates, server_preamble
-from ephys_link.util.console import Console
+from aiohttp.web import Application, run_app
 from pydantic import ValidationError
 from socketio import AsyncClient, AsyncServer
 from vbl_aquarium.models.ephys_link import (
@@ -16,6 +13,10 @@ from vbl_aquarium.models.ephys_link import (
     InsideBrainRequest,
 )
 from vbl_aquarium.models.generic import VBLBaseModel
+
+from ephys_link.back_end.platform_handler import PlatformHandler
+from ephys_link.util.common import check_for_updates, server_preamble
+from ephys_link.util.console import Console
 
 
 class Server:
@@ -28,10 +29,8 @@ class Server:
         self._console = console
 
         # Initialize based on proxy usage.
-        if self._options.use_proxy:
-            self._sio: AsyncServer | AsyncClient = AsyncClient()
-        else:
-            self._sio: AsyncServer | AsyncClient = AsyncServer()
+        self._sio: AsyncServer | AsyncClient = AsyncClient() if self._options.use_proxy else AsyncServer()
+        if not self._options.use_proxy:
             self._app = Application()
             self._sio.attach(self._app)
 
@@ -43,7 +42,7 @@ class Server:
         self._client_sid: str = ""
 
         # Bind events.
-        self._sio.on("*", self.test)
+        self._sio.on("*", self.platform_event_handler)
 
     # Server launch.
     def launch(self) -> None:
@@ -65,43 +64,46 @@ class Server:
             self._console.info_print("PINPOINT ID", self._platform_handler.get_pinpoint_id().pinpoint_id)
 
             async def connect_proxy() -> None:
+                # noinspection HttpUrlsUsage
                 await self._sio.connect(f"http://{self._options.proxy_address}:{self._options.port}")
                 await self._sio.wait()
 
             run(connect_proxy())
+        else:
+            run_app(self._app, port=self._options.port)
 
     # Helper functions.
-    def _malformed_request_response(self, request: str, data: str) -> str:
+    def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:
         """Return a response for a malformed request."""
         self._console.labeled_error_print("MALFORMED REQUEST", f"{request}: {data}")
         return dumps({"error": "Malformed request."})
 
     async def _run_if_data_available(
-            self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: str
+        self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: tuple[tuple[Any], ...]
     ) -> str:
         """Run a function if data is available."""
         if data:
-            return (await function(data)).to_string()
+            return str((await function(str(data[0]))).to_string())
         return self._malformed_request_response(event, data)
 
     async def _run_if_data_parses(
-            self,
-            function: Callable[[VBLBaseModel], Coroutine[Any, Any, VBLBaseModel]],
-            data_type: type[VBLBaseModel],
-            event: str,
-            data: str,
+        self,
+        function: Callable[[VBLBaseModel], Coroutine[Any, Any, VBLBaseModel]],
+        data_type: type[VBLBaseModel],
+        event: str,
+        data: tuple[tuple[Any], ...],
     ) -> str:
         """Run a function if data parses."""
         if data:
             try:
-                parsed_data = data_type(**loads(data))
+                parsed_data = data_type(**loads(str(data[0])))
             except JSONDecodeError:
                 return self._malformed_request_response(event, data)
             except ValidationError as e:
                 self._console.exception_error_print(event, e)
                 return self._malformed_request_response(event, data)
             else:
-                return (await function(parsed_data)).to_string()
+                return str((await function(parsed_data)).to_string())
         return self._malformed_request_response(event, data)
 
     # Event Handlers.
@@ -138,27 +140,17 @@ class Server:
         else:
             self._console.error_print(f"Client {sid} disconnected without being connected.")
 
-    async def test(self, event) -> str:
-        print(event)
-        return self._platform_handler.get_pinpoint_id().to_string()
-
-    async def platform_event_handler(self, event: str, sid: str, data: str) -> str:
+    # noinspection PyTypeChecker
+    async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:
         """Handle events from the server
 
         :param event: Event name.
         :type event: str
-        :param sid: Socket session ID.
-        :type sid: str
-        :param data: Event data.
-        :type data: str
+        :param args: Event arguments.
+        :type args: tuple[Any]
         :returns: Response data.
         :rtype: str
         """
-
-        # Ignore events from SID's that don't match the client.
-        if sid != self._client_sid:
-            self._console.error_print(f"Event from unauthorized client {sid}.")
-            return "ERROR"
 
         # Log event.
         self._console.debug_print("EVENT", event)
@@ -169,30 +161,30 @@ class Server:
             case "get_version":
                 return self._platform_handler.get_version()
             case "get_pinpoint_id":
-                return self._platform_handler.get_pinpoint_id().to_string()
+                return str(self._platform_handler.get_pinpoint_id().to_string())
             case "get_platform_type":
                 return self._platform_handler.get_platform_type()
 
             # Manipulator commands.
             case "get_manipulators":
-                return (await self._platform_handler.get_manipulators()).to_string()
+                return str((await self._platform_handler.get_manipulators()).to_string())
             case "get_position":
-                return await self._run_if_data_available(self._platform_handler.get_position, event, data)
+                return await self._run_if_data_available(self._platform_handler.get_position, event, args)
             case "get_angles":
-                return await self._run_if_data_available(self._platform_handler.get_angles, event, data)
+                return await self._run_if_data_available(self._platform_handler.get_angles, event, args)
             case "get_shank_count":
-                return await self._run_if_data_available(self._platform_handler.get_shank_count, event, data)
+                return await self._run_if_data_available(self._platform_handler.get_shank_count, event, args)
             case "set_position":
                 return await self._run_if_data_parses(
-                    self._platform_handler.set_position, GotoPositionRequest, event, data
+                    self._platform_handler.set_position, GotoPositionRequest, event, args
                 )
             case "set_depth":
                 return await self._run_if_data_parses(
-                    self._platform_handler.set_depth, DriveToDepthRequest, event, data
+                    self._platform_handler.set_depth, DriveToDepthRequest, event, args
                 )
             case "set_inside_brain":
                 return await self._run_if_data_parses(
-                    self._platform_handler.set_inside_brain, InsideBrainRequest, event, data
+                    self._platform_handler.set_inside_brain, InsideBrainRequest, event, args
                 )
             case "stop":
                 return await self._platform_handler.stop()

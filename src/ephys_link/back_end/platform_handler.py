@@ -25,6 +25,7 @@ from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
+from ephys_link.platforms.fake_bindings import FakeBindings
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
 from ephys_link.util.common import vector4_to_array
 from ephys_link.util.console import Console
@@ -50,9 +51,16 @@ class PlatformHandler:
         self._console = console
 
         # Define bindings based on platform type.
+        self._bindings: BaseBindings
         match platform_type:
             case "ump-4":
-                self._bindings: BaseBindings = Ump4Bindings()
+                self._bindings = Ump4Bindings()
+            case "fake":
+                self._bindings = FakeBindings()
+            case _:
+                error_message = f'Platform type "{platform_type}" not recognized.'
+                self._console.labeled_error_print("PLATFORM", error_message)
+                raise ValueError(error_message)
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
@@ -159,6 +167,7 @@ class PlatformHandler:
         else:
             return ShankCountResponse(shank_count=shank_count)
 
+    # noinspection PyArgumentList
     async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
         """Move a manipulator to a specified translation position in unified coordinates (mm).
 
