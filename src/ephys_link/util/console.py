@@ -61,7 +61,8 @@ class Console:
         if self._enable_debug:
             print(f"{Back.BLUE}{Style.BRIGHT} DEBUG {Style.RESET_ALL}\t\t{Fore.BLUE}{msg}")
 
-    def info_print(self, label: str, msg: str) -> None:
+    @staticmethod
+    def info_print(label: str, msg: str) -> None:
         """Print info to console.
 
         :param label: Label for the message.

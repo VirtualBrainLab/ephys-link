@@ -7,7 +7,6 @@ Instantiates the appropriate bindings based on the platform type and uses them t
 Usage: Instantiate PlatformHandler with the platform type and call the desired command.
 """
 
-from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from vbl_aquarium.models.ephys_link import (
@@ -26,19 +25,16 @@ from vbl_aquarium.models.unity import Vector4
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
 from ephys_link.util.base_commands import BaseCommands
 from ephys_link.util.common import vector4_to_array
+from ephys_link.util.console import Console
 
 if TYPE_CHECKING:
     from ephys_link.util.base_bindings import BaseBindings
-
-# Import console if available.
-with suppress(ImportError):
-    from ephys_link.util.common import console
 
 
 class PlatformHandler(BaseCommands):
     """Handler for platform commands."""
 
-    def __init__(self, platform_type: str) -> None:
+    def __init__(self, platform_type: str, console: Console) -> None:
         """Initialize platform handler.
 
         :param platform_type: Platform type to initialize bindings from.
@@ -47,6 +43,9 @@ class PlatformHandler(BaseCommands):
 
         # Store the platform type.
         self._platform_type = platform_type
+
+        # Store the console.
+        self._console = console
 
         # Define bindings based on platform type.
         match platform_type:
@@ -65,8 +64,8 @@ class PlatformHandler(BaseCommands):
             num_axes = await self._bindings.get_num_axes()
             dimensions = await self._bindings.get_dimensions()
         except Exception as e:
-            console.exception_error_print("Get Manipulators", e)
-            return GetManipulatorsResponse(error=console.pretty_exception(e))
+            self._console.exception_error_print("Get Manipulators", e)
+            return GetManipulatorsResponse(error=self._console.pretty_exception(e))
         else:
             return GetManipulatorsResponse(
                 manipulators=manipulators,
@@ -80,7 +79,7 @@ class PlatformHandler(BaseCommands):
                 await self._bindings.get_position(manipulator_id)
             )
         except Exception as e:
-            console.exception_error_print("Get Position", e)
+            self._console.exception_error_print("Get Position", e)
             return PositionalResponse(error=str(e))
         else:
             return PositionalResponse(position=unified_position)
@@ -89,8 +88,8 @@ class PlatformHandler(BaseCommands):
         try:
             angles = await self._bindings.get_angles(manipulator_id)
         except Exception as e:
-            console.exception_error_print("Get Angles", e)
-            return AngularResponse(error=console.pretty_exception(e))
+            self._console.exception_error_print("Get Angles", e)
+            return AngularResponse(error=self._console.pretty_exception(e))
         else:
             return AngularResponse(angles=angles)
 
@@ -98,8 +97,8 @@ class PlatformHandler(BaseCommands):
         try:
             shank_count = await self._bindings.get_shank_count(manipulator_id)
         except Exception as e:
-            console.exception_error_print("Get Shank Count", e)
-            return ShankCountResponse(error=console.pretty_exception(e))
+            self._console.exception_error_print("Get Shank Count", e)
+            return ShankCountResponse(error=self._console.pretty_exception(e))
         else:
             return ShankCountResponse(shank_count=shank_count)
 
@@ -108,7 +107,7 @@ class PlatformHandler(BaseCommands):
             # Disallow setting manipulator position while inside the brain.
             if request.manipulator_id in self._inside_brain:
                 error_message = 'Can not move manipulator while inside the brain. Set depth ("set_depth") instead.'
-                console.error_print(error_message)
+                self._console.error_print(error_message)
                 return PositionalResponse(error=error_message)
 
             # Move to the new position.
@@ -131,11 +130,11 @@ class PlatformHandler(BaseCommands):
                         f"Manipulator {request.manipulator_id} did not reach target"
                         f" position on axis {list(Vector4.model_fields.keys())[index]}"
                     )
-                    console.error_print(error_message)
+                    self._console.error_print(error_message)
                     return PositionalResponse(error=error_message)
         except Exception as e:
-            console.exception_error_print("Set Position", e)
-            return PositionalResponse(error=console.pretty_exception(e))
+            self._console.exception_error_print("Set Position", e)
+            return PositionalResponse(error=self._console.pretty_exception(e))
         else:
             return PositionalResponse(position=final_unified_position)
 
@@ -155,8 +154,8 @@ class PlatformHandler(BaseCommands):
             )
             final_unified_position = await self._bindings.platform_space_to_unified_space(final_platform_position)
         except Exception as e:
-            console.exception_error_print("Set Depth", e)
-            return DriveToDepthResponse(error=console.pretty_exception(e))
+            self._console.exception_error_print("Set Depth", e)
+            return DriveToDepthResponse(error=self._console.pretty_exception(e))
         else:
             return DriveToDepthResponse(depth=final_unified_position.w)
 
@@ -167,8 +166,8 @@ class PlatformHandler(BaseCommands):
             else:
                 self._inside_brain.discard(request.manipulator_id)
         except Exception as e:
-            console.exception_error_print("Set Inside Brain", e)
-            return BooleanStateResponse(error=console.pretty_exception(e))
+            self._console.exception_error_print("Set Inside Brain", e)
+            return BooleanStateResponse(error=self._console.pretty_exception(e))
         else:
             return BooleanStateResponse(state=request.inside)
 
@@ -176,7 +175,7 @@ class PlatformHandler(BaseCommands):
         try:
             await self._bindings.stop()
         except Exception as e:
-            console.exception_error_print("Stop", e)
-            return console.pretty_exception(e)
+            self._console.exception_error_print("Stop", e)
+            return self._console.pretty_exception(e)
         else:
             return ""

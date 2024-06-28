@@ -1,4 +1,3 @@
-from contextlib import suppress
 from uuid import uuid4
 
 from aiohttp.web import Application
@@ -18,14 +17,11 @@ from vbl_aquarium.models.ephys_link import (
 
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.util.base_commands import BaseCommands
-
-# Import console if available.
-with suppress(ImportError):
-    from ephys_link.util.common import console
+from ephys_link.util.console import Console
 
 
 class Server(BaseCommands):
-    def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler) -> None:
+    def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler, console: Console) -> None:
         """Initialize server fields based on options and platform handler."""
 
         # Initialize based on proxy usage.
@@ -44,6 +40,9 @@ class Server(BaseCommands):
         # Platform handler.
         self.platform_handler = platform_handler
 
+        # Console.
+        self._console = console
+
         # Store connected client.
         self._client_sid: str = ""
 
@@ -60,7 +59,7 @@ class Server(BaseCommands):
 
     # Server launch.
     def launch(self) -> None:
-        console.info_print("SERVER", "Starting server...")
+        self._console.info_print("SERVER", "Starting server...")
 
     # Event Handlers.
 
@@ -72,14 +71,14 @@ class Server(BaseCommands):
         :returns: False on error to refuse connection, True otherwise.
         :rtype: bool
         """
-        console.info_print("CONNECTION REQUEST", sid)
+        self._console.info_print("CONNECTION REQUEST", sid)
 
         if self._client_sid == "":
             self._client_sid = sid
-            console.info_print("CONNECTION GRANTED", sid)
+            self._console.info_print("CONNECTION GRANTED", sid)
             return True
 
-        console.error_print(f"CONNECTION REFUSED to {sid}. Client {self._client_sid} already connected.")
+        self._console.error_print(f"CONNECTION REFUSED to {sid}. Client {self._client_sid} already connected.")
         return False
 
     async def disconnect(self, sid: str) -> None:
@@ -88,11 +87,11 @@ class Server(BaseCommands):
         :param sid: Socket session ID.
         :type sid: str
         """
-        console.info_print("DISCONNECTED", sid)
+        self._console.info_print("DISCONNECTED", sid)
         if self._client_sid == sid:
             self._client_sid = ""
         else:
-            console.error_print(f"Client {sid} disconnected without being connected.")
+            self._console.error_print(f"Client {sid} disconnected without being connected.")
 
     async def get_platform_type(self) -> str:
         pass
