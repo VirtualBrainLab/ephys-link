@@ -1,3 +1,4 @@
+from contextlib import suppress
 from uuid import uuid4
 
 from aiohttp.web import Application
@@ -17,7 +18,10 @@ from vbl_aquarium.models.ephys_link import (
 
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.util.base_commands import BaseCommands
-from ephys_link.util.common import console
+
+# Import console if available.
+with suppress(ImportError):
+    from ephys_link.util.common import console
 
 
 class Server(BaseCommands):
