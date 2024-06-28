@@ -8,6 +8,9 @@ Usage: Create a Console object and call the appropriate method to print messages
 
 from colorama import Back, Fore, Style, init
 
+# Constants.
+TAB_BLOCK = "\t\t"
+
 
 class Console:
     def __init__(self, *, enable_debug: bool) -> None:
@@ -28,7 +31,7 @@ class Console:
         :param msg: Error message to print.
         :type msg: str
         """
-        print(f"{Back.RED}{Style.BRIGHT} ERROR {Style.RESET_ALL}\t\t{Fore.RED}{msg}")
+        print(f"{Back.RED}{Style.BRIGHT} ERROR {Style.RESET_ALL}{TAB_BLOCK}{Fore.RED}{msg}")
 
     @staticmethod
     def labeled_error_print(label: str, msg: str) -> None:
@@ -39,7 +42,7 @@ class Console:
         :param msg: Error message to print.
         :type msg: str
         """
-        print(f"{Back.RED}{Style.BRIGHT} ERROR {label} {Style.RESET_ALL}\t\t{Fore.RED}{msg}")
+        print(f"{Back.RED}{Style.BRIGHT} ERROR {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.RED}{msg}")
 
     @staticmethod
     def pretty_exception(exception: Exception) -> str:
@@ -72,7 +75,7 @@ class Console:
         :type msg: str
         """
         if self._enable_debug:
-            print(f"{Back.BLUE}{Style.BRIGHT} DEBUG {label} {Style.RESET_ALL}\t\t{Fore.BLUE}{msg}")
+            print(f"{Back.BLUE}{Style.BRIGHT} DEBUG {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.BLUE}{msg}")
 
     @staticmethod
     def info_print(label: str, msg: str) -> None:
@@ -83,4 +86,4 @@ class Console:
         :param msg: Message to print.
         :type msg: str
         """
-        print(f"{Back.GREEN}{Style.BRIGHT} {label} {Style.RESET_ALL}\t\t{Fore.GREEN}{msg}")
+        print(f"{Back.GREEN}{Style.BRIGHT} {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.GREEN}{msg}")

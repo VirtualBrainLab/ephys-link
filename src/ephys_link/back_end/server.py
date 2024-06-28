@@ -1,30 +1,37 @@
+from asyncio import get_event_loop, run
 from collections.abc import Callable, Coroutine
 from json import JSONDecodeError, dumps, loads
 from typing import Any
 
 from aiohttp.web import Application
+from ephys_link.back_end.platform_handler import PlatformHandler
+from ephys_link.util.common import check_for_updates, server_preamble
+from ephys_link.util.console import Console
 from pydantic import ValidationError
 from socketio import AsyncClient, AsyncServer
 from vbl_aquarium.models.ephys_link import (
     DriveToDepthRequest,
     EphysLinkOptions,
     GotoPositionRequest,
+    InsideBrainRequest,
 )
 from vbl_aquarium.models.generic import VBLBaseModel
-
-from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.util.console import Console
 
 
 class Server:
     def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler, console: Console) -> None:
         """Initialize server fields based on options and platform handler."""
 
+        # Save fields.
+        self._options = options
+        self._platform_handler = platform_handler
+        self._console = console
+
         # Initialize based on proxy usage.
-        if options.use_proxy:
-            self._sio = AsyncClient()
+        if self._options.use_proxy:
+            self._sio: AsyncServer | AsyncClient = AsyncClient()
         else:
-            self._sio = AsyncServer()
+            self._sio: AsyncServer | AsyncClient = AsyncServer()
             self._app = Application()
             self._sio.attach(self._app)
 
@@ -32,21 +39,36 @@ class Server:
             self._sio.on("connect", self.connect)
             self._sio.on("disconnect", self.disconnect)
 
-        # Platform handler.
-        self._platform_handler = platform_handler
-
-        # Console.
-        self._console = console
-
         # Store connected client.
         self._client_sid: str = ""
 
         # Bind events.
-        self._sio.on("*", self.platform_event_handler)
+        self._sio.on("*", self.test)
 
     # Server launch.
     def launch(self) -> None:
-        self._console.info_print("SERVER", "Starting server...")
+        # Preamble.
+        server_preamble()
+
+        # Check for updates.
+        check_for_updates()
+
+        # List platform and available manipulators.
+        self._console.info_print("PLATFORM", self._platform_handler.get_platform_type())
+        self._console.info_print(
+            "MANIPULATORS",
+            str(get_event_loop().run_until_complete(self._platform_handler.get_manipulators()).manipulators),
+        )
+
+        # Launch server
+        if self._options.use_proxy:
+            self._console.info_print("PINPOINT ID", self._platform_handler.get_pinpoint_id().pinpoint_id)
+
+            async def connect_proxy() -> None:
+                await self._sio.connect(f"http://{self._options.proxy_address}:{self._options.port}")
+                await self._sio.wait()
+
+            run(connect_proxy())
 
     # Helper functions.
     def _malformed_request_response(self, request: str, data: str) -> str:
@@ -55,7 +77,7 @@ class Server:
         return dumps({"error": "Malformed request."})
 
     async def _run_if_data_available(
-        self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: str
+            self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: str
     ) -> str:
         """Run a function if data is available."""
         if data:
@@ -63,11 +85,11 @@ class Server:
         return self._malformed_request_response(event, data)
 
     async def _run_if_data_parses(
-        self,
-        function: Callable[[VBLBaseModel], Coroutine[Any, Any, VBLBaseModel]],
-        data_type: type[VBLBaseModel],
-        event: str,
-        data: str,
+            self,
+            function: Callable[[VBLBaseModel], Coroutine[Any, Any, VBLBaseModel]],
+            data_type: type[VBLBaseModel],
+            event: str,
+            data: str,
     ) -> str:
         """Run a function if data parses."""
         if data:
@@ -116,6 +138,10 @@ class Server:
         else:
             self._console.error_print(f"Client {sid} disconnected without being connected.")
 
+    async def test(self, event) -> str:
+        print(event)
+        return self._platform_handler.get_pinpoint_id().to_string()
+
     async def platform_event_handler(self, event: str, sid: str, data: str) -> str:
         """Handle events from the server
 
@@ -141,11 +167,11 @@ class Server:
         match event:
             # Server metadata.
             case "get_version":
-                return await self._platform_handler.get_version()
+                return self._platform_handler.get_version()
             case "get_pinpoint_id":
-                return (await self._platform_handler.get_pinpoint_id()).to_string()
+                return self._platform_handler.get_pinpoint_id().to_string()
             case "get_platform_type":
-                return await self._platform_handler.get_platform_type()
+                return self._platform_handler.get_platform_type()
 
             # Manipulator commands.
             case "get_manipulators":
@@ -164,5 +190,12 @@ class Server:
                 return await self._run_if_data_parses(
                     self._platform_handler.set_depth, DriveToDepthRequest, event, data
                 )
-
-        return "OK"
+            case "set_inside_brain":
+                return await self._run_if_data_parses(
+                    self._platform_handler.set_inside_brain, InsideBrainRequest, event, data
+                )
+            case "stop":
+                return await self._platform_handler.stop()
+            case _:
+                self._console.error_print(f"Unknown event: {event}.")
+                return dumps({"error": "Unknown event."})

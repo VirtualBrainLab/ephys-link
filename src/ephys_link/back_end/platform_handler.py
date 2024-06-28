@@ -63,7 +63,7 @@ class PlatformHandler:
     # Ephys Link metadata.
 
     @staticmethod
-    async def get_version() -> str:
+    def get_version() -> str:
         """Get Ephys Link's version.
 
         :returns: Ephys Link's version.
@@ -71,7 +71,7 @@ class PlatformHandler:
         """
         return __version__
 
-    async def get_pinpoint_id(self) -> PinpointIdResponse:
+    def get_pinpoint_id(self) -> PinpointIdResponse:
         """Get the Pinpoint ID for proxy usage.
 
         :returns: Pinpoint ID response.
@@ -79,7 +79,7 @@ class PlatformHandler:
         """
         return PinpointIdResponse(pinpoint_id=self._pinpoint_id, is_requester=False)
 
-    async def get_platform_type(self) -> str:
+    def get_platform_type(self) -> str:
         """Get the manipulator platform type connected to Ephys Link.
 
         :returns: Platform type config identifier (see CLI options for examples).
