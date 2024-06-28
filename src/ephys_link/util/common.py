@@ -20,7 +20,7 @@ ASCII = r"""
 """
 
 # Absolute path to the resource folder.
-RESOURCES_PATH = join(str(Path(__file__).parent.absolute()), "resources")
+RESOURCES_PATH = join(str(Path(__file__).parent.parent.absolute()), "resources")
 
 # Console instance.
 console: Console
