@@ -8,6 +8,7 @@ Usage: Instantiate PlatformHandler with the platform type and call the desired c
 """
 
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from vbl_aquarium.models.ephys_link import (
     AngularResponse,
@@ -20,10 +21,11 @@ from vbl_aquarium.models.ephys_link import (
     PositionalResponse,
     ShankCountResponse,
 )
+from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.models.unity import Vector4
 
+from ephys_link.__about__ import __version__
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
-from ephys_link.util.base_commands import BaseCommands
 from ephys_link.util.common import vector4_to_array
 from ephys_link.util.console import Console
 
@@ -31,7 +33,7 @@ if TYPE_CHECKING:
     from ephys_link.util.base_bindings import BaseBindings
 
 
-class PlatformHandler(BaseCommands):
+class PlatformHandler:
     """Handler for platform commands."""
 
     def __init__(self, platform_type: str, console: Console) -> None:
@@ -55,10 +57,44 @@ class PlatformHandler(BaseCommands):
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
 
+        # Generate a Pinpoint ID for proxy usage.
+        self._pinpoint_id = str(uuid4())[:8]
+
+    # Ephys Link metadata.
+
+    @staticmethod
+    async def get_version() -> str:
+        """Get Ephys Link's version.
+
+        :returns: Ephys Link's version.
+        :rtype: str
+        """
+        return __version__
+
+    async def get_pinpoint_id(self) -> PinpointIdResponse:
+        """Get the Pinpoint ID for proxy usage.
+
+        :returns: Pinpoint ID response.
+        :rtype: :class:`vbl_aquarium.models.ephys_link.PinpointIDResponse`
+        """
+        return PinpointIdResponse(pinpoint_id=self._pinpoint_id, is_requester=False)
+
     async def get_platform_type(self) -> str:
+        """Get the manipulator platform type connected to Ephys Link.
+
+        :returns: Platform type config identifier (see CLI options for examples).
+        :rtype: str
+        """
         return self._platform_type
 
+    # Manipulator commands.
+
     async def get_manipulators(self) -> GetManipulatorsResponse:
+        """Get a list of available manipulators on the current handler.
+
+        :returns: List of manipulator IDs, number of axes, dimensions of manipulators (mm), and an error message if any.
+        :rtype: :class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse`
+        """
         try:
             manipulators = await self._bindings.get_manipulators()
             num_axes = await self._bindings.get_num_axes()
@@ -74,6 +110,13 @@ class PlatformHandler(BaseCommands):
             )
 
     async def get_position(self, manipulator_id: str) -> PositionalResponse:
+        """Get the current translation position of a manipulator in unified coordinates (mm).
+
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :returns: Current position of the manipulator and an error message if any.
+        :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
+        """
         try:
             unified_position = await self._bindings.platform_space_to_unified_space(
                 await self._bindings.get_position(manipulator_id)
@@ -85,6 +128,13 @@ class PlatformHandler(BaseCommands):
             return PositionalResponse(position=unified_position)
 
     async def get_angles(self, manipulator_id: str) -> AngularResponse:
+        """Get the current rotation angles of a manipulator in Yaw, Pitch, Roll (degrees).
+
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :returns: Current angles of the manipulator and an error message if any.
+        :rtype: :class:`vbl_aquarium.models.ephys_link.AngularResponse`
+        """
         try:
             angles = await self._bindings.get_angles(manipulator_id)
         except Exception as e:
@@ -94,6 +144,13 @@ class PlatformHandler(BaseCommands):
             return AngularResponse(angles=angles)
 
     async def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
+        """Get the number of shanks on a manipulator.
+
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :returns: Number of shanks on the manipulator and an error message if any.
+        :rtype: :class:`vbl_aquarium.models.ephys_link.ShankCountResponse`
+        """
         try:
             shank_count = await self._bindings.get_shank_count(manipulator_id)
         except Exception as e:
@@ -103,6 +160,13 @@ class PlatformHandler(BaseCommands):
             return ShankCountResponse(shank_count=shank_count)
 
     async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
+        """Move a manipulator to a specified translation position in unified coordinates (mm).
+
+        :param request: Request to move a manipulator to a specified position.
+        :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
+        :returns: Final position of the manipulator and an error message if any.
+        :rtype: :class:`vbl_aquarium.models.ephys_link.Position`
+        """
         try:
             # Disallow setting manipulator position while inside the brain.
             if request.manipulator_id in self._inside_brain:
@@ -139,6 +203,13 @@ class PlatformHandler(BaseCommands):
             return PositionalResponse(position=final_unified_position)
 
     async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
+        """Move a manipulator's depth translation stage to a specific value (mm).
+
+        :param request: Request to move a manipulator to a specified depth.
+        :type request: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest`
+        :returns: Final depth of the manipulator and an error message if any.
+        :rtype: :class:`vbl_aquarium.models.ephys_link.DriveToDepthResponse`
+        """
         try:
             # Create a position based on the new depth.
             current_platform_position = await self._bindings.get_position(request.manipulator_id)
@@ -160,6 +231,15 @@ class PlatformHandler(BaseCommands):
             return DriveToDepthResponse(depth=final_unified_position.w)
 
     async def set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
+        """Mark a manipulator as inside the brain or not.
+
+        This should restrict the manipulator's movement to just the depth axis.
+
+        :param request: Request to set a manipulator's inside brain state.
+        :type request: :class:`vbl_aquarium.models.ephys_link.InsideBrainRequest`
+        :returns: Inside brain state of the manipulator and an error message if any.
+        :rtype: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
+        """
         try:
             if request.inside:
                 self._inside_brain.add(request.manipulator_id)
@@ -172,6 +252,11 @@ class PlatformHandler(BaseCommands):
             return BooleanStateResponse(state=request.inside)
 
     async def stop(self) -> str:
+        """Stop all manipulators.
+
+        :returns: Error message if any.
+        :rtype: str
+        """
         try:
             await self._bindings.stop()
         except Exception as e:

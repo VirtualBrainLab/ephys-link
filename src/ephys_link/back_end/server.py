@@ -1,33 +1,22 @@
-from uuid import uuid4
+from json import dumps
 
 from aiohttp.web import Application
 from socketio import AsyncClient, AsyncServer
 from vbl_aquarium.models.ephys_link import (
-    AngularResponse,
-    BooleanStateResponse,
-    DriveToDepthRequest,
-    DriveToDepthResponse,
     EphysLinkOptions,
-    GetManipulatorsResponse,
-    GotoPositionRequest,
-    InsideBrainRequest,
-    PositionalResponse,
-    ShankCountResponse,
 )
 
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.util.base_commands import BaseCommands
 from ephys_link.util.console import Console
 
 
-class Server(BaseCommands):
+class Server:
     def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler, console: Console) -> None:
         """Initialize server fields based on options and platform handler."""
 
         # Initialize based on proxy usage.
         if options.use_proxy:
             self._sio = AsyncClient()
-            self._pinpoint_id = str(uuid4())[:8]
         else:
             self._sio = AsyncServer()
             self._app = Application()
@@ -47,19 +36,17 @@ class Server(BaseCommands):
         self._client_sid: str = ""
 
         # Bind events.
-        self._sio.on("get_platform_type", self.get_platform_type)
-        self._sio.on("get_manipulators", self.get_manipulators)
-        self._sio.on("get_position", self.get_position)
-        self._sio.on("get_angles", self.get_angles)
-        self._sio.on("get_shank_count", self.get_shank_count)
-        self._sio.on("set_position", self.set_position)
-        self._sio.on("set_depth", self.set_depth)
-        self._sio.on("set_inside_brain", self.set_inside_brain)
-        self._sio.on("stop", self.stop)
+        self._sio.on("*", self.platform_event_handler)
 
     # Server launch.
     def launch(self) -> None:
         self._console.info_print("SERVER", "Starting server...")
+
+    # Helper functions.
+    def _malformed_request_response(self, request: str, data: str) -> str:
+        """Return a response for a malformed request."""
+        self._console.labeled_error_print("MALFORMED REQUEST", f"{request}: {data}")
+        return dumps({"error": "Malformed request."})
 
     # Event Handlers.
 
@@ -88,34 +75,50 @@ class Server(BaseCommands):
         :type sid: str
         """
         self._console.info_print("DISCONNECTED", sid)
+
+        # Reset client SID if it matches.
         if self._client_sid == sid:
             self._client_sid = ""
         else:
             self._console.error_print(f"Client {sid} disconnected without being connected.")
 
-    async def get_platform_type(self) -> str:
-        pass
+    async def platform_event_handler(self, event: str, sid: str, data: str) -> str:
+        """Handle events from the server
 
-    async def get_manipulators(self) -> GetManipulatorsResponse:
-        pass
+        :param event: Event name.
+        :type event: str
+        :param sid: Socket session ID.
+        :type sid: str
+        :param data: Event data.
+        :type data: str
+        :returns: Response data.
+        :rtype: str
+        """
 
-    async def get_position(self, manipulator_id: str) -> PositionalResponse:
-        pass
+        # Ignore events from SID's that don't match the client.
+        if sid != self._client_sid:
+            self._console.error_print(f"Event from unauthorized client {sid}.")
+            return "ERROR"
 
-    async def get_angles(self, manipulator_id: str) -> AngularResponse:
-        pass
+        # Log event.
+        self._console.debug_print("EVENT", event)
 
-    async def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
-        pass
+        # Handle event.
+        match event:
+            # Server metadata.
+            case "get_version":
+                return await self.platform_handler.get_version()
+            case "get_pinpoint_id":
+                return (await self.platform_handler.get_pinpoint_id()).to_string()
+            case "get_platform_type":
+                return await self.platform_handler.get_platform_type()
 
-    async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
-        pass
+            # Manipulator commands.
+            case "get_manipulators":
+                return (await self.platform_handler.get_manipulators()).to_string()
+            case "get_position":
+                if data:
+                    return (await self.platform_handler.get_position(data)).to_string()
+                return self._malformed_request_response(event, data)
 
-    async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
-        pass
-
-    async def set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
-        pass
-
-    async def stop(self) -> str:
-        pass
+        return "OK"
