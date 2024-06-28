@@ -7,6 +7,8 @@ Usage: call main() to start.
 
 from sys import argv
 
+from ephys_link.back_end.platform_handler import PlatformHandler
+from ephys_link.back_end.server import Server
 from ephys_link.front_end.cli import CLI
 from ephys_link.front_end.gui import GUI
 from ephys_link.util import common
@@ -30,11 +32,13 @@ def main() -> None:
     common.console = Console(enable_debug=options.debug)
 
     # 3. Instantiate the Platform Handler with the appropriate platform bindings.
-    # platform_handler = PlatformHandler(options.type)
+    platform_handler = PlatformHandler(options.type)
 
     # 4. Instantiate the Emergency Stop service.
 
     # 5. Start the server.
+    server = Server(options, platform_handler)
+    server.launch()
 
 
 if __name__ == "__main__":
