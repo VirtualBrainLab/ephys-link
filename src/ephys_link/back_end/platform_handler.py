@@ -186,10 +186,10 @@ class PlatformHandler:
             # Move to the new position.
             final_platform_position = await self._bindings.set_position(
                 manipulator_id=request.manipulator_id,
-                position=await self._bindings.unified_space_to_platform_space(request.position),
+                position=self._bindings.unified_space_to_platform_space(request.position),
                 speed=request.speed,
             )
-            final_unified_position = await self._bindings.platform_space_to_unified_space(final_platform_position)
+            final_unified_position = self._bindings.platform_space_to_unified_space(final_platform_position)
 
             # Return error if movement did not reach target within tolerance.
             for index, axis in enumerate(vector4_to_array(final_unified_position - request.position)):
@@ -201,7 +201,8 @@ class PlatformHandler:
                 if abs(axis) > await self._bindings.get_movement_tolerance():
                     error_message = (
                         f"Manipulator {request.manipulator_id} did not reach target"
-                        f" position on axis {list(Vector4.model_fields.keys())[index]}"
+                        f" position on axis {list(Vector4.model_fields.keys())[index]}."
+                        f"Requested: {request.position}, got: {final_unified_position}."
                     )
                     self._console.error_print(error_message)
                     return PositionalResponse(error=error_message)
@@ -211,6 +212,7 @@ class PlatformHandler:
         else:
             return PositionalResponse(position=final_unified_position)
 
+    # noinspection PyArgumentList
     async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         """Move a manipulator's depth translation stage to a specific value (mm).
 

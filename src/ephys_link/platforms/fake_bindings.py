@@ -47,8 +47,8 @@ class FakeBindings(BaseBindings):
     async def stop(self) -> None:
         pass
 
-    async def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
+    def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
         pass
 
-    async def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
+    def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
         pass

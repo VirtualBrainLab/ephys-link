@@ -9,7 +9,7 @@ from sensapex import UMP, SensapexDevice
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.util.base_bindings import BaseBindings
-from ephys_link.util.common import RESOURCES_PATH, array_to_vector4, mm_to_um, mmps_to_umps
+from ephys_link.util.common import RESOURCES_PATH, array_to_vector4, mm_to_um, mmps_to_umps, vector4_to_array, um_to_mm
 from ephys_link.util.console import Console
 
 
@@ -33,7 +33,7 @@ class Ump4Bindings(BaseBindings):
     async def get_num_axes(self) -> int:
         return 4
 
-    async def get_dimensions(self) -> Vector4:
+    def get_dimensions(self) -> Vector4:
         return Vector4(x=20, y=20, z=20, w=20)
 
     async def get_position(self, manipulator_id: str) -> Vector4:
@@ -79,7 +79,7 @@ class Ump4Bindings(BaseBindings):
         target_position_um = mm_to_um(position)
 
         # Request movement.
-        movement = self._get_device(manipulator_id).goto_pos(target_position_um, mmps_to_umps(speed))
+        movement = self._get_device(manipulator_id).goto_pos(vector4_to_array(target_position_um), mmps_to_umps(speed))
 
         # Wait for movement to finish.
         await get_running_loop().run_in_executor(None, movement.finished_event.wait)
@@ -89,13 +89,13 @@ class Ump4Bindings(BaseBindings):
             error_message = f"Manipulator {manipulator_id} interrupted: {movement.interrupt_reason}"
             raise RuntimeError(error_message)
 
-        return array_to_vector4(movement.final_pos)
+        return um_to_mm(array_to_vector4(movement.last_pos))
 
     async def stop(self) -> None:
         for device_ids in await self.get_manipulators():
             self._get_device(device_ids).stop()
 
-    async def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
+    def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
         # unified   <-  platform
         # +x        <-  +y
         # +y        <-  -z
@@ -104,12 +104,12 @@ class Ump4Bindings(BaseBindings):
 
         return Vector4(
             x=platform_space.y,
-            y=(await self.get_dimensions()).z - platform_space.z,
+            y=self.get_dimensions().z - platform_space.z,
             z=platform_space.x,
             w=platform_space.w,
         )
 
-    async def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
+    def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
         # platform  <-  unified
         # +x        <-  +z
         # +y        <-  +x
@@ -119,7 +119,7 @@ class Ump4Bindings(BaseBindings):
         return Vector4(
             x=unified_space.z,
             y=unified_space.x,
-            z=(await self.get_dimensions()).z - unified_space.y,
+            z=self.get_dimensions().z - unified_space.y,
             w=unified_space.w,
         )
 

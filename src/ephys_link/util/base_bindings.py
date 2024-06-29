@@ -33,7 +33,7 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def get_dimensions(self) -> Vector4:
+    def get_dimensions(self) -> Vector4:
         """Get the dimensions of the manipulators on the current platform (mm).
 
         For 3-axis manipulators, copy the dimension of the axis parallel to the probe into w.
@@ -106,7 +106,7 @@ class BaseBindings(ABC):
         """Stop all manipulators."""
 
     @abstractmethod
-    async def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
+    def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
         """Convert platform space coordinates to unified space coordinates.
 
         This is an axes-swapping transformation.
@@ -121,7 +121,7 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
+    def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
         """Convert unified space coordinates to platform space coordinates.
 
         This is an axes-swapping transformation.

@@ -6,6 +6,8 @@ Configure the console to print error and debug messages.
 Usage: Create a Console object and call the appropriate method to print messages.
 """
 
+from traceback import print_exc
+
 from colorama import Back, Fore, Style, init
 
 # Constants.
@@ -65,6 +67,7 @@ class Console:
         :type exception: Exception
         """
         Console.labeled_error_print(label, Console.pretty_exception(exception))
+        print_exc()
 
     def debug_print(self, label: str, msg: str) -> None:
         """Print a debug message to the console.
