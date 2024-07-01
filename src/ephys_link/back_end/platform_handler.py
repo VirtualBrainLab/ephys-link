@@ -7,7 +7,6 @@ Instantiates the appropriate bindings based on the platform type and uses them t
 Usage: Instantiate PlatformHandler with the platform type and call the desired command.
 """
 
-from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from vbl_aquarium.models.ephys_link import (
@@ -27,11 +26,9 @@ from vbl_aquarium.models.unity import Vector4
 from ephys_link.__about__ import __version__
 from ephys_link.platforms.fake_bindings import FakeBindings
 from ephys_link.platforms.ump_4_bindings import Ump4Bindings
+from ephys_link.util.base_bindings import BaseBindings
 from ephys_link.util.common import vector4_to_array
 from ephys_link.util.console import Console
-
-if TYPE_CHECKING:
-    from ephys_link.util.base_bindings import BaseBindings
 
 
 class PlatformHandler:
@@ -51,22 +48,31 @@ class PlatformHandler:
         self._console = console
 
         # Define bindings based on platform type.
-        self._bindings: BaseBindings
-        match platform_type:
-            case "ump-4":
-                self._bindings = Ump4Bindings()
-            case "fake":
-                self._bindings = FakeBindings()
-            case _:
-                error_message = f'Platform type "{platform_type}" not recognized.'
-                self._console.labeled_error_print("PLATFORM", error_message)
-                raise ValueError(error_message)
+        self._bindings = self._match_platform_type(platform_type)
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
 
         # Generate a Pinpoint ID for proxy usage.
         self._pinpoint_id = str(uuid4())[:8]
+
+    def _match_platform_type(self, platform_type: str) -> BaseBindings:
+        """Match the platform type to the appropriate bindings.
+
+        :param platform_type: Platform type.
+        :type platform_type: str
+        :returns: Bindings for the specified platform type.
+        :rtype: :class:`ephys_link.util.base_bindings.BaseBindings`
+        """
+        match platform_type:
+            case "ump-4":
+                return Ump4Bindings()
+            case "fake":
+                return FakeBindings()
+            case _:
+                error_message = f'Platform type "{platform_type}" not recognized.'
+                self._console.labeled_error_print("PLATFORM", error_message)
+                raise ValueError(error_message)
 
     # Ephys Link metadata.
 
@@ -167,7 +173,6 @@ class PlatformHandler:
         else:
             return ShankCountResponse(shank_count=shank_count)
 
-    # noinspection PyArgumentList
     async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
         """Move a manipulator to a specified translation position in unified coordinates (mm).
 
@@ -212,7 +217,6 @@ class PlatformHandler:
         else:
             return PositionalResponse(position=final_unified_position)
 
-    # noinspection PyArgumentList
     async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
         """Move a manipulator's depth translation stage to a specific value (mm).
 

@@ -9,7 +9,7 @@ from sensapex import UMP, SensapexDevice
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.util.base_bindings import BaseBindings
-from ephys_link.util.common import RESOURCES_PATH, array_to_vector4, mm_to_um, mmps_to_umps, vector4_to_array, um_to_mm
+from ephys_link.util.common import RESOURCES_PATH, array_to_vector4, mm_to_um, mmps_to_umps, um_to_mm, vector4_to_array
 from ephys_link.util.console import Console
 
 
