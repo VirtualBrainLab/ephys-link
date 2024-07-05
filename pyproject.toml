@@ -31,6 +31,7 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp==3.9.5",
+    "colorama==0.4.6",
     "platformdirs==4.2.2",
     "pyserial==3.5",
     "python-socketio[asyncio_client]==5.11.3",
