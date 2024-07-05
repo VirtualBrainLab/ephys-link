@@ -12,12 +12,12 @@ from uuid import uuid4
 from vbl_aquarium.models.ephys_link import (
     AngularResponse,
     BooleanStateResponse,
-    DriveToDepthRequest,
-    DriveToDepthResponse,
     GetManipulatorsResponse,
-    GotoPositionRequest,
-    InsideBrainRequest,
     PositionalResponse,
+    SetDepthRequest,
+    SetDepthResponse,
+    SetInsideBrainRequest,
+    SetPositionRequest,
     ShankCountResponse,
 )
 from vbl_aquarium.models.proxy import PinpointIdResponse
@@ -173,7 +173,7 @@ class PlatformHandler:
         else:
             return ShankCountResponse(shank_count=shank_count)
 
-    async def set_position(self, request: GotoPositionRequest) -> PositionalResponse:
+    async def set_position(self, request: SetPositionRequest) -> PositionalResponse:
         """Move a manipulator to a specified translation position in unified coordinates (mm).
 
         :param request: Request to move a manipulator to a specified position.
@@ -217,7 +217,7 @@ class PlatformHandler:
         else:
             return PositionalResponse(position=final_unified_position)
 
-    async def set_depth(self, request: DriveToDepthRequest) -> DriveToDepthResponse:
+    async def set_depth(self, request: SetDepthRequest) -> SetDepthResponse:
         """Move a manipulator's depth translation stage to a specific value (mm).
 
         :param request: Request to move a manipulator to a specified depth.
@@ -241,11 +241,11 @@ class PlatformHandler:
             final_unified_position = self._bindings.platform_space_to_unified_space(final_platform_position)
         except Exception as e:
             self._console.exception_error_print("Set Depth", e)
-            return DriveToDepthResponse(error=self._console.pretty_exception(e))
+            return SetDepthResponse(error=self._console.pretty_exception(e))
         else:
-            return DriveToDepthResponse(depth=final_unified_position.w)
+            return SetDepthResponse(depth=final_unified_position.w)
 
-    async def set_inside_brain(self, request: InsideBrainRequest) -> BooleanStateResponse:
+    async def set_inside_brain(self, request: SetInsideBrainRequest) -> BooleanStateResponse:
         """Mark a manipulator as inside the brain or not.
 
         This should restrict the manipulator's movement to just the depth axis.
