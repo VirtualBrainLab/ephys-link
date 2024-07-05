@@ -112,7 +112,7 @@ class PlatformHandler:
         try:
             manipulators = await self._bindings.get_manipulators()
             num_axes = await self._bindings.get_num_axes()
-            dimensions = await self._bindings.get_dimensions()
+            dimensions = self._bindings.get_dimensions()
         except Exception as e:
             self._console.exception_error_print("Get Manipulators", e)
             return GetManipulatorsResponse(error=self._console.pretty_exception(e))
@@ -132,7 +132,7 @@ class PlatformHandler:
         :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
         """
         try:
-            unified_position = await self._bindings.platform_space_to_unified_space(
+            unified_position = self._bindings.platform_space_to_unified_space(
                 await self._bindings.get_position(manipulator_id)
             )
         except Exception as e:
@@ -228,9 +228,9 @@ class PlatformHandler:
         try:
             # Create a position based on the new depth.
             current_platform_position = await self._bindings.get_position(request.manipulator_id)
-            current_unified_position = await self._bindings.platform_space_to_unified_space(current_platform_position)
+            current_unified_position = self._bindings.platform_space_to_unified_space(current_platform_position)
             target_unified_position = current_unified_position.model_copy(update={"w": request.depth})
-            target_platform_position = await self._bindings.unified_space_to_platform_space(target_unified_position)
+            target_platform_position = self._bindings.unified_space_to_platform_space(target_unified_position)
 
             # Move to the new depth.
             final_platform_position = await self._bindings.set_position(
@@ -238,7 +238,7 @@ class PlatformHandler:
                 position=target_platform_position,
                 speed=request.speed,
             )
-            final_unified_position = await self._bindings.platform_space_to_unified_space(final_platform_position)
+            final_unified_position = self._bindings.platform_space_to_unified_space(final_platform_position)
         except Exception as e:
             self._console.exception_error_print("Set Depth", e)
             return DriveToDepthResponse(error=self._console.pretty_exception(e))

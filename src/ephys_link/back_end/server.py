@@ -15,7 +15,7 @@ from vbl_aquarium.models.ephys_link import (
 from vbl_aquarium.models.generic import VBLBaseModel
 
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.util.common import check_for_updates, server_preamble, PORT
+from ephys_link.util.common import PORT, check_for_updates, server_preamble
 from ephys_link.util.console import Console
 
 
@@ -82,9 +82,10 @@ class Server:
         self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: tuple[tuple[Any], ...]
     ) -> str:
         """Run a function if data is available."""
-        if data:
-            return str((await function(str(data[0]))).to_string())
-        return self._malformed_request_response(event, data)
+        request_data = data[1]
+        if request_data:
+            return str((await function(str(request_data))).to_string())
+        return self._malformed_request_response(event, request_data)
 
     async def _run_if_data_parses(
         self,
@@ -94,25 +95,28 @@ class Server:
         data: tuple[tuple[Any], ...],
     ) -> str:
         """Run a function if data parses."""
-        if data:
+        request_data = data[1]
+        if request_data:
             try:
-                parsed_data = data_type(**loads(str(data[0])))
+                parsed_data = data_type(**loads(str(request_data)))
             except JSONDecodeError:
-                return self._malformed_request_response(event, data)
+                return self._malformed_request_response(event, request_data)
             except ValidationError as e:
                 self._console.exception_error_print(event, e)
-                return self._malformed_request_response(event, data)
+                return self._malformed_request_response(event, request_data)
             else:
                 return str((await function(parsed_data)).to_string())
-        return self._malformed_request_response(event, data)
+        return self._malformed_request_response(event, request_data)
 
     # Event Handlers.
 
-    async def connect(self, sid: str) -> bool:
+    async def connect(self, sid: str, _: str) -> bool:
         """Handle connections to the server
 
         :param sid: Socket session ID.
         :type sid: str
+        :param _: Extra connection data (unused).
+        :type _: str
         :returns: False on error to refuse connection, True otherwise.
         :rtype: bool
         """
@@ -152,8 +156,9 @@ class Server:
         :rtype: str
         """
 
-        # Log event.
-        self._console.debug_print("EVENT", event)
+        # Log event (except for get_position since it's very common).
+        if event != "get_position":
+            self._console.debug_print("EVENT", event)
 
         # Handle event.
         match event:
