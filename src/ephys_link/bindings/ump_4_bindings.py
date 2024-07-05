@@ -37,7 +37,7 @@ class Ump4Bindings(BaseBindings):
         return Vector4(x=20, y=20, z=20, w=20)
 
     async def get_position(self, manipulator_id: str) -> Vector4:
-        return array_to_vector4(self._get_device(manipulator_id).get_pos(1))
+        return um_to_mm(array_to_vector4(self._get_device(manipulator_id).get_pos(1)))
 
     # noinspection PyTypeChecker
     async def get_angles(self, _: str) -> Vector3:

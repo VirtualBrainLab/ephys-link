@@ -24,8 +24,8 @@ from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
-from ephys_link.platforms.fake_bindings import FakeBindings
-from ephys_link.platforms.ump_4_bindings import Ump4Bindings
+from ephys_link.bindings.fake_bindings import FakeBindings
+from ephys_link.bindings.ump_4_bindings import Ump4Bindings
 from ephys_link.util.base_bindings import BaseBindings
 from ephys_link.util.common import vector4_to_array
 from ephys_link.util.console import Console
@@ -184,7 +184,7 @@ class PlatformHandler:
         try:
             # Disallow setting manipulator position while inside the brain.
             if request.manipulator_id in self._inside_brain:
-                error_message = 'Can not move manipulator while inside the brain. Set depth ("set_depth") instead.'
+                error_message = 'Can not move manipulator while inside the brain. Set the depth ("set_depth") instead.'
                 self._console.error_print(error_message)
                 return PositionalResponse(error=error_message)
 

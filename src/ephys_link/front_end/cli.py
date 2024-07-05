@@ -51,7 +51,7 @@ class CLI:
             help="Enable debug mode.",
         )
         self._parser.add_argument(
-            "-x",
+            "-p",
             "--use-proxy",
             dest="use_proxy",
             action="store_true",

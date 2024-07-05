@@ -46,7 +46,7 @@ class BaseBindings(ABC):
     async def get_position(self, manipulator_id: str) -> Vector4:
         """Get the current position of a manipulator.
 
-        These will be the raw values from the manipulator (mm), so they may need to be converted to unified space.
+        These will be the translation values of the manipulator (mm), so they may need to be rotated to unified space.
         For 3-axis manipulators, copy the position of the axis parallel to the probe into w.
 
         :param manipulator_id: Manipulator ID.
