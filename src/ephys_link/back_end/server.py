@@ -7,10 +7,10 @@ from aiohttp.web import Application, run_app
 from pydantic import ValidationError
 from socketio import AsyncClient, AsyncServer
 from vbl_aquarium.models.ephys_link import (
-    DriveToDepthRequest,
     EphysLinkOptions,
-    GotoPositionRequest,
-    InsideBrainRequest,
+    SetDepthRequest,
+    SetInsideBrainRequest,
+    SetPositionRequest,
 )
 from vbl_aquarium.models.generic import VBLBaseModel
 
@@ -84,7 +84,7 @@ class Server:
         """Run a function if data is available."""
         request_data = data[1]
         if request_data:
-            return str((await function(str(request_data))).to_string())
+            return str((await function(str(request_data))).to_json_string())
         return self._malformed_request_response(event, request_data)
 
     async def _run_if_data_parses(
@@ -105,7 +105,7 @@ class Server:
                 self._console.exception_error_print(event, e)
                 return self._malformed_request_response(event, request_data)
             else:
-                return str((await function(parsed_data)).to_string())
+                return str((await function(parsed_data)).to_json_string())
         return self._malformed_request_response(event, request_data)
 
     # Event Handlers.
@@ -165,13 +165,13 @@ class Server:
             case "get_version":
                 return self._platform_handler.get_version()
             case "get_pinpoint_id":
-                return str(self._platform_handler.get_pinpoint_id().to_string())
+                return str(self._platform_handler.get_pinpoint_id().to_json_string())
             case "get_platform_type":
                 return self._platform_handler.get_platform_type()
 
             # Manipulator commands.
             case "get_manipulators":
-                return str((await self._platform_handler.get_manipulators()).to_string())
+                return str((await self._platform_handler.get_manipulators()).to_json_string())
             case "get_position":
                 return await self._run_if_data_available(self._platform_handler.get_position, event, args)
             case "get_angles":
@@ -180,15 +180,13 @@ class Server:
                 return await self._run_if_data_available(self._platform_handler.get_shank_count, event, args)
             case "set_position":
                 return await self._run_if_data_parses(
-                    self._platform_handler.set_position, GotoPositionRequest, event, args
+                    self._platform_handler.set_position, SetPositionRequest, event, args
                 )
             case "set_depth":
-                return await self._run_if_data_parses(
-                    self._platform_handler.set_depth, DriveToDepthRequest, event, args
-                )
+                return await self._run_if_data_parses(self._platform_handler.set_depth, SetDepthRequest, event, args)
             case "set_inside_brain":
                 return await self._run_if_data_parses(
-                    self._platform_handler.set_inside_brain, InsideBrainRequest, event, args
+                    self._platform_handler.set_inside_brain, SetInsideBrainRequest, event, args
                 )
             case "stop":
                 return await self._platform_handler.stop()
