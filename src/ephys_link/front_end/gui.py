@@ -129,6 +129,15 @@ class GUI:
             variable=self._ignore_updates,
         ).grid(column=1, row=4, sticky="we")
 
+        # Debug mode.
+        ttk.Label(server_serving_settings, text="Debug mode:", anchor=E, justify=RIGHT).grid(
+            column=0, row=5, sticky="we"
+        )
+        ttk.Checkbutton(
+            server_serving_settings,
+            variable=self._debug,
+        ).grid(column=1, row=5, sticky="we")
+
         # ---
 
         # Platform type.
