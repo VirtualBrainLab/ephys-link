@@ -1,6 +1,7 @@
 from socketio import SimpleClient
 from vbl_aquarium.models.ephys_link import GotoPositionRequest, InsideBrainRequest, DriveToDepthRequest
 from vbl_aquarium.models.unity import Vector4
+from time import sleep
 
 with SimpleClient() as sio:
     sio.connect("http://localhost:3000")
@@ -10,10 +11,12 @@ with SimpleClient() as sio:
     target = Vector4()
     # target = Vector4(x=10, y=10, z=10, w=10)
 
-    print(sio.call(
+    sio.emit(
         "set_depth",
-        DriveToDepthRequest(manipulator_id="6", depth=10, speed=5).to_string(),
-    ))
+        DriveToDepthRequest(manipulator_id="6", depth=10, speed=3).to_string(),
+    )
+    sleep(1)
+    print(sio.call("stop"))
     # while True:
     #     print(sio.call("get_position", "6"))
     sio.disconnect()
