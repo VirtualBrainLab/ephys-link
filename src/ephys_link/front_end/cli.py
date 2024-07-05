@@ -66,14 +66,6 @@ class CLI:
             help="Proxy IP address.",
         )
         self._parser.add_argument(
-            "-p",
-            "--port",
-            type=int,
-            default=8081,
-            dest="port",
-            help="TCP/IP port to use. Default: 8081 (avoids conflict with other HTTP servers).",
-        )
-        self._parser.add_argument(
             "--mpm-port",
             type=int,
             default=8080,

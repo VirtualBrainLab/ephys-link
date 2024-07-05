@@ -26,6 +26,9 @@ ASCII = r"""
 # Absolute path to the resource folder.
 RESOURCES_PATH = join(str(Path(__file__).parent.parent.absolute()), "resources")
 
+# Ephys Link Port
+PORT = 3000
+
 
 # Server startup.
 def server_preamble() -> None:

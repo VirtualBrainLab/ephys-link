@@ -46,7 +46,6 @@ class GUI:
         self._debug = BooleanVar(value=options.debug)
         self._use_proxy = BooleanVar(value=options.use_proxy)
         self._proxy_address = StringVar(value=options.proxy_address)
-        self._port = IntVar(value=options.port)
         self._mpm_port = IntVar(value=options.mpm_port)
         self._serial = StringVar(value=options.serial)
 
@@ -71,7 +70,6 @@ class GUI:
             debug=self._debug.get(),
             use_proxy=self._use_proxy.get(),
             proxy_address=self._proxy_address.get(),
-            port=self._port.get(),
             mpm_port=self._mpm_port.get(),
             serial=self._serial.get(),
         )
@@ -120,12 +118,6 @@ class GUI:
         )
         ttk.Entry(server_serving_settings, textvariable=self._proxy_address, justify=CENTER).grid(
             column=1, row=2, sticky="we"
-        )
-
-        # Port.
-        ttk.Label(server_serving_settings, text="Port:", anchor=E, justify=RIGHT).grid(column=0, row=3, sticky="we")
-        ttk.Entry(server_serving_settings, textvariable=self._port, width=5, justify=CENTER).grid(
-            column=1, row=3, sticky="we"
         )
 
         # Ignore updates.

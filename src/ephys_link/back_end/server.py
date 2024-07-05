@@ -15,7 +15,7 @@ from vbl_aquarium.models.ephys_link import (
 from vbl_aquarium.models.generic import VBLBaseModel
 
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.util.common import check_for_updates, server_preamble
+from ephys_link.util.common import check_for_updates, server_preamble, PORT
 from ephys_link.util.console import Console
 
 
@@ -65,12 +65,12 @@ class Server:
 
             async def connect_proxy() -> None:
                 # noinspection HttpUrlsUsage
-                await self._sio.connect(f"http://{self._options.proxy_address}:{self._options.port}")
+                await self._sio.connect(f"http://{self._options.proxy_address}:{PORT}")
                 await self._sio.wait()
 
             run(connect_proxy())
         else:
-            run_app(self._app, port=self._options.port)
+            run_app(self._app, port=PORT)
 
     # Helper functions.
     def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:
