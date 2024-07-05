@@ -10,6 +10,7 @@ options = parser.parse_args()
 
 FILE_NAME = f"EphysLink-v{version}"
 
+# noinspection PyUnresolvedReferences
 a = Analysis(
     ['src\\ephys_link\\__main__.py'],
     pathex=[],
@@ -23,9 +24,11 @@ a = Analysis(
     noarchive=False,
     optimize=1,
 )
+# noinspection PyUnresolvedReferences
 pyz = PYZ(a.pure)
 
 if options.dir:
+    # noinspection PyUnresolvedReferences
     exe = EXE(
         pyz,
         a.scripts,
@@ -45,8 +48,10 @@ if options.dir:
         entitlements_file=None,
         icon='assets\\icon.ico',
     )
+    # noinspection PyUnresolvedReferences
     coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=True, upx_exclude=[], name=FILE_NAME)
 else:
+    # noinspection PyUnresolvedReferences
     exe = EXE(
         pyz,
         a.scripts,

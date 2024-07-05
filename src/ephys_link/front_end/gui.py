@@ -1,64 +1,89 @@
-from asyncio import run
-from json import dumps, load
+"""Graphical User Interface for Ephys Link.
+
+Usage: create a GUI instance and call get_options() to get the options.
+"""
+
+from json import load
 from os import makedirs
-from os.path import exists
+from os.path import exists, join
 from socket import gethostbyname, gethostname
+from sys import exit
 from tkinter import CENTER, RIGHT, BooleanVar, E, IntVar, StringVar, Tk, ttk
 
 from platformdirs import user_config_dir
+from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
-import ephys_link.common as com
 from ephys_link.__about__ import __version__ as version
-from ephys_link.emergency_stop import EmergencyStop
-from ephys_link.server import Server
 
-SETTINGS_DIR = f"{user_config_dir()}\\VBL\\Ephys Link"
-SETTINGS_FILENAME = "settings.json"
+# Define options path.
+OPTIONS_DIR = join(user_config_dir(), "VBL", "Ephys Link")
+OPTIONS_FILENAME = "options.json"
+OPTIONS_PATH = join(OPTIONS_DIR, OPTIONS_FILENAME)
 
 
 class GUI:
-    """GUI definition for Ephys Link"""
+    """Graphical User Interface for Ephys Link.
+
+    Gathers options from the user and saves them to a file.
+    """
 
     def __init__(self) -> None:
-        """Setup and construction of the Tk GUI"""
+        """Setup GUI properties."""
 
         self._root = Tk()
 
-        # Create default settings dictionary
-        settings = {
-            "ignore_updates": False,
-            "type": "sensapex",
-            "debug": False,
-            "proxy": False,
-            "proxy_address": "proxy2.virtualbrainlab.org",
-            "port": 8081,
-            "pathfinder_port": 8080,
-            "serial": "no-e-stop",
-        }
+        # Create default options.
+        options = EphysLinkOptions()
 
-        # Read settings.
-        if exists(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}"):
-            with open(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}") as settings_file:
-                settings = load(settings_file)
+        # Read options.
+        if exists(OPTIONS_PATH):
+            with open(OPTIONS_PATH) as options_file:
+                options = EphysLinkOptions(**load(options_file))
 
-        self._ignore_updates = BooleanVar(value=settings["ignore_updates"])
-        self._type = StringVar(value=settings["type"])
-        self._debug = BooleanVar(value=settings["debug"])
-        self._proxy = BooleanVar(value=settings["proxy"])
-        self._proxy_address = StringVar(value=settings["proxy_address"])
-        self._port = IntVar(value=settings["port"])
-        self._pathfinder_port = IntVar(value=settings["pathfinder_port"])
-        self._serial = StringVar(value=settings["serial"])
+        # Load options into GUI variables.
+        self._ignore_updates = BooleanVar(value=options.ignore_updates)
+        self._type = StringVar(value=options.type)
+        self._debug = BooleanVar(value=options.debug)
+        self._use_proxy = BooleanVar(value=options.use_proxy)
+        self._proxy_address = StringVar(value=options.proxy_address)
+        self._mpm_port = IntVar(value=options.mpm_port)
+        self._serial = StringVar(value=options.serial)
 
-    def launch(self) -> None:
-        """Build and launch GUI"""
+        # Submit flag.
+        self._submit = False
 
-        # Build and run GUI.
+    def get_options(self) -> EphysLinkOptions:
+        """Get options from GUI."""
+
+        # Launch GUI.
         self._build_gui()
         self._root.mainloop()
 
-    def _build_gui(self):
-        """Build GUI"""
+        # Exit if the user did not submit options.
+        if not self._submit:
+            exit(1)
+
+        # Extract options from GUI.
+        options = EphysLinkOptions(
+            ignore_updates=self._ignore_updates.get(),
+            type=self._type.get(),
+            debug=self._debug.get(),
+            use_proxy=self._use_proxy.get(),
+            proxy_address=self._proxy_address.get(),
+            mpm_port=self._mpm_port.get(),
+            serial=self._serial.get(),
+        )
+
+        # Save options.
+        makedirs(OPTIONS_DIR, exist_ok=True)
+        with open(OPTIONS_PATH, "w+") as options_file:
+            options_file.write(options.model_dump_json())
+
+        # Return options
+        return options
+
+    def _build_gui(self) -> None:
+        """Build GUI."""
 
         self._root.title(f"Ephys Link v{version}")
 
@@ -84,7 +109,7 @@ class GUI:
         )
         ttk.Checkbutton(
             server_serving_settings,
-            variable=self._proxy,
+            variable=self._use_proxy,
         ).grid(column=1, row=1, sticky="we")
 
         # Proxy address.
@@ -93,12 +118,6 @@ class GUI:
         )
         ttk.Entry(server_serving_settings, textvariable=self._proxy_address, justify=CENTER).grid(
             column=1, row=2, sticky="we"
-        )
-
-        # Port.
-        ttk.Label(server_serving_settings, text="Port:", anchor=E, justify=RIGHT).grid(column=0, row=3, sticky="we")
-        ttk.Entry(server_serving_settings, textvariable=self._port, width=5, justify=CENTER).grid(
-            column=1, row=3, sticky="we"
         )
 
         # Ignore updates.
@@ -110,6 +129,15 @@ class GUI:
             variable=self._ignore_updates,
         ).grid(column=1, row=4, sticky="we")
 
+        # Debug mode.
+        ttk.Label(server_serving_settings, text="Debug mode:", anchor=E, justify=RIGHT).grid(
+            column=0, row=5, sticky="we"
+        )
+        ttk.Checkbutton(
+            server_serving_settings,
+            variable=self._debug,
+        ).grid(column=1, row=5, sticky="we")
+
         # ---
 
         # Platform type.
@@ -120,38 +148,44 @@ class GUI:
             platform_type_settings,
             text="Sensapex uMp-4",
             variable=self._type,
-            value="sensapex",
+            value="ump-4",
         ).grid(column=0, row=0, sticky="we")
         ttk.Radiobutton(
             platform_type_settings,
             text="Sensapex uMp-3",
             variable=self._type,
-            value="ump3",
+            value="ump-3",
         ).grid(column=0, row=1, sticky="we")
         ttk.Radiobutton(
             platform_type_settings,
             text="Pathfinder MPM Control v2.8.8+",
             variable=self._type,
-            value="new_scale_pathfinder",
+            value="pathfinder-mpm",
         ).grid(column=0, row=2, sticky="we")
         ttk.Radiobutton(
             platform_type_settings,
             text="New Scale M3-USB-3:1-EP",
             variable=self._type,
-            value="new_scale",
+            value="new-scale",
         ).grid(column=0, row=3, sticky="we")
+        ttk.Radiobutton(
+            platform_type_settings,
+            text="Fake Platform",
+            variable=self._type,
+            value="fake",
+        ).grid(column=0, row=4, sticky="we")
 
         # ---
 
         # New Scale Settings.
-        new_scale_settings = ttk.LabelFrame(mainframe, text="Pathfinder Settings", padding=3)
+        new_scale_settings = ttk.LabelFrame(mainframe, text="Pathfinder MPM Settings", padding=3)
         new_scale_settings.grid(column=0, row=2, sticky="news")
 
         # Port
         ttk.Label(new_scale_settings, text="HTTP Server Port:", anchor=E, justify=RIGHT).grid(
             column=0, row=1, sticky="we"
         )
-        ttk.Entry(new_scale_settings, textvariable=self._pathfinder_port, width=5, justify=CENTER).grid(
+        ttk.Entry(new_scale_settings, textvariable=self._mpm_port, width=5, justify=CENTER).grid(
             column=1, row=1, sticky="we"
         )
 
@@ -173,45 +207,9 @@ class GUI:
         ).grid(column=0, row=4, columnspan=2, sticky="we")
 
     def _launch_server(self) -> None:
-        """Launch server based on GUI settings"""
+        """Close GUI and return to the server.
 
-        # Close GUI.
+        Options are saved in fields.
+        """
+        self._submit = True
         self._root.destroy()
-
-        # Save settings.
-        settings = {
-            "ignore_updates": self._ignore_updates.get(),
-            "type": self._type.get(),
-            "debug": self._debug.get(),
-            "proxy": self._proxy.get(),
-            "proxy_address": self._proxy_address.get(),
-            "port": self._port.get(),
-            "pathfinder_port": self._pathfinder_port.get(),
-            "serial": self._serial.get(),
-        }
-        makedirs(SETTINGS_DIR, exist_ok=True)
-        with open(f"{SETTINGS_DIR}\\{SETTINGS_FILENAME}", "w+") as f:
-            f.write(dumps(settings))
-
-        # Launch server.
-        server = Server()
-
-        com.DEBUG = self._debug.get()
-
-        if self._serial.get() != "no-e-stop":
-            e_stop = EmergencyStop(server, self._serial.get())
-            e_stop.watch()
-
-        # Launch with parsed arguments on main thread.
-        if self._proxy.get():
-            run(
-                server.launch_for_proxy(
-                    self._proxy_address.get(),
-                    self._port.get(),
-                    self._type.get(),
-                    self._pathfinder_port.get(),
-                    self._ignore_updates.get(),
-                )
-            )
-        else:
-            server.launch(self._type.get(), self._port.get(), self._pathfinder_port.get(), self._ignore_updates.get())

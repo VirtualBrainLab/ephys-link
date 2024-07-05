@@ -35,8 +35,9 @@ dependencies = [
     "pyserial==3.5",
     "python-socketio[asyncio_client]==5.11.3",
     "pythonnet==3.0.3",
+    "requests==2.32.3",
     "sensapex==1.400.0",
-    "vbl-aquarium==0.0.17"
+    "vbl-aquarium==0.0.18"
 ]
 
 [project.urls]
@@ -59,7 +60,6 @@ exclude = ["/.github", "/.idea"]
 python = "3.12"
 dependencies = [
     "coverage[toml]>=6.5",
-    "mypy>=1.0.0",
     "pytest",
 ]
 [tool.hatch.envs.default.scripts]
@@ -73,7 +73,6 @@ cov = [
     "test-cov",
     "cov-report",
 ]
-types = "mypy --strict --install-types --non-interactive {args:src/ephys_link tests}"
 
 #[[tool.hatch.envs.all.matrix]]
 #python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
@@ -87,6 +86,15 @@ dependencies = [
 build = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
 build_onefile = "pyinstaller.exe ephys_link.spec -y"
 build_clean = "pyinstaller.exe ephys_link.spec -y --clean"
+
+[tool.hatch.envs.types]
+python = "3.12"
+skip-install = true
+dependencies = [
+    "mypy",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --strict --install-types --non-interactive --ignore-missing-imports {args:src/ephys_link tests}"
 
 [tool.coverage.run]
 source_pkgs = ["ephys_link", "tests"]
@@ -106,6 +114,3 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
-
-[tool.ruff.lint]
-extend-ignore = ["T201", "PLW0603", "BLE001", "FBT001", "ARG002", "S310"]

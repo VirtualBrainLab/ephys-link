@@ -1,21 +1,15 @@
-import json
+from asyncio import run
 
-import socketio
+from vbl_aquarium.models.ephys_link import GotoPositionRequest
+from vbl_aquarium.models.unity import Vector4
 
-if __name__ == "__main__":
-    sio = socketio.Client()
-    sio.connect("http://localhost:8081")
+from ephys_link.back_end.platform_handler import PlatformHandler
+from ephys_link.util.console import Console
 
-    sio.emit("register_manipulator", "6")
-    sio.emit("bypass_calibration", "6")
-    sio.emit("set_can_write", json.dumps({"manipulator_id": "6", "can_write": True, "hours": 0}))
+c = Console(enable_debug=True)
+p = PlatformHandler("ump-4", c)
+target = Vector4()
+# target = Vector4(x=10, y=10, z=10, w=10)
 
-    end = ""
-    while end == "":
-        sio.emit("goto_pos", json.dumps({"manipulator_id": "6", "pos": [0, 10, 10, 10], "speed": 0.5}))
-
-        input("Press enter to continue...")
-
-        sio.emit("goto_pos", json.dumps({"manipulator_id": "6", "pos": [10, 10, 10, 10], "speed": 1}))
-
-        end = input("Press enter to continue (or type any key then enter to end)...")
+print(run(p.set_position(GotoPositionRequest(manipulator_id="6", position=target, speed=5))).to_string())
+print("Done!")
