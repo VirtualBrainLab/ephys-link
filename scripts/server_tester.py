@@ -1,7 +1,8 @@
-from socketio import SimpleClient
-from vbl_aquarium.models.ephys_link import GotoPositionRequest, InsideBrainRequest, DriveToDepthRequest
-from vbl_aquarium.models.unity import Vector4
 from time import sleep
+
+from socketio import SimpleClient
+from vbl_aquarium.models.ephys_link import DriveToDepthRequest, InsideBrainRequest
+from vbl_aquarium.models.unity import Vector4
 
 with SimpleClient() as sio:
     sio.connect("http://localhost:3000")
