@@ -8,7 +8,8 @@ from ephys_link.util.console import Console
 
 c = Console(enable_debug=True)
 p = PlatformHandler("ump-4", c)
-# target = Vector4()
-target = Vector4(x=10, y=10, z=10, w=10)
+target = Vector4()
+# target = Vector4(x=10, y=10, z=10, w=10)
 
 print(run(p.set_position(GotoPositionRequest(manipulator_id="6", position=target, speed=5))).to_string())
+print("Done!")

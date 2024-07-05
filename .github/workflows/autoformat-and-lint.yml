@@ -41,5 +41,8 @@ jobs:
           skip_fetch: true
           skip_checkout: true
 
-      - name: 🔍 Lint
+      - name: 🧶 Lint
         run: hatch fmt --check
+      
+      - name: 🔍 Type Check
+        run: hatch -e types run check

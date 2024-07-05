@@ -36,8 +36,7 @@ def main() -> None:
     # 4. Instantiate the Emergency Stop service.
 
     # 5. Start the server.
-    server = Server(options, platform_handler, console)
-    server.launch()
+    Server(options, platform_handler, console).launch()
 
 
 if __name__ == "__main__":
