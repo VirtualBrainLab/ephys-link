@@ -5,7 +5,7 @@ from time import sleep
 
 with SimpleClient() as sio:
     sio.connect("http://localhost:3000")
-    
+
     print(sio.call("set_inside_brain", InsideBrainRequest(manipulator_id="6", inside=True).to_string()))
 
     target = Vector4()
