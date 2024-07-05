@@ -156,9 +156,8 @@ class Server:
         :rtype: str
         """
 
-        # Log event (except for get_position since it's very common).
-        if event != "get_position":
-            self._console.debug_print("EVENT", event)
+        # Log event.
+        self._console.debug_print("EVENT", event)
 
         # Handle event.
         match event:

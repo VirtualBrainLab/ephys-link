@@ -5,8 +5,8 @@ from vbl_aquarium.models.unity import Vector4
 with SimpleClient() as sio:
     sio.connect("http://localhost:3000")
 
-    # target = Vector4()
-    target = Vector4(x=10, y=10, z=10, w=10)
+    target = Vector4()
+    # target = Vector4(x=10, y=10, z=10, w=10)
 
     sio.emit(
         "set_position",

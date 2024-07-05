@@ -23,6 +23,10 @@ class Console:
         """
         self._enable_debug = enable_debug
 
+        # Repeat message fields.
+        self._last_message = ""
+        self._repeat_counter = 1
+
         # Initialize colorama.
         init(autoreset=True)
 
@@ -33,7 +37,7 @@ class Console:
         :param msg: Error message to print.
         :type msg: str
         """
-        print(f"{Back.RED}{Style.BRIGHT} ERROR {Style.RESET_ALL}{TAB_BLOCK}{Fore.RED}{msg}")
+        print(f"\n{Back.RED}{Style.BRIGHT} ERROR {Style.RESET_ALL}{TAB_BLOCK}{Fore.RED}{msg}")
 
     @staticmethod
     def labeled_error_print(label: str, msg: str) -> None:
@@ -44,7 +48,7 @@ class Console:
         :param msg: Error message to print.
         :type msg: str
         """
-        print(f"{Back.RED}{Style.BRIGHT} ERROR {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.RED}{msg}")
+        print(f"\n{Back.RED}{Style.BRIGHT} ERROR {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.RED}{msg}")
 
     @staticmethod
     def pretty_exception(exception: Exception) -> str:
@@ -78,7 +82,7 @@ class Console:
         :type msg: str
         """
         if self._enable_debug:
-            print(f"{Back.BLUE}{Style.BRIGHT} DEBUG {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.BLUE}{msg}")
+            self._repeat_print(f"{Back.BLUE}{Style.BRIGHT} DEBUG {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.BLUE}{msg}")
 
     @staticmethod
     def info_print(label: str, msg: str) -> None:
@@ -89,4 +93,20 @@ class Console:
         :param msg: Message to print.
         :type msg: str
         """
-        print(f"{Back.GREEN}{Style.BRIGHT} {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.GREEN}{msg}")
+        print(f"\n{Back.GREEN}{Style.BRIGHT} {label} {Style.RESET_ALL}{TAB_BLOCK}{Fore.GREEN}{msg}")
+
+    # Helper methods.
+    def _repeat_print(self, msg: str) -> None:
+        """Print a message to the console with repeat counter.
+
+        :param msg: Message to print.
+        :type msg: str
+        """
+        if msg == self._last_message:
+            self._repeat_counter += 1
+        else:
+            self._repeat_counter = 1
+            self._last_message = msg
+            print()
+
+        print(f"\r{msg}{f" (x{self._repeat_counter})" if self._repeat_counter > 1 else ""}", end="")
