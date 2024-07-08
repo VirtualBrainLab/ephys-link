@@ -37,7 +37,7 @@ dependencies = [
     "python-socketio[asyncio_client]==5.11.3",
     "pythonnet==3.0.3",
     "requests==2.32.3",
-    "sensapex==1.400.0",
+    "sensapex==1.400.1",
     "vbl-aquarium==0.0.19"
 ]
 
