@@ -91,9 +91,8 @@ class Ump4Bindings(BaseBindings):
 
         return um_to_mm(array_to_vector4(movement.last_pos))
 
-    async def stop(self) -> None:
-        for device_ids in await self.get_manipulators():
-            self._get_device(device_ids).stop()
+    async def stop(self, manipulator_id: str) -> None:
+        self._get_device(manipulator_id).stop()
 
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
         # unified   <-  platform

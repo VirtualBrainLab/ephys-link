@@ -266,14 +266,31 @@ class PlatformHandler:
         else:
             return BooleanStateResponse(state=request.inside)
 
-    async def stop(self) -> str:
+    async def stop(self, manipulator_id: str) -> str:
+        """Stop a manipulator.
+
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :returns: Error message if any.
+        :rtype: str
+        """
+        try:
+            await self._bindings.stop(manipulator_id)
+        except Exception as e:
+            self._console.exception_error_print("Stop", e)
+            return self._console.pretty_exception(e)
+        else:
+            return ""
+
+    async def stop_all(self) -> str:
         """Stop all manipulators.
 
         :returns: Error message if any.
         :rtype: str
         """
         try:
-            await self._bindings.stop()
+            for manipulator_id in await self._bindings.get_manipulators():
+                await self._bindings.stop(manipulator_id)
         except Exception as e:
             self._console.exception_error_print("Stop", e)
             return self._console.pretty_exception(e)
