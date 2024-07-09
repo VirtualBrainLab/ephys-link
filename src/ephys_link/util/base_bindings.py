@@ -102,8 +102,8 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def stop(self) -> None:
-        """Stop all manipulators."""
+    async def stop(self, manipulator_id: str) -> None:
+        """Stop a manipulator."""
 
     @abstractmethod
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:

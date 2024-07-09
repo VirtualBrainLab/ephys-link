@@ -189,7 +189,7 @@ class Server:
                     self._platform_handler.set_inside_brain, SetInsideBrainRequest, event, args
                 )
             case "stop":
-                return await self._platform_handler.stop()
+                return await self._platform_handler.stop_all()
             case _:
                 self._console.error_print(f"Unknown event: {event}.")
                 return dumps({"error": "Unknown event."})

@@ -44,7 +44,7 @@ class FakeBindings(BaseBindings):
         self._positions[int(manipulator_id)] = position
         return position
 
-    async def stop(self) -> None:
+    async def stop(self, _: str) -> None:
         pass
 
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
