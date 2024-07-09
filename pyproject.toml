@@ -38,7 +38,7 @@ dependencies = [
     "pythonnet==3.0.3",
     "requests==2.32.3",
     "sensapex==1.400.1",
-    "textual==0.72.0",
+    "rich==13.7.1",
     "vbl-aquarium==0.0.19"
 ]
 
@@ -63,7 +63,6 @@ python = "3.12"
 dependencies = [
     "coverage[toml]>=6.5",
     "pytest",
-    "textual-dev",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
