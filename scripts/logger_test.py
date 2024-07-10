@@ -1,18 +1,17 @@
-import time
+import logging
 
-from rich import box
-from rich.live import Live
-from rich.table import Table
+from rich.logging import RichHandler
 
-table = Table(box=box.SIMPLE_HEAVY, highlight=True)
-table.add_column("Row ID")
-table.add_column("Description")
-table.add_column("Level")
+logging.basicConfig(level="NOTSET", format="%(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
-with Live(table):  # update 4 times a second to feel fluid
-    for row in range(12):
-        time.sleep(0.4)
-        table.add_row(f"{row}", f"description {row}", "[bright_white on red] ERROR ")
-
-    time.sleep(1)
-    print(table.rows)
+log = logging.getLogger("rich")
+log.debug("This message should go to the log file")
+log.info("So should this")
+log.warning("And this, too")
+log.error("And non-ASCII stuff, too, like Øresund and Malmö")
+log.error("[bold red blink]Server is shutting down!", extra={"markup": True})
+log.critical("Critical error! [b red]Server is shutting down!", extra={"markup": True})
+try:
+    print(1 / 0)
+except Exception:
+    log.exception("[b magenta]unable print![/] [i magenta]asdf", extra={"markup": True})

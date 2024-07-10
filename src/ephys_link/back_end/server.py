@@ -75,7 +75,7 @@ class Server:
     # Helper functions.
     def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:
         """Return a response for a malformed request."""
-        self._console.labeled_error_print("MALFORMED REQUEST", f"{request}: {data}")
+        self._console.error_print("MALFORMED REQUEST", f"{request}: {data}")
         return dumps({"error": "Malformed request."})
 
     async def _run_if_data_available(
@@ -127,7 +127,9 @@ class Server:
             self._console.info_print("CONNECTION GRANTED", sid)
             return True
 
-        self._console.error_print(f"CONNECTION REFUSED to {sid}. Client {self._client_sid} already connected.")
+        self._console.error_print(
+            "CONNECTION REFUSED", f"Cannot connect {sid} as {self._client_sid} is already connected."
+        )
         return False
 
     async def disconnect(self, sid: str) -> None:
@@ -142,7 +144,7 @@ class Server:
         if self._client_sid == sid:
             self._client_sid = ""
         else:
-            self._console.error_print(f"Client {sid} disconnected without being connected.")
+            self._console.error_print("DISCONNECTION", f"Client {sid} disconnected without being connected.")
 
     # noinspection PyTypeChecker
     async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:
@@ -196,5 +198,5 @@ class Server:
             case "stop_all":
                 return await self._platform_handler.stop_all()
             case _:
-                self._console.error_print(f"Unknown event: {event}.")
+                self._console.error_print("EVENT", f"Unknown event: {event}.")
                 return dumps({"error": "Unknown event."})

@@ -12,7 +12,6 @@ from ephys_link.back_end.server import Server
 from ephys_link.front_end.cli import CLI
 from ephys_link.front_end.gui import GUI
 from ephys_link.util.console import Console
-from rich.live import Live
 
 
 def main() -> None:
@@ -31,14 +30,13 @@ def main() -> None:
     # 2. Instantiate the Console and make it globally accessible.
     console = Console(enable_debug=options.debug)
 
-    with Live(console.get_table(), refresh_per_second=1):
-        # 3. Instantiate the Platform Handler with the appropriate platform bindings.
-        platform_handler = PlatformHandler(options.type, console)
+    # 3. Instantiate the Platform Handler with the appropriate platform bindings.
+    platform_handler = PlatformHandler(options.type, console)
 
-        # 4. Instantiate the Emergency Stop service.
+    # 4. Instantiate the Emergency Stop service.
 
-        # 5. Start the server.
-        Server(options, platform_handler, console).launch()
+    # 5. Start the server.
+    Server(options, platform_handler, console).launch()
 
 
 if __name__ == "__main__":

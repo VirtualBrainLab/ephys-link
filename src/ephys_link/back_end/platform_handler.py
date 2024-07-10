@@ -71,7 +71,7 @@ class PlatformHandler:
                 return FakeBindings()
             case _:
                 error_message = f'Platform type "{platform_type}" not recognized.'
-                self._console.labeled_error_print("PLATFORM", error_message)
+                self._console.critical_print(error_message)
                 raise ValueError(error_message)
 
     # Ephys Link metadata.
@@ -185,7 +185,7 @@ class PlatformHandler:
             # Disallow setting manipulator position while inside the brain.
             if request.manipulator_id in self._inside_brain:
                 error_message = 'Can not move manipulator while inside the brain. Set the depth ("set_depth") instead.'
-                self._console.error_print(error_message)
+                self._console.error_print("Set Position", error_message)
                 return PositionalResponse(error=error_message)
 
             # Move to the new position.
@@ -209,7 +209,7 @@ class PlatformHandler:
                         f" position on axis {list(Vector4.model_fields.keys())[index]}."
                         f"Requested: {request.position}, got: {final_unified_position}."
                     )
-                    self._console.error_print(error_message)
+                    self._console.error_print("Set Position", error_message)
                     return PositionalResponse(error=error_message)
         except Exception as e:
             self._console.exception_error_print("Set Position", e)
