@@ -27,7 +27,7 @@ class Console:
         basicConfig(
             level=DEBUG if enable_debug else INFO,
             format="%(message)s",
-            datefmt="%I:%M:%S %p",
+            datefmt="[%I:%M:%S %p]",
             handlers=[RichHandler(rich_tracebacks=True)],
         )
         self._log = getLogger("rich")
