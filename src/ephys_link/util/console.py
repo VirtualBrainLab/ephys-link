@@ -42,7 +42,7 @@ class Console:
         self._console = console.Console()
 
         # Install Rich traceback handler.
-        install(show_locals=True)
+        # install(show_locals=True)
 
     def error_print(self, msg: str) -> None:
         """Print an error message to the console.
@@ -88,8 +88,8 @@ class Console:
         )
 
         # Also print out the exception in debug mode.
-        if self._enable_debug:
-            self._console.print_exception(show_locals=True)
+        # if self._enable_debug:
+        #     self._console.print_exception(show_locals=True)
 
     def debug_print(self, label: str, msg: str) -> None:
         """Print a debug message to the console.
@@ -100,7 +100,7 @@ class Console:
         :type msg: str
         """
         if self._enable_debug:
-            self._add_row("[bright_white on blue] DEBUG", f"[blue]{label}", msg)
+            self._add_row("[bright_white on blue] DEBUG ", f"[blue]{label}", msg)
 
     def info_print(self, label: str, msg: str) -> None:
         """Print info to console.
