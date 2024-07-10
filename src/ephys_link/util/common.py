@@ -9,7 +9,6 @@ from requests import get
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
-from ephys_link.util.console import Console
 
 # Ephys Link ASCII.
 ASCII = r"""
@@ -47,8 +46,8 @@ def check_for_updates() -> None:
     response = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
     latest_version = response.json()[0]["name"]
     if parse(latest_version) > parse(__version__):
-        Console.info_print("Update available", latest_version)
-        Console.info_print("", "Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
+        print(f"Update available: {latest_version} !")
+        print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
 
 
 # Unit conversions

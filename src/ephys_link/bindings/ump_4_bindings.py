@@ -10,7 +10,6 @@ from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.util.base_bindings import BaseBindings
 from ephys_link.util.common import RESOURCES_PATH, array_to_vector4, mm_to_um, mmps_to_umps, um_to_mm, vector4_to_array
-from ephys_link.util.console import Console
 
 
 class Ump4Bindings(BaseBindings):
@@ -24,7 +23,6 @@ class Ump4Bindings(BaseBindings):
         self._ump = UMP.get_ump()
         if self._ump is None:
             error_message = "Unable to connect to uMp"
-            Console.error_print(error_message)
             raise ValueError(error_message)
 
     async def get_manipulators(self) -> list[str]:

@@ -38,6 +38,7 @@ dependencies = [
     "pythonnet==3.0.3",
     "requests==2.32.3",
     "sensapex==1.400.1",
+    "rich==13.7.1",
     "vbl-aquarium==0.0.19"
 ]
 
@@ -115,3 +116,6 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+
+[tool.ruff.lint]
+extend-ignore = ["DTZ005"]
