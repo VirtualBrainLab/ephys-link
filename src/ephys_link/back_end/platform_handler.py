@@ -203,7 +203,7 @@ class PlatformHandler:
                     break
 
                 # Check if the axis is within the movement tolerance.
-                if abs(axis) > await self._bindings.get_movement_tolerance():
+                if abs(axis) > self._bindings.get_movement_tolerance():
                     error_message = (
                         f"Manipulator {request.manipulator_id} did not reach target"
                         f" position on axis {list(Vector4.model_fields.keys())[index]}."

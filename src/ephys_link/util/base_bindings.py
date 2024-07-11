@@ -76,7 +76,7 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance(self) -> float:
         """Get the tolerance for how close the final position must be to the target position in a movement (mm).
 
         :returns: Movement tolerance (mm).

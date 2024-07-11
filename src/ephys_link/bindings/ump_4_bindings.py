@@ -55,7 +55,7 @@ class Ump4Bindings(BaseBindings):
         error_message = "UMP-4 does not support getting shank count"
         raise AttributeError(error_message)
 
-    async def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance(self) -> float:
         return 0.001
 
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
