@@ -119,6 +119,7 @@ class MPMBinding(BaseBindings):
             "Z": position.z,
         }
         await self._put_request(requests)
+        # TODO: Wait for movement to finish then report final position.
 
     async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> None:
         """Move the Z axis the needed relative distance to reach the desired depth."""
@@ -136,6 +137,7 @@ class MPMBinding(BaseBindings):
             "Rate": speed,
         }
         await self._put_request(request)
+        # TODO: Wait for movement to finish then report final position
 
     async def stop(self, manipulator_id: str) -> None:
         request = {"PutId": "ProbeStop", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id)}
