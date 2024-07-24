@@ -6,7 +6,7 @@ This means exceptions need to be made for its API.
 Usage: Instantiate MPMBindings to interact with the New Scale Pathfinder MPM HTTP server platform.
 """
 
-from asyncio import get_running_loop
+from asyncio import get_running_loop, sleep
 from json import dumps
 from typing import Any
 
@@ -14,6 +14,7 @@ from requests import JSONDecodeError, get, put
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.util.base_bindings import BaseBindings
+from ephys_link.util.common import vector4_to_array
 
 
 class MPMBinding(BaseBindings):
@@ -70,6 +71,7 @@ class MPMBinding(BaseBindings):
         :type port: int
         """
         self._url = f"http://localhost:{port}"
+        self._movement_stopped = False
 
     async def get_manipulators(self) -> list[str]:
         return [manipulator["Id"] for manipulator in (await self._query_data())["ProbeArray"]]
@@ -86,7 +88,7 @@ class MPMBinding(BaseBindings):
             x=manipulator_data["Tip_X_ML"],
             y=manipulator_data["Tip_Y_AP"],
             z=manipulator_data["Tip_Z_DV"],
-            w=manipulator_data["TIP_Z_DV"],
+            w=0,
         )
 
     async def get_angles(self, manipulator_id: str) -> Vector3:
@@ -107,7 +109,7 @@ class MPMBinding(BaseBindings):
     def get_movement_tolerance(self) -> float:
         return 0.01
 
-    async def set_position(self, manipulator_id: str, position: Vector4, _: float) -> Vector4:
+    async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:  # noqa: ARG002
         requests = {
             "PutId": "ProbeMotion",
             "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
@@ -119,7 +121,32 @@ class MPMBinding(BaseBindings):
             "Z": position.z,
         }
         await self._put_request(requests)
-        # TODO: Wait for movement to finish then report final position.
+
+        # Keep track of the previous position to check if the manipulator stopped advancing unexpectedly.
+        current_position = await self.get_position(manipulator_id)
+        previous_position = current_position
+        unchanged_counter = 0
+
+        while not self._movement_stopped and not self._is_vector_close(position, current_position):
+            current_position = await self.get_position(manipulator_id)
+
+            # Check if the manipulator is not moving.
+            if self._is_vector_close(previous_position, current_position):
+                # Position did not change.
+                unchanged_counter += 1
+            else:
+                # Position changed.
+                unchanged_counter = 0
+                previous_position = current_position
+
+            # Resend request if not moving for too long (2 seconds).
+            if unchanged_counter > 10:
+                await self._put_request(requests)
+
+            # Wait for a short time before checking again.
+            await sleep(0.2)
+
+        return await self.get_position(manipulator_id)
 
     async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> None:
         """Move the Z axis the needed relative distance to reach the desired depth."""
@@ -142,12 +169,13 @@ class MPMBinding(BaseBindings):
     async def stop(self, manipulator_id: str) -> None:
         request = {"PutId": "ProbeStop", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id)}
         await self._put_request(request)
+        self._movement_stopped = True
 
-    def platform_space_to_unified_space(self, _: Vector4) -> Vector4:
-        pass
+    def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
+        return platform_space
 
-    def unified_space_to_platform_space(self, _: Vector4) -> Vector4:
-        pass
+    def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
+        return unified_space
 
     # Helper functions.
     async def _query_data(self) -> Any:
@@ -172,3 +200,6 @@ class MPMBinding(BaseBindings):
 
     async def _put_request(self, request: dict[str, Any]) -> None:
         await get_running_loop().run_in_executor(None, put, self._url, dumps(request))
+
+    def _is_vector_close(self, target: Vector4, current: Vector4) -> bool:
+        return all(abs(axis) < self.get_movement_tolerance() for axis in vector4_to_array(target - current))

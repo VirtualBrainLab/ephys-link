@@ -12,6 +12,7 @@ from uuid import uuid4
 from vbl_aquarium.models.ephys_link import (
     AngularResponse,
     BooleanStateResponse,
+    EphysLinkOptions,
     GetManipulatorsResponse,
     PositionalResponse,
     SetDepthRequest,
@@ -25,6 +26,7 @@ from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
 from ephys_link.bindings.fake_bindings import FakeBindings
+from ephys_link.bindings.mpm_bindings import MPMBinding
 from ephys_link.bindings.ump_4_bindings import Ump4Bindings
 from ephys_link.util.base_bindings import BaseBindings
 from ephys_link.util.common import vector4_to_array
@@ -34,21 +36,21 @@ from ephys_link.util.console import Console
 class PlatformHandler:
     """Handler for platform commands."""
 
-    def __init__(self, platform_type: str, console: Console) -> None:
+    def __init__(self, options: EphysLinkOptions, console: Console) -> None:
         """Initialize platform handler.
 
-        :param platform_type: Platform type to initialize bindings from.
-        :type platform_type: str
+        :param options: CLI options.
+        :type options: EphysLinkOptions
         """
 
-        # Store the platform type.
-        self._platform_type = platform_type
+        # Store the CLI options.
+        self._options = options
 
         # Store the console.
         self._console = console
 
         # Define bindings based on platform type.
-        self._bindings = self._match_platform_type(platform_type)
+        self._bindings = self._match_platform_type(options)
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
@@ -56,21 +58,23 @@ class PlatformHandler:
         # Generate a Pinpoint ID for proxy usage.
         self._pinpoint_id = str(uuid4())[:8]
 
-    def _match_platform_type(self, platform_type: str) -> BaseBindings:
+    def _match_platform_type(self, options: EphysLinkOptions) -> BaseBindings:
         """Match the platform type to the appropriate bindings.
 
-        :param platform_type: Platform type.
-        :type platform_type: str
+        :param options: CLI options.
+        :type options: EphysLinkOptions
         :returns: Bindings for the specified platform type.
         :rtype: :class:`ephys_link.util.base_bindings.BaseBindings`
         """
-        match platform_type:
+        match options.type:
             case "ump-4":
                 return Ump4Bindings()
+            case "pathfinder-mpm":
+                return MPMBinding(options.mpm_port)
             case "fake":
                 return FakeBindings()
             case _:
-                error_message = f'Platform type "{platform_type}" not recognized.'
+                error_message = f'Platform type "{options.type}" not recognized.'
                 self._console.critical_print(error_message)
                 raise ValueError(error_message)
 
@@ -99,7 +103,7 @@ class PlatformHandler:
         :returns: Platform type config identifier (see CLI options for examples).
         :rtype: str
         """
-        return self._platform_type
+        return str(self._options.type)
 
     # Manipulator commands.
 
