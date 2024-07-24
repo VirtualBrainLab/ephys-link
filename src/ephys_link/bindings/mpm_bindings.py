@@ -84,11 +84,12 @@ class MPMBinding(BaseBindings):
 
     async def get_position(self, manipulator_id: str) -> Vector4:
         manipulator_data = await self._manipulator_data(manipulator_id)
+        tip_z_dv = manipulator_data["Tip_Z_DV"]
         return Vector4(
             x=manipulator_data["Tip_X_ML"],
             y=manipulator_data["Tip_Y_AP"],
-            z=manipulator_data["Tip_Z_DV"],
-            w=0,
+            z=tip_z_dv,
+            w=tip_z_dv,
         )
 
     async def get_angles(self, manipulator_id: str) -> Vector3:
@@ -127,6 +128,8 @@ class MPMBinding(BaseBindings):
         previous_position = current_position
         unchanged_counter = 0
 
+        # TODO: Fix movement flag clearing logic
+
         while not self._movement_stopped and not self._is_vector_close(position, current_position):
             current_position = await self.get_position(manipulator_id)
 
@@ -146,25 +149,54 @@ class MPMBinding(BaseBindings):
             # Wait for a short time before checking again.
             await sleep(0.2)
 
+        # Clear the movement stopped flag.
+        self._movement_stopped = False
+
+        # Return the final position.
         return await self.get_position(manipulator_id)
 
-    async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> None:
+    async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
         """Move the Z axis the needed relative distance to reach the desired depth."""
         # Get current position.
-        current_position = await self.get_position(manipulator_id)
+        current_depth = (await self._manipulator_data(manipulator_id))["Stage_Z"]
 
-        # Compute difference between current and desired depth.
-        depth_difference = depth - current_position.z
-
-        # Request movement.
+        # Request movement based on difference between current and requested (remaining insertion).
         request = {
             "PutId": "ProbeInsertion",
             "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-            "Distance": depth_difference,
+            "Distance": depth - current_depth,
             "Rate": speed,
         }
         await self._put_request(request)
-        # TODO: Wait for movement to finish then report final position
+
+        # Keep track of the previous position to check if the manipulator stopped advancing unexpectedly.
+        previous_position = current_depth
+        unchanged_counter = 0
+
+        while not self._movement_stopped and abs(depth - current_depth) > self.get_movement_tolerance():
+            # Update current position.
+            current_depth = (await self._manipulator_data(manipulator_id))["Stage_Z"]
+
+            # Check if the manipulator is not moving.
+            if abs(previous_position - current_depth) < self.get_movement_tolerance():
+                # Position did not change.
+                unchanged_counter += 1
+            else:
+                # Position changed.
+                unchanged_counter = 0
+                previous_position = current_depth
+
+            # Resend request if not moving for too long (2 seconds).
+            if unchanged_counter > 10:
+                await self._put_request(request)
+
+            # Wait for a short time before checking again.
+            await sleep(0.2)
+
+        # Clear the movement stopped flag.
+        self._movement_stopped = False
+
+        return current_depth
 
     async def stop(self, manipulator_id: str) -> None:
         request = {"PutId": "ProbeStop", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id)}
@@ -202,4 +234,4 @@ class MPMBinding(BaseBindings):
         await get_running_loop().run_in_executor(None, put, self._url, dumps(request))
 
     def _is_vector_close(self, target: Vector4, current: Vector4) -> bool:
-        return all(abs(axis) < self.get_movement_tolerance() for axis in vector4_to_array(target - current))
+        return all(abs(axis) <= self.get_movement_tolerance() for axis in vector4_to_array(target - current))
