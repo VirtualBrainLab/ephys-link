@@ -6,7 +6,7 @@ Configure the console to print error and debug messages.
 Usage: Create a Console object and call the appropriate method to print messages.
 """
 
-from logging import DEBUG, ERROR, INFO, basicConfig, getLogger
+from logging import DEBUG, ERROR, INFO, WARNING, basicConfig, getLogger
 
 from rich.logging import RichHandler
 from rich.traceback import install
@@ -25,12 +25,12 @@ class Console:
 
         # Config logger.
         basicConfig(
-            level=DEBUG if enable_debug else INFO,
             format="%(message)s",
             datefmt="[%I:%M:%S %p]",
             handlers=[RichHandler(rich_tracebacks=True)],
         )
         self._log = getLogger("rich")
+        self._log.setLevel(DEBUG if enable_debug else INFO)
 
         # Install Rich traceback.
         install()
