@@ -64,6 +64,10 @@ class MPMBinding(BaseBindings):
         "AN",
     )
 
+    # Movement polling preferences.
+    UNCHANGED_COUNTER_LIMIT = 10
+    POLL_INTERVAL = 0.2
+
     def __init__(self, port: int) -> None:
         """Initialize connection to MPM HTTP server.
 
@@ -111,6 +115,7 @@ class MPMBinding(BaseBindings):
         return 0.01
 
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:  # noqa: ARG002
+        # Request movement to the desired position.
         requests = {
             "PutId": "ProbeMotion",
             "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
@@ -128,9 +133,8 @@ class MPMBinding(BaseBindings):
         previous_position = current_position
         unchanged_counter = 0
 
-        # TODO: Fix movement flag clearing logic
-
         while not self._movement_stopped and not self._is_vector_close(position, current_position):
+            # Update current position.
             current_position = await self.get_position(manipulator_id)
 
             # Check if the manipulator is not moving.
@@ -142,14 +146,14 @@ class MPMBinding(BaseBindings):
                 unchanged_counter = 0
                 previous_position = current_position
 
-            # Resend request if not moving for too long (2 seconds).
-            if unchanged_counter > 10:
+            # Resend request if not moving for too long.
+            if unchanged_counter > self.UNCHANGED_COUNTER_LIMIT:
                 await self._put_request(requests)
 
             # Wait for a short time before checking again.
-            await sleep(0.2)
+            await sleep(self.POLL_INTERVAL)
 
-        # Clear the movement stopped flag.
+        # Reset movement stopped flag.
         self._movement_stopped = False
 
         # Return the final position.
@@ -157,8 +161,12 @@ class MPMBinding(BaseBindings):
 
     async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
         """Move the Z axis the needed relative distance to reach the desired depth."""
+
+        async def _get_current_depth() -> float:
+            return float((await self._manipulator_data(manipulator_id))["Stage_Z"])
+
         # Get current position.
-        current_depth = (await self._manipulator_data(manipulator_id))["Stage_Z"]
+        current_depth = await _get_current_depth()
 
         # Request movement based on difference between current and requested (remaining insertion).
         request = {
@@ -175,7 +183,7 @@ class MPMBinding(BaseBindings):
 
         while not self._movement_stopped and abs(depth - current_depth) > self.get_movement_tolerance():
             # Update current position.
-            current_depth = (await self._manipulator_data(manipulator_id))["Stage_Z"]
+            current_depth = await _get_current_depth()
 
             # Check if the manipulator is not moving.
             if abs(previous_position - current_depth) < self.get_movement_tolerance():
@@ -187,16 +195,17 @@ class MPMBinding(BaseBindings):
                 previous_position = current_depth
 
             # Resend request if not moving for too long (2 seconds).
-            if unchanged_counter > 10:
+            if unchanged_counter > self.UNCHANGED_COUNTER_LIMIT:
                 await self._put_request(request)
 
             # Wait for a short time before checking again.
-            await sleep(0.2)
+            await sleep(self.POLL_INTERVAL)
 
-        # Clear the movement stopped flag.
+        # Reset movement stopped flag.
         self._movement_stopped = False
 
-        return current_depth
+        # Return the final depth.
+        return await _get_current_depth()
 
     async def stop(self, manipulator_id: str) -> None:
         request = {"PutId": "ProbeStop", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id)}
