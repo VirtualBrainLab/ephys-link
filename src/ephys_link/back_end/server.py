@@ -12,7 +12,7 @@ from vbl_aquarium.models.ephys_link import (
     SetInsideBrainRequest,
     SetPositionRequest,
 )
-from vbl_aquarium.models.generic import VBLBaseModel
+from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.util.common import PORT, check_for_updates, server_preamble
