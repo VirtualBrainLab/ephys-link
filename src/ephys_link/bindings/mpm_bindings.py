@@ -88,12 +88,12 @@ class MPMBinding(BaseBindings):
 
     async def get_position(self, manipulator_id: str) -> Vector4:
         manipulator_data = await self._manipulator_data(manipulator_id)
-        tip_z_dv = manipulator_data["Tip_Z_DV"]
+        stage_z = manipulator_data["Stage_Z"]
         return Vector4(
-            x=manipulator_data["Tip_X_ML"],
-            y=manipulator_data["Tip_Y_AP"],
-            z=tip_z_dv,
-            w=tip_z_dv,
+            x=manipulator_data["Stage_X"],
+            y=manipulator_data["Stage_Y"],
+            z=stage_z,
+            w=stage_z,
         )
 
     async def get_angles(self, manipulator_id: str) -> Vector3:
@@ -120,7 +120,7 @@ class MPMBinding(BaseBindings):
             "PutId": "ProbeMotion",
             "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
             "Absolute": 1,
-            "Stereotactic": 1,
+            "Stereotactic": 0,
             "AxisMask": 7,
             "X": position.x,
             "Y": position.y,
@@ -213,11 +213,32 @@ class MPMBinding(BaseBindings):
         self._movement_stopped = True
 
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
-        return platform_space
+        # unified   <-  platform
+        # +x        <-  -x
+        # +y        <-  +z
+        # +z        <-  +y
+        # +d        <-  -d
+
+        return Vector4(
+            x=self.dimensions.x - platform_space.x,
+            y=platform_space.z,
+            z=platform_space.y,
+            w=self.dimensions.z - platform_space.w,
+        ) 
 
     def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
-        return unified_space
+        # platform  <-  unified
+        # +x        <-  -x
+        # +y        <-  +z
+        # +z        <-  +y
+        # +d        <-  -d
 
+        return Vector4(
+            x=self.dimensions.x - unified_space.x,
+            y=unified_space.z,
+            z=unified_space.y,
+            w=self.dimensions.z - unified_space.w,
+        )
     # Helper functions.
     async def _query_data(self) -> Any:
         try:
