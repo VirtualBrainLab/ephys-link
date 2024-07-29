@@ -39,7 +39,7 @@ dependencies = [
     "requests==2.32.3",
     "sensapex==1.400.1",
     "rich==13.7.1",
-    "vbl-aquarium==0.0.19"
+    "vbl-aquarium==0.0.22"
 ]
 
 [project.urls]
