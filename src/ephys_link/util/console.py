@@ -25,12 +25,12 @@ class Console:
 
         # Config logger.
         basicConfig(
-            level=DEBUG if enable_debug else INFO,
             format="%(message)s",
             datefmt="[%I:%M:%S %p]",
-            handlers=[RichHandler(rich_tracebacks=True)],
+            handlers=[RichHandler(rich_tracebacks=True, markup=True)],
         )
         self._log = getLogger("rich")
+        self._log.level = DEBUG if enable_debug else INFO
 
         # Install Rich traceback.
         install()
@@ -71,7 +71,7 @@ class Console:
         :param msg: Critical message to print.
         :type msg: str
         """
-        self._log.critical(f"[b i red]{msg}", extra={"markup": True})
+        self._log.critical(f"[b i red]{msg}")
 
     @staticmethod
     def pretty_exception(exception: Exception) -> str:
@@ -93,7 +93,7 @@ class Console:
         :type exception: Exception
         """
         self._log.exception(
-            f"[b magenta]{label}:[/] [magenta]{Console.pretty_exception(exception)}", extra={"markup": True}
+            f"[b magenta]{label}:[/] [magenta]{Console.pretty_exception(exception)}"
         )
 
     # Helper methods.
@@ -123,11 +123,10 @@ class Console:
                 # Complete previous repeat.
                 self._log.log(
                     self._last_message[0],
-                    f"{self._last_message[1]}:[/] {self._last_message[2]}[/] x {self._repeat_counter}",
-                    extra={"markup": True},
+                    f"{self._last_message[1]}:[/] {self._last_message[2]}[/] x {self._repeat_counter}"
                 )
                 self._repeat_counter = 0
 
             # Log new message.
-            self._log.log(log_type, f"{label}:[/] {message}", extra={"markup": True})
+            self._log.log(log_type, f"{label}:[/] {message}")
             self._last_message = message_set
