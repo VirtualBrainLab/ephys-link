@@ -192,16 +192,27 @@ class PlatformHandler:
                 self._console.error_print("Set Position", error_message)
                 return PositionalResponse(error=error_message)
 
+            request_platform_position = self._bindings.unified_space_to_platform_space(request.position)
+
+            # For 3-axis manipulators, duplicate W axis to depth axis.
+            if await self._bindings.get_axes_count() == 3:  # noqa: PLR2004
+                request_platform_position = request_platform_position.model_copy(
+                    update={self._bindings.get_depth_axis_on_three_axis(): request_platform_position.w}
+                )
+            
+            # Update request position based on edits.
+            request_unified_position = self._bindings.platform_space_to_unified_space(request_platform_position)
+
             # Move to the new position.
             final_platform_position = await self._bindings.set_position(
                 manipulator_id=request.manipulator_id,
-                position=self._bindings.unified_space_to_platform_space(request.position),
+                position=request_platform_position,
                 speed=request.speed,
             )
             final_unified_position = self._bindings.platform_space_to_unified_space(final_platform_position)
 
             # Return error if movement did not reach target within tolerance.
-            for index, axis in enumerate(vector4_to_array(final_unified_position - request.position)):
+            for index, axis in enumerate(vector4_to_array(final_unified_position - request_unified_position)):
                 # End once index is greater than the number of axes.
                 if index >= await self._bindings.get_axes_count():
                     break
@@ -211,7 +222,7 @@ class PlatformHandler:
                     error_message = (
                         f"Manipulator {request.manipulator_id} did not reach target"
                         f" position on axis {list(Vector4.model_fields.keys())[index]}."
-                        f"Requested: {request.position}, got: {final_unified_position}."
+                        f" Requested: {request_unified_position}, got: {final_unified_position}."
                     )
                     self._console.error_print("Set Position", error_message)
                     return PositionalResponse(error=error_message)

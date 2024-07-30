@@ -83,6 +83,9 @@ class MPMBinding(BaseBindings):
     async def get_axes_count(self) -> int:
         return 3
 
+    def get_depth_axis_on_three_axis(self) -> str | None:
+        return "z"
+
     def get_dimensions(self) -> Vector4:
         return Vector4(x=15, y=15, z=15, w=15)
 
@@ -115,9 +118,6 @@ class MPMBinding(BaseBindings):
         return 0.01
 
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
-        # Duplicate W to Z on target position.
-        target_position = position.model_copy(update={"z": position.w})
-        
         # Determine if this is a depth only movement.
 
         # Get current position to check if this is a depth only movement.
@@ -125,8 +125,8 @@ class MPMBinding(BaseBindings):
 
         # If X and Y are the same, this is a depth only movement.
         depth_only = (
-            abs(current_position.x - target_position.x) <= self.get_movement_tolerance()
-            and abs(current_position.y - target_position.y) <= self.get_movement_tolerance()
+            abs(current_position.x - position.x) <= self.get_movement_tolerance()
+            and abs(current_position.y - position.y) <= self.get_movement_tolerance()
         )
 
         # Reset step mode to normal for non-depth only movements.
@@ -142,7 +142,7 @@ class MPMBinding(BaseBindings):
                 {
                     "PutId": "ProbeInsertion",
                     "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                    "Distance": mmps_to_umps(current_position_for_request.w - target_position.w),
+                    "Distance": mmps_to_umps(current_position_for_request.w - position.w),
                     "Rate": mmps_to_umps(speed) * 60,
                 }
                 if depth_only
@@ -152,9 +152,9 @@ class MPMBinding(BaseBindings):
                     "Absolute": 1,
                     "Stereotactic": 0,
                     "AxisMask": 7,
-                    "X": target_position.x,
-                    "Y": target_position.y,
-                    "Z": target_position.z,
+                    "X": position.x,
+                    "Y": position.y,
+                    "Z": position.z,
                 }
             )
 
@@ -165,7 +165,8 @@ class MPMBinding(BaseBindings):
         previous_position = current_position
         unchanged_counter = 0
 
-        while not self._movement_stopped and not self._is_vector_close(target_position, current_position):
+        while not self._movement_stopped and not self._is_vector_close(position, current_position):
+            # print(f"Target: {position}, Current: {current_position}, Close: {self._is_vector_close(position, current_position)}")
             # Update current position.
             current_position = await self.get_position(manipulator_id)
 
