@@ -33,14 +33,6 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    def get_depth_axis_on_three_axis(self) -> str | None:
-        """Get the axis that represents depth on a 3-axis manipulator.
-
-        :returns: Axis that represents depth ('x', 'y', 'z') or None for 4 axis manipulators.
-        :rtype: str | None
-        """
-
-    @abstractmethod
     def get_dimensions(self) -> Vector4:
         """Get the dimensions of the manipulators on the current platform (mm).
 
