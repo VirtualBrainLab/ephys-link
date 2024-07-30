@@ -117,7 +117,7 @@ class MPMBinding(BaseBindings):
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
         # Duplicate W to Z on target position.
         target_position = position.model_copy(update={"z": position.w})
-        
+
         # Determine if this is a depth only movement.
 
         # Get current position to check if this is a depth only movement.

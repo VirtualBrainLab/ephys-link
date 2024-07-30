@@ -202,8 +202,8 @@ class PlatformHandler:
 
             # Return error if movement did not reach target within tolerance.
             for index, axis in enumerate(vector4_to_array(final_unified_position - request.position)):
-                # End once index is greater than the number of axes.
-                if index >= await self._bindings.get_axes_count():
+                # End once index is the number of axes.
+                if index == await self._bindings.get_axes_count():
                     break
 
                 # Check if the axis is within the movement tolerance.
@@ -211,7 +211,7 @@ class PlatformHandler:
                     error_message = (
                         f"Manipulator {request.manipulator_id} did not reach target"
                         f" position on axis {list(Vector4.model_fields.keys())[index]}."
-                        f"Requested: {request.position}, got: {final_unified_position}."
+                        f" Requested: {request.position}, got: {final_unified_position}."
                     )
                     self._console.error_print("Set Position", error_message)
                     return PositionalResponse(error=error_message)
