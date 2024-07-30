@@ -138,7 +138,7 @@ class MPMBinding(BaseBindings):
             {
                 "PutId": "ProbeInsertion",
                 "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                "Distance": mmps_to_umps(position.w - current_position.w),
+                "Distance": mmps_to_umps(current_position.w - position.w),
                 "Rate": mmps_to_umps(speed) * 60,
             }
             if depth_only
@@ -202,7 +202,7 @@ class MPMBinding(BaseBindings):
             x=self.get_dimensions().x - platform_space.x,
             y=platform_space.z,
             z=platform_space.y,
-            w=self.get_dimensions().z - platform_space.w,
+            w=self.get_dimensions().w - platform_space.w,
         )
 
     def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
@@ -216,7 +216,7 @@ class MPMBinding(BaseBindings):
             x=self.get_dimensions().x - unified_space.x,
             y=unified_space.z,
             z=unified_space.y,
-            w=self.get_dimensions().z - unified_space.w,
+            w=self.get_dimensions().w - unified_space.w,
         )
 
     # Helper functions.
