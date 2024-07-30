@@ -80,7 +80,7 @@ class MPMBinding(BaseBindings):
     async def get_manipulators(self) -> list[str]:
         return [manipulator["Id"] for manipulator in (await self._query_data())["ProbeArray"]]
 
-    async def get_num_axes(self) -> int:
+    async def get_axes_count(self) -> int:
         return 3
 
     def get_dimensions(self) -> Vector4:

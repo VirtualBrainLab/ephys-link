@@ -28,7 +28,7 @@ class Ump4Bindings(BaseBindings):
     async def get_manipulators(self) -> list[str]:
         return list(map(str, self._ump.list_devices()))
 
-    async def get_num_axes(self) -> int:
+    async def get_axes_count(self) -> int:
         return 4
 
     def get_dimensions(self) -> Vector4:

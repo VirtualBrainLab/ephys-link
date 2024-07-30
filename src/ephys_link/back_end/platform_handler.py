@@ -115,7 +115,7 @@ class PlatformHandler:
         """
         try:
             manipulators = await self._bindings.get_manipulators()
-            num_axes = await self._bindings.get_num_axes()
+            num_axes = await self._bindings.get_axes_count()
             dimensions = self._bindings.get_dimensions()
         except Exception as e:
             self._console.exception_error_print("Get Manipulators", e)
@@ -203,7 +203,7 @@ class PlatformHandler:
             # Return error if movement did not reach target within tolerance.
             for index, axis in enumerate(vector4_to_array(final_unified_position - request.position)):
                 # End once index is greater than the number of axes.
-                if index >= await self._bindings.get_num_axes():
+                if index >= await self._bindings.get_axes_count():
                     break
 
                 # Check if the axis is within the movement tolerance.

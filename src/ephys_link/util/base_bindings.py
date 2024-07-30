@@ -25,7 +25,7 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def get_num_axes(self) -> int:
+    async def get_axes_count(self) -> int:
         """Get the number of axes for the current platform.
 
         :returns: Number of axes.
