@@ -14,7 +14,7 @@ from requests import JSONDecodeError, get, put
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.util.base_bindings import BaseBindings
-from ephys_link.util.common import vector4_to_array
+from ephys_link.util.common import vector4_to_array, mm_to_um, mmps_to_umps
 
 
 class MPMBinding(BaseBindings):
@@ -115,20 +115,33 @@ class MPMBinding(BaseBindings):
         return 0.01
 
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
+        # Determine if this is a depth only movement.
+
         # Get current position to check if this is a depth only movement.
         current_position = await self.get_position(manipulator_id)
 
         # If X and Y are the same, this is a depth only movement.
-        # Declare request as such. Otherwise, do normal movement.
+        depth_only = (
+            abs(current_position.x - position.x) <= self.get_movement_tolerance()
+            and abs(current_position.y - position.y) <= self.get_movement_tolerance()
+        )
+
+        # Reset step mode to normal for non-depth only movements.
+        if not depth_only:
+            await self._put_request(
+                {"PutId": "ProbeStepMode", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id), "StepMode": 0}
+            )
+
+        # Declare request based on depth only or not.
+        # Distance and speed are converted from mm to µm and mm/s to µm/min.
         requests = (
             {
                 "PutId": "ProbeInsertion",
                 "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                "Distance": position.w - current_position.w,
-                "Rate": speed,
+                "Distance": mmps_to_umps(position.w - current_position.w),
+                "Rate": mmps_to_umps(speed) * 60,
             }
-            if abs(current_position.x - position.x) <= self.get_movement_tolerance()
-            and abs(current_position.y - position.y) <= self.get_movement_tolerance()
+            if depth_only
             else {
                 "PutId": "ProbeMotion",
                 "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),

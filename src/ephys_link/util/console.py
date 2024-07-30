@@ -92,9 +92,7 @@ class Console:
         :param exception: Exception to print.
         :type exception: Exception
         """
-        self._log.exception(
-            f"[b magenta]{label}:[/] [magenta]{Console.pretty_exception(exception)}"
-        )
+        self._log.exception(f"[b magenta]{label}:[/] [magenta]{Console.pretty_exception(exception)}")
 
     # Helper methods.
     def _repeatable_log(self, log_type: int, label: str, message: str) -> None:
@@ -123,7 +121,7 @@ class Console:
                 # Complete previous repeat.
                 self._log.log(
                     self._last_message[0],
-                    f"{self._last_message[1]}:[/] {self._last_message[2]}[/] x {self._repeat_counter}"
+                    f"{self._last_message[1]}:[/] {self._last_message[2]}[/] x {self._repeat_counter}",
                 )
                 self._repeat_counter = 0
 
