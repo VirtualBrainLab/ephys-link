@@ -14,7 +14,7 @@ from requests import JSONDecodeError, get, put
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.util.base_bindings import BaseBindings
-from ephys_link.util.common import vector4_to_array, mm_to_um, mmps_to_umps
+from ephys_link.util.common import mmps_to_umps, vector4_to_array
 
 
 class MPMBinding(BaseBindings):
@@ -115,6 +115,9 @@ class MPMBinding(BaseBindings):
         return 0.01
 
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
+        # Duplicate W to Z on target position.
+        target_position = position.model_copy(update={"z": position.w})
+        
         # Determine if this is a depth only movement.
 
         # Get current position to check if this is a depth only movement.
@@ -122,8 +125,8 @@ class MPMBinding(BaseBindings):
 
         # If X and Y are the same, this is a depth only movement.
         depth_only = (
-            abs(current_position.x - position.x) <= self.get_movement_tolerance()
-            and abs(current_position.y - position.y) <= self.get_movement_tolerance()
+            abs(current_position.x - target_position.x) <= self.get_movement_tolerance()
+            and abs(current_position.y - target_position.y) <= self.get_movement_tolerance()
         )
 
         # Reset step mode to normal for non-depth only movements.
@@ -134,33 +137,35 @@ class MPMBinding(BaseBindings):
 
         # Declare request based on depth only or not.
         # Distance and speed are converted from mm to µm and mm/s to µm/min.
-        requests = (
-            {
-                "PutId": "ProbeInsertion",
-                "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                "Distance": mmps_to_umps(current_position.w - position.w),
-                "Rate": mmps_to_umps(speed) * 60,
-            }
-            if depth_only
-            else {
-                "PutId": "ProbeMotion",
-                "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                "Absolute": 1,
-                "Stereotactic": 0,
-                "AxisMask": 7,
-                "X": position.x,
-                "Y": position.y,
-                "Z": position.z,
-            }
-        )
-        await self._put_request(requests)
+        def _request(current_position_for_request: Vector4) -> dict[str, Any]:
+            return (
+                {
+                    "PutId": "ProbeInsertion",
+                    "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                    "Distance": mmps_to_umps(current_position_for_request.w - target_position.w),
+                    "Rate": mmps_to_umps(speed) * 60,
+                }
+                if depth_only
+                else {
+                    "PutId": "ProbeMotion",
+                    "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                    "Absolute": 1,
+                    "Stereotactic": 0,
+                    "AxisMask": 7,
+                    "X": target_position.x,
+                    "Y": target_position.y,
+                    "Z": target_position.z,
+                }
+            )
+
+        await self._put_request(_request(current_position))
 
         # Keep track of the previous position to check if the manipulator stopped advancing unexpectedly.
         current_position = await self.get_position(manipulator_id)
         previous_position = current_position
         unchanged_counter = 0
 
-        while not self._movement_stopped and not self._is_vector_close(position, current_position):
+        while not self._movement_stopped and not self._is_vector_close(target_position, current_position):
             # Update current position.
             current_position = await self.get_position(manipulator_id)
 
@@ -175,7 +180,7 @@ class MPMBinding(BaseBindings):
 
             # Resend request if not moving for too long.
             if unchanged_counter > self.UNCHANGED_COUNTER_LIMIT:
-                await self._put_request(requests)
+                await self._put_request(_request(current_position))
 
             # Wait for a short time before checking again.
             await sleep(self.POLL_INTERVAL)
