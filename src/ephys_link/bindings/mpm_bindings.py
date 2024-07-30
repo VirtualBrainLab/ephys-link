@@ -114,18 +114,32 @@ class MPMBinding(BaseBindings):
     def get_movement_tolerance(self) -> float:
         return 0.01
 
-    async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:  # noqa: ARG002
-        # Request movement to the desired position.
-        requests = {
-            "PutId": "ProbeMotion",
-            "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-            "Absolute": 1,
-            "Stereotactic": 0,
-            "AxisMask": 7,
-            "X": position.x,
-            "Y": position.y,
-            "Z": position.z,
-        }
+    async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
+        # Get current position to check if this is a depth only movement.
+        current_position = await self.get_position(manipulator_id)
+
+        # If X and Y are the same, this is a depth only movement.
+        # Declare request as such. Otherwise, do normal movement.
+        requests = (
+            {
+                "PutId": "ProbeInsertion",
+                "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                "Distance": position.w - current_position.w,
+                "Rate": speed,
+            }
+            if abs(current_position.x - position.x) <= self.get_movement_tolerance()
+            and abs(current_position.y - position.y) <= self.get_movement_tolerance()
+            else {
+                "PutId": "ProbeMotion",
+                "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                "Absolute": 1,
+                "Stereotactic": 0,
+                "AxisMask": 7,
+                "X": position.x,
+                "Y": position.y,
+                "Z": position.z,
+            }
+        )
         await self._put_request(requests)
 
         # Keep track of the previous position to check if the manipulator stopped advancing unexpectedly.
@@ -159,54 +173,6 @@ class MPMBinding(BaseBindings):
         # Return the final position.
         return await self.get_position(manipulator_id)
 
-    async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
-        """Move the Z axis the needed relative distance to reach the desired depth."""
-
-        async def _get_current_depth() -> float:
-            return float((await self._manipulator_data(manipulator_id))["Stage_Z"])
-
-        # Get current position.
-        current_depth = await _get_current_depth()
-
-        # Request movement based on difference between current and requested (remaining insertion).
-        request = {
-            "PutId": "ProbeInsertion",
-            "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-            "Distance": depth - current_depth,
-            "Rate": speed,
-        }
-        await self._put_request(request)
-
-        # Keep track of the previous position to check if the manipulator stopped advancing unexpectedly.
-        previous_position = current_depth
-        unchanged_counter = 0
-
-        while not self._movement_stopped and abs(depth - current_depth) > self.get_movement_tolerance():
-            # Update current position.
-            current_depth = await _get_current_depth()
-
-            # Check if the manipulator is not moving.
-            if abs(previous_position - current_depth) < self.get_movement_tolerance():
-                # Position did not change.
-                unchanged_counter += 1
-            else:
-                # Position changed.
-                unchanged_counter = 0
-                previous_position = current_depth
-
-            # Resend request if not moving for too long (2 seconds).
-            if unchanged_counter > self.UNCHANGED_COUNTER_LIMIT:
-                await self._put_request(request)
-
-            # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
-
-        # Reset movement stopped flag.
-        self._movement_stopped = False
-
-        # Return the final depth.
-        return await _get_current_depth()
-
     async def stop(self, manipulator_id: str) -> None:
         request = {"PutId": "ProbeStop", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id)}
         await self._put_request(request)
@@ -217,28 +183,29 @@ class MPMBinding(BaseBindings):
         # +x        <-  -x
         # +y        <-  +z
         # +z        <-  +y
-        # +d        <-  -d
+        # +w        <-  -w
 
         return Vector4(
-            x=self.dimensions.x - platform_space.x,
+            x=self.get_dimensions().x - platform_space.x,
             y=platform_space.z,
             z=platform_space.y,
-            w=self.dimensions.z - platform_space.w,
-        ) 
+            w=self.get_dimensions().z - platform_space.w,
+        )
 
     def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
         # platform  <-  unified
         # +x        <-  -x
         # +y        <-  +z
         # +z        <-  +y
-        # +d        <-  -d
+        # +w        <-  -w
 
         return Vector4(
-            x=self.dimensions.x - unified_space.x,
+            x=self.get_dimensions().x - unified_space.x,
             y=unified_space.z,
             z=unified_space.y,
-            w=self.dimensions.z - unified_space.w,
+            w=self.get_dimensions().z - unified_space.w,
         )
+
     # Helper functions.
     async def _query_data(self) -> Any:
         try:
