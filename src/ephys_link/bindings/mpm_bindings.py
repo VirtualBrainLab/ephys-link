@@ -5,7 +5,6 @@ This means exceptions need to be made for its API.
 
 Usage: Instantiate MPMBindings to interact with the New Scale Pathfinder MPM HTTP server platform.
 """
-
 from asyncio import get_running_loop, sleep
 from json import dumps
 from typing import Any
@@ -93,6 +92,9 @@ class MPMBinding(BaseBindings):
     async def get_position(self, manipulator_id: str) -> Vector4:
         manipulator_data = await self._manipulator_data(manipulator_id)
         stage_z = manipulator_data["Stage_Z"]
+
+        await sleep(self.POLL_INTERVAL)  # Wait for the stage to stabilize.
+
         return Vector4(
             x=manipulator_data["Stage_X"],
             y=manipulator_data["Stage_Y"],
@@ -119,10 +121,10 @@ class MPMBinding(BaseBindings):
         return 0.01
 
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
-        # Keep track of the previous position to check if the manipulator stopped advancing unexpectedly.
+        # Keep track of the previous position to check if the manipulator stopped advancing.
         current_position = await self.get_position(manipulator_id)
         previous_position = current_position
-        unchanged_counter = self.UNCHANGED_COUNTER_LIMIT
+        unchanged_counter = 0
 
         # Set step mode based on speed.
         await self._put_request(
@@ -133,9 +135,29 @@ class MPMBinding(BaseBindings):
             }
         )
 
-        # Send request to move to the target position while not there.
-        while not self._movement_stopped and not self._is_vector_close(current_position, position):
-            print(f"Current position: {current_position}, Target position: {position}, close: {self._is_vector_close(current_position, position)}")
+        # Send move request.
+        await self._put_request(
+            {
+                "PutId": "ProbeMotion",
+                "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                "Absolute": 1,
+                "Stereotactic": 0,
+                "AxisMask": 7,
+                "X": position.x,
+                "Y": position.y,
+                "Z": position.z,
+            }
+        )
+
+        # Wait for the manipulator to reach the target position or be stopped or stuck.
+        while (
+                not self._movement_stopped
+                and not self._is_vector_close(current_position, position)
+                and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
+        ):
+            # Wait for a short time before checking again.
+            await sleep(self.POLL_INTERVAL)
+
             # Update current position.
             current_position = await self.get_position(manipulator_id)
 
@@ -148,24 +170,6 @@ class MPMBinding(BaseBindings):
                 unchanged_counter = 0
                 previous_position = current_position
 
-            # Send request if not moving for too long.
-            if unchanged_counter > self.UNCHANGED_COUNTER_LIMIT:
-                await self._put_request(
-                    {
-                        "PutId": "ProbeMotion",
-                        "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                        "Absolute": 1,
-                        "Stereotactic": 0,
-                        "AxisMask": 7,
-                        "X": position.x,
-                        "Y": position.y,
-                        "Z": position.z,
-                    }
-                )
-
-            # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
-
         # Reset movement stopped flag.
         self._movement_stopped = False
 
@@ -176,11 +180,24 @@ class MPMBinding(BaseBindings):
         # Keep track of the previous depth to check if the manipulator stopped advancing unexpectedly.
         current_depth = (await self.get_position(manipulator_id)).w
         previous_depth = current_depth
-        unchanged_counter = self.UNCHANGED_COUNTER_LIMIT
+        unchanged_counter = 0
 
-        # Send request to move to the target depth while not there.
+        # Send move request.
+        # Convert mm/s to um/min and cap speed at the limit.
+        await self._put_request(
+            {
+                "PutId": "ProbeInsertion",
+                "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                "Distance": scalar_mm_to_um(current_depth - depth),
+                "Rate": min(scalar_mm_to_um(speed) * 60, self.INSERTION_SPEED_LIMIT),
+            }
+        )
+
+        # Wait for the manipulator to reach the target depth or be stopped or get stuck.
         while not self._movement_stopped and not abs(current_depth - depth) <= self.get_movement_tolerance():
-            print(f"Current depth: {current_depth}, Target depth: {depth}")
+            # Wait for a short time before checking again.
+            await sleep(self.POLL_INTERVAL)
+
             # Get the current depth.
             current_depth = (await self.get_position(manipulator_id)).w
 
@@ -192,21 +209,6 @@ class MPMBinding(BaseBindings):
                 # Depth changed.
                 unchanged_counter = 0
                 previous_depth = current_depth
-
-            # Send request if not moving for too long.
-            # Need to convert mm/s to um/min and cap at the limit.
-            if unchanged_counter > self.UNCHANGED_COUNTER_LIMIT:
-                await self._put_request(
-                    {
-                        "PutId": "ProbeInsertion",
-                        "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                        "Distance": scalar_mm_to_um(current_depth - depth),
-                        "Rate": min(scalar_mm_to_um(speed) * 60, self.INSERTION_SPEED_LIMIT),
-                    }
-                )
-
-            # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
 
         # Reset movement stopped flag.
         self._movement_stopped = False
