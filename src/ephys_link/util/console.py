@@ -30,7 +30,7 @@ class Console:
             handlers=[RichHandler(rich_tracebacks=True, markup=True)],
         )
         self._log = getLogger("rich")
-        self._log.level = DEBUG if enable_debug else INFO
+        self._log.setLevel(DEBUG if enable_debug else INFO)
 
         # Install Rich traceback.
         install()
