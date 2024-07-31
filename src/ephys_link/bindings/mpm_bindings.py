@@ -14,7 +14,7 @@ from requests import JSONDecodeError, get, put
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.util.base_bindings import BaseBindings
-from ephys_link.util.common import mmps_to_umps, vector4_to_array
+from ephys_link.util.common import scalar_mm_to_um, vector4_to_array
 
 
 class MPMBinding(BaseBindings):
@@ -68,6 +68,10 @@ class MPMBinding(BaseBindings):
     UNCHANGED_COUNTER_LIMIT = 10
     POLL_INTERVAL = 0.2
 
+    # Speed preferences (mm/s to use coarse mode).
+    COARSE_SPEED_THRESHOLD = 0.1
+    INSERTION_SPEED_LIMIT = 9_000
+
     def __init__(self, port: int) -> None:
         """Initialize connection to MPM HTTP server.
 
@@ -115,61 +119,27 @@ class MPMBinding(BaseBindings):
         return 0.01
 
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
-        # Duplicate W to Z on target position.
-        target_position = position.model_copy(update={"z": position.w})
-
-        # Determine if this is a depth only movement.
-
-        # Get current position to check if this is a depth only movement.
-        current_position = await self.get_position(manipulator_id)
-
-        # If X and Y are the same, this is a depth only movement.
-        depth_only = (
-            abs(current_position.x - target_position.x) <= self.get_movement_tolerance()
-            and abs(current_position.y - target_position.y) <= self.get_movement_tolerance()
-        )
-
-        # Reset step mode to normal for non-depth only movements.
-        if not depth_only:
-            await self._put_request(
-                {"PutId": "ProbeStepMode", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id), "StepMode": 0}
-            )
-
-        # Declare request based on depth only or not.
-        # Distance and speed are converted from mm to µm and mm/s to µm/min.
-        def _request(current_position_for_request: Vector4) -> dict[str, Any]:
-            return (
-                {
-                    "PutId": "ProbeInsertion",
-                    "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                    "Distance": mmps_to_umps(current_position_for_request.w - target_position.w),
-                    "Rate": mmps_to_umps(speed) * 60,
-                }
-                if depth_only
-                else {
-                    "PutId": "ProbeMotion",
-                    "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
-                    "Absolute": 1,
-                    "Stereotactic": 0,
-                    "AxisMask": 7,
-                    "X": target_position.x,
-                    "Y": target_position.y,
-                    "Z": target_position.z,
-                }
-            )
-
-        await self._put_request(_request(current_position))
-
         # Keep track of the previous position to check if the manipulator stopped advancing unexpectedly.
         current_position = await self.get_position(manipulator_id)
         previous_position = current_position
-        unchanged_counter = 0
+        unchanged_counter = self.UNCHANGED_COUNTER_LIMIT
 
-        while not self._movement_stopped and not self._is_vector_close(target_position, current_position):
+        # Set step mode based on speed.
+        await self._put_request(
+            {
+                "PutId": "ProbeStepMode",
+                "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                "StepMode": 0 if speed > self.COARSE_SPEED_THRESHOLD else 1,
+            }
+        )
+
+        # Send request to move to the target position while not there.
+        while not self._movement_stopped and not self._is_vector_close(current_position, position):
+            print(f"Current position: {current_position}, Target position: {position}, close: {self._is_vector_close(current_position, position)}")
             # Update current position.
             current_position = await self.get_position(manipulator_id)
 
-            # Check if the manipulator is not moving.
+            # Check if manipulator is not moving.
             if self._is_vector_close(previous_position, current_position):
                 # Position did not change.
                 unchanged_counter += 1
@@ -178,9 +148,20 @@ class MPMBinding(BaseBindings):
                 unchanged_counter = 0
                 previous_position = current_position
 
-            # Resend request if not moving for too long.
+            # Send request if not moving for too long.
             if unchanged_counter > self.UNCHANGED_COUNTER_LIMIT:
-                await self._put_request(_request(current_position))
+                await self._put_request(
+                    {
+                        "PutId": "ProbeMotion",
+                        "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                        "Absolute": 1,
+                        "Stereotactic": 0,
+                        "AxisMask": 7,
+                        "X": position.x,
+                        "Y": position.y,
+                        "Z": position.z,
+                    }
+                )
 
             # Wait for a short time before checking again.
             await sleep(self.POLL_INTERVAL)
@@ -190,6 +171,48 @@ class MPMBinding(BaseBindings):
 
         # Return the final position.
         return await self.get_position(manipulator_id)
+
+    async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
+        # Keep track of the previous depth to check if the manipulator stopped advancing unexpectedly.
+        current_depth = (await self.get_position(manipulator_id)).w
+        previous_depth = current_depth
+        unchanged_counter = self.UNCHANGED_COUNTER_LIMIT
+
+        # Send request to move to the target depth while not there.
+        while not self._movement_stopped and not abs(current_depth - depth) <= self.get_movement_tolerance():
+            print(f"Current depth: {current_depth}, Target depth: {depth}")
+            # Get the current depth.
+            current_depth = (await self.get_position(manipulator_id)).w
+
+            # Check if manipulator is not moving.
+            if abs(previous_depth - current_depth) <= self.get_movement_tolerance():
+                # Depth did not change.
+                unchanged_counter += 1
+            else:
+                # Depth changed.
+                unchanged_counter = 0
+                previous_depth = current_depth
+
+            # Send request if not moving for too long.
+            # Need to convert mm/s to um/min and cap at the limit.
+            if unchanged_counter > self.UNCHANGED_COUNTER_LIMIT:
+                await self._put_request(
+                    {
+                        "PutId": "ProbeInsertion",
+                        "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+                        "Distance": scalar_mm_to_um(current_depth - depth),
+                        "Rate": min(scalar_mm_to_um(speed) * 60, self.INSERTION_SPEED_LIMIT),
+                    }
+                )
+
+            # Wait for a short time before checking again.
+            await sleep(self.POLL_INTERVAL)
+
+        # Reset movement stopped flag.
+        self._movement_stopped = False
+
+        # Return the final depth.
+        return float((await self.get_position(manipulator_id)).w)
 
     async def stop(self, manipulator_id: str) -> None:
         request = {"PutId": "ProbeStop", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id)}
@@ -249,4 +272,4 @@ class MPMBinding(BaseBindings):
         await get_running_loop().run_in_executor(None, put, self._url, dumps(request))
 
     def _is_vector_close(self, target: Vector4, current: Vector4) -> bool:
-        return all(abs(axis) <= self.get_movement_tolerance() for axis in vector4_to_array(target - current))
+        return all(abs(axis) <= self.get_movement_tolerance() for axis in vector4_to_array(target - current)[:3])

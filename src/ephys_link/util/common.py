@@ -53,23 +53,23 @@ def check_for_updates() -> None:
 # Unit conversions
 
 
-def mmps_to_umps(mmps: float) -> float:
-    """Convert millimeters per second to micrometers per second.
+def scalar_mm_to_um(mm: float) -> float:
+    """Convert scalar values of millimeters to micrometers.
 
-    :param mmps: Speed in millimeters per second.
-    :type mmps: float
-    :returns: Speed in micrometers per second.
+    :param mm: Scalar value in millimeters.
+    :type mm: float
+    :returns: Scalar value in micrometers.
     :rtype: float
     """
-    return mmps * 1_000
+    return mm * 1_000
 
 
-def mm_to_um(mm: Vector4) -> Vector4:
-    """Convert millimeters to micrometers.
+def vector_mm_to_um(mm: Vector4) -> Vector4:
+    """Convert vector values of millimeters to micrometers.
 
-    :param mm: Length in millimeters.
+    :param mm: Vector in millimeters.
     :type mm: Vector4
-    :returns: Length in micrometers.
+    :returns: Vector in micrometers.
     :rtype: Vector4
     """
     return mm * 1_000

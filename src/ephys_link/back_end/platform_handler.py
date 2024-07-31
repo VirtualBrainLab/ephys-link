@@ -230,24 +230,27 @@ class PlatformHandler:
         :rtype: :class:`vbl_aquarium.models.ephys_link.DriveToDepthResponse`
         """
         try:
-            # Create a position based on the new depth.
-            current_platform_position = await self._bindings.get_position(request.manipulator_id)
-            current_unified_position = self._bindings.platform_space_to_unified_space(current_platform_position)
-            target_unified_position = current_unified_position.model_copy(update={"w": request.depth})
-            target_platform_position = self._bindings.unified_space_to_platform_space(target_unified_position)
-
             # Move to the new depth.
-            final_platform_position = await self._bindings.set_position(
+            final_platform_depth = await self._bindings.set_depth(
                 manipulator_id=request.manipulator_id,
-                position=target_platform_position,
+                depth=self._bindings.unified_space_to_platform_space(Vector4(w=request.depth)).w,
                 speed=request.speed,
             )
-            final_unified_position = self._bindings.platform_space_to_unified_space(final_platform_position)
+            final_unified_depth = self._bindings.platform_space_to_unified_space(Vector4(w=final_platform_depth)).w
+
+            # Return error if movement did not reach target within tolerance.
+            if abs(final_unified_depth - request.depth) > self._bindings.get_movement_tolerance():
+                error_message = (
+                    f"Manipulator {request.manipulator_id} did not reach target depth."
+                    f" Requested: {request.depth}, got: {final_unified_depth}."
+                )
+                self._console.error_print("Set Depth", error_message)
+                return SetDepthResponse(error=error_message)
         except Exception as e:
             self._console.exception_error_print("Set Depth", e)
             return SetDepthResponse(error=self._console.pretty_exception(e))
         else:
-            return SetDepthResponse(depth=final_unified_position.w)
+            return SetDepthResponse(depth=final_unified_depth)
 
     async def set_inside_brain(self, request: SetInsideBrainRequest) -> BooleanStateResponse:
         """Mark a manipulator as inside the brain or not.
