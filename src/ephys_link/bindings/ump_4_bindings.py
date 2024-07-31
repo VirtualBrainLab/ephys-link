@@ -9,7 +9,14 @@ from sensapex import UMP, SensapexDevice
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.util.base_bindings import BaseBindings
-from ephys_link.util.common import RESOURCES_PATH, array_to_vector4, mm_to_um, mmps_to_umps, um_to_mm, vector4_to_array
+from ephys_link.util.common import (
+    RESOURCES_PATH,
+    array_to_vector4,
+    scalar_mm_to_um,
+    um_to_mm,
+    vector4_to_array,
+    vector_mm_to_um,
+)
 
 
 class Ump4Bindings(BaseBindings):
@@ -28,7 +35,7 @@ class Ump4Bindings(BaseBindings):
     async def get_manipulators(self) -> list[str]:
         return list(map(str, self._ump.list_devices()))
 
-    async def get_num_axes(self) -> int:
+    async def get_axes_count(self) -> int:
         return 4
 
     def get_dimensions(self) -> Vector4:
@@ -55,29 +62,17 @@ class Ump4Bindings(BaseBindings):
         error_message = "UMP-4 does not support getting shank count"
         raise AttributeError(error_message)
 
-    async def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance(self) -> float:
         return 0.001
 
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
-        """Set the position of the manipulator.
-
-        Waits using Asyncio until the movement is finished. This assumes the application is running in an event loop.
-
-        :param manipulator_id: Manipulator ID.
-        :type manipulator_id: str
-        :param position: Platform space position to set the manipulator to (mm).
-        :type position: Vector4
-        :param speed: Speed to move the manipulator to the position (mm/s).
-        :type speed: float
-        :returns: Final position of the manipulator in platform space (mm).
-        :rtype: Vector4
-        :raises RuntimeError: If the movement is interrupted.
-        """
         # Convert position to micrometers.
-        target_position_um = mm_to_um(position)
+        target_position_um = vector_mm_to_um(position)
 
         # Request movement.
-        movement = self._get_device(manipulator_id).goto_pos(vector4_to_array(target_position_um), mmps_to_umps(speed))
+        movement = self._get_device(manipulator_id).goto_pos(
+            vector4_to_array(target_position_um), scalar_mm_to_um(speed)
+        )
 
         # Wait for movement to finish.
         await get_running_loop().run_in_executor(None, movement.finished_event.wait)
@@ -88,6 +83,17 @@ class Ump4Bindings(BaseBindings):
             raise RuntimeError(error_message)
 
         return um_to_mm(array_to_vector4(movement.last_pos))
+
+    async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
+        # Augment current position with depth.
+        current_position = await self.get_position(manipulator_id)
+        new_platform_position = current_position.model_copy(update={"w": depth})
+
+        # Make the movement.
+        final_platform_position = await self.set_position(manipulator_id, new_platform_position, speed)
+
+        # Return the final depth.
+        return float(final_platform_position.w)
 
     async def stop(self, manipulator_id: str) -> None:
         self._get_device(manipulator_id).stop()

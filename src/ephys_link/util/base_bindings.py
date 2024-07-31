@@ -25,7 +25,7 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def get_num_axes(self) -> int:
+    async def get_axes_count(self) -> int:
         """Get the number of axes for the current platform.
 
         :returns: Number of axes.
@@ -76,7 +76,7 @@ class BaseBindings(ABC):
         """
 
     @abstractmethod
-    async def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance(self) -> float:
         """Get the tolerance for how close the final position must be to the target position in a movement (mm).
 
         :returns: Movement tolerance (mm).
@@ -88,7 +88,6 @@ class BaseBindings(ABC):
         """Set the position of a manipulator.
 
         This will directly set the position in the original platform space.
-        Unified space coordinates will need to be converted to platform space.
         For 3-axis manipulators, the first 3 values of the position will be used.
 
         :param manipulator_id: Manipulator ID.
@@ -99,6 +98,22 @@ class BaseBindings(ABC):
         :type speed: float
         :returns: Final position of the manipulator in platform space (mm).
         :rtype: Vector4
+        """
+
+    @abstractmethod
+    async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
+        """Set the depth of a manipulator.
+
+        This will directly set the depth stage in the original platform space.
+
+        :param manipulator_id: Manipulator ID.
+        :type manipulator_id: str
+        :param depth: Depth to set the manipulator to (mm).
+        :type depth: float
+        :param speed: Speed to move the manipulator to the depth (mm/s).
+        :type speed: float
+        :returns: Final depth of the manipulator in platform space (mm).
+        :rtype: float
         """
 
     @abstractmethod

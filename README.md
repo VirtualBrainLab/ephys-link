@@ -80,13 +80,12 @@ window instead of `localhost`.
 pip install ephys-link
 ```
 
-Import the modules you need and launch the server.
+Import main and run (this will launch the setup GUI).
 
 ```python
-from ephys_link.server import Server
+from ephys_link.__main__ import main
 
-server = Server()
-server.launch("sensapex", args.proxy_address, 8081)
+main()
 ```
 
 ## Install for Development

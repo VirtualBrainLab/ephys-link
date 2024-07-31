@@ -31,7 +31,7 @@ def main() -> None:
     console = Console(enable_debug=options.debug)
 
     # 3. Instantiate the Platform Handler with the appropriate platform bindings.
-    platform_handler = PlatformHandler(options.type, console)
+    platform_handler = PlatformHandler(options, console)
 
     # 4. Instantiate the Emergency Stop service.
 

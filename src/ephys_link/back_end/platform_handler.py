@@ -12,6 +12,7 @@ from uuid import uuid4
 from vbl_aquarium.models.ephys_link import (
     AngularResponse,
     BooleanStateResponse,
+    EphysLinkOptions,
     GetManipulatorsResponse,
     PositionalResponse,
     SetDepthRequest,
@@ -25,6 +26,7 @@ from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
 from ephys_link.bindings.fake_bindings import FakeBindings
+from ephys_link.bindings.mpm_bindings import MPMBinding
 from ephys_link.bindings.ump_4_bindings import Ump4Bindings
 from ephys_link.util.base_bindings import BaseBindings
 from ephys_link.util.common import vector4_to_array
@@ -34,21 +36,21 @@ from ephys_link.util.console import Console
 class PlatformHandler:
     """Handler for platform commands."""
 
-    def __init__(self, platform_type: str, console: Console) -> None:
+    def __init__(self, options: EphysLinkOptions, console: Console) -> None:
         """Initialize platform handler.
 
-        :param platform_type: Platform type to initialize bindings from.
-        :type platform_type: str
+        :param options: CLI options.
+        :type options: EphysLinkOptions
         """
 
-        # Store the platform type.
-        self._platform_type = platform_type
+        # Store the CLI options.
+        self._options = options
 
         # Store the console.
         self._console = console
 
         # Define bindings based on platform type.
-        self._bindings = self._match_platform_type(platform_type)
+        self._bindings = self._match_platform_type(options)
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
@@ -56,21 +58,23 @@ class PlatformHandler:
         # Generate a Pinpoint ID for proxy usage.
         self._pinpoint_id = str(uuid4())[:8]
 
-    def _match_platform_type(self, platform_type: str) -> BaseBindings:
+    def _match_platform_type(self, options: EphysLinkOptions) -> BaseBindings:
         """Match the platform type to the appropriate bindings.
 
-        :param platform_type: Platform type.
-        :type platform_type: str
+        :param options: CLI options.
+        :type options: EphysLinkOptions
         :returns: Bindings for the specified platform type.
         :rtype: :class:`ephys_link.util.base_bindings.BaseBindings`
         """
-        match platform_type:
+        match options.type:
             case "ump-4":
                 return Ump4Bindings()
+            case "pathfinder-mpm":
+                return MPMBinding(options.mpm_port)
             case "fake":
                 return FakeBindings()
             case _:
-                error_message = f'Platform type "{platform_type}" not recognized.'
+                error_message = f'Platform type "{options.type}" not recognized.'
                 self._console.critical_print(error_message)
                 raise ValueError(error_message)
 
@@ -99,7 +103,7 @@ class PlatformHandler:
         :returns: Platform type config identifier (see CLI options for examples).
         :rtype: str
         """
-        return self._platform_type
+        return str(self._options.type)
 
     # Manipulator commands.
 
@@ -111,7 +115,7 @@ class PlatformHandler:
         """
         try:
             manipulators = await self._bindings.get_manipulators()
-            num_axes = await self._bindings.get_num_axes()
+            num_axes = await self._bindings.get_axes_count()
             dimensions = self._bindings.get_dimensions()
         except Exception as e:
             self._console.exception_error_print("Get Manipulators", e)
@@ -198,16 +202,16 @@ class PlatformHandler:
 
             # Return error if movement did not reach target within tolerance.
             for index, axis in enumerate(vector4_to_array(final_unified_position - request.position)):
-                # End once index is greater than the number of axes.
-                if index >= await self._bindings.get_num_axes():
+                # End once index is the number of axes.
+                if index == await self._bindings.get_axes_count():
                     break
 
                 # Check if the axis is within the movement tolerance.
-                if abs(axis) > await self._bindings.get_movement_tolerance():
+                if abs(axis) > self._bindings.get_movement_tolerance():
                     error_message = (
                         f"Manipulator {request.manipulator_id} did not reach target"
                         f" position on axis {list(Vector4.model_fields.keys())[index]}."
-                        f"Requested: {request.position}, got: {final_unified_position}."
+                        f" Requested: {request.position}, got: {final_unified_position}."
                     )
                     self._console.error_print("Set Position", error_message)
                     return PositionalResponse(error=error_message)
@@ -226,24 +230,27 @@ class PlatformHandler:
         :rtype: :class:`vbl_aquarium.models.ephys_link.DriveToDepthResponse`
         """
         try:
-            # Create a position based on the new depth.
-            current_platform_position = await self._bindings.get_position(request.manipulator_id)
-            current_unified_position = self._bindings.platform_space_to_unified_space(current_platform_position)
-            target_unified_position = current_unified_position.model_copy(update={"w": request.depth})
-            target_platform_position = self._bindings.unified_space_to_platform_space(target_unified_position)
-
             # Move to the new depth.
-            final_platform_position = await self._bindings.set_position(
+            final_platform_depth = await self._bindings.set_depth(
                 manipulator_id=request.manipulator_id,
-                position=target_platform_position,
+                depth=self._bindings.unified_space_to_platform_space(Vector4(w=request.depth)).w,
                 speed=request.speed,
             )
-            final_unified_position = self._bindings.platform_space_to_unified_space(final_platform_position)
+            final_unified_depth = self._bindings.platform_space_to_unified_space(Vector4(w=final_platform_depth)).w
+
+            # Return error if movement did not reach target within tolerance.
+            if abs(final_unified_depth - request.depth) > self._bindings.get_movement_tolerance():
+                error_message = (
+                    f"Manipulator {request.manipulator_id} did not reach target depth."
+                    f" Requested: {request.depth}, got: {final_unified_depth}."
+                )
+                self._console.error_print("Set Depth", error_message)
+                return SetDepthResponse(error=error_message)
         except Exception as e:
             self._console.exception_error_print("Set Depth", e)
             return SetDepthResponse(error=self._console.pretty_exception(e))
         else:
-            return SetDepthResponse(depth=final_unified_position.w)
+            return SetDepthResponse(depth=final_unified_depth)
 
     async def set_inside_brain(self, request: SetInsideBrainRequest) -> BooleanStateResponse:
         """Mark a manipulator as inside the brain or not.

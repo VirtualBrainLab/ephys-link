@@ -61,6 +61,7 @@ exclude = ["/.github", "/.idea"]
 [tool.hatch.envs.default]
 python = "3.12"
 dependencies = [
+    "mypy",
     "coverage[toml]>=6.5",
     "pytest",
 ]
