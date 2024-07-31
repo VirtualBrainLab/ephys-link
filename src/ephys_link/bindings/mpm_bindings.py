@@ -5,6 +5,7 @@ This means exceptions need to be made for its API.
 
 Usage: Instantiate MPMBindings to interact with the New Scale Pathfinder MPM HTTP server platform.
 """
+
 from asyncio import get_running_loop, sleep
 from json import dumps
 from typing import Any
@@ -151,9 +152,9 @@ class MPMBinding(BaseBindings):
 
         # Wait for the manipulator to reach the target position or be stopped or stuck.
         while (
-                not self._movement_stopped
-                and not self._is_vector_close(current_position, position)
-                and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
+            not self._movement_stopped
+            and not self._is_vector_close(current_position, position)
+            and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
             await sleep(self.POLL_INTERVAL)
