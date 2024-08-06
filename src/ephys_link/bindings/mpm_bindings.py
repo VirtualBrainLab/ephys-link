@@ -66,7 +66,7 @@ class MPMBinding(BaseBindings):
 
     # Movement polling preferences.
     UNCHANGED_COUNTER_LIMIT = 10
-    POLL_INTERVAL = 0.2
+    POLL_INTERVAL = 0.1
 
     # Speed preferences (mm/s to use coarse mode).
     COARSE_SPEED_THRESHOLD = 0.1
