@@ -30,7 +30,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
 dependencies = [
-    "aiohttp==3.10.1",
+    "aiohttp==3.10.4",
     "colorama==0.4.6",
     "platformdirs==4.2.2",
     "pyserial==3.5",
