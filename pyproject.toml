@@ -32,13 +32,13 @@ classifiers = [
 dependencies = [
     "aiohttp==3.10.5",
     "colorama==0.4.6",
-    "platformdirs==4.3.2",
+    "platformdirs==4.3.3",
     "pyserial==3.5",
     "python-socketio[asyncio_client]==5.11.4",
     "pythonnet==3.0.3",
     "requests==2.32.3",
     "sensapex==1.400.1",
-    "rich==13.8.0",
+    "rich==13.8.1",
     "vbl-aquarium==0.0.22"
 ]
 
