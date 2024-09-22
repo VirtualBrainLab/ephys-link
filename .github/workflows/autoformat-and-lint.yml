@@ -23,7 +23,7 @@ jobs:
           token: ${{ secrets.WORKFLOW_COMMIT }}
 
       - name: 📦 Install Hatch
-        run: pypa/hatch@install
+        uses: pypa/hatch@install
 
       - name: 📝 Format Code
         run: hatch fmt -f
