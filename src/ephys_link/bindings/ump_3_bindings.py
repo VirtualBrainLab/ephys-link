@@ -1,4 +1,4 @@
-"""Bindings for Sensapex uMp-4 platform.
+"""Bindings for Sensapex uMp-3 platform.
 
 Usage: Instantiate Ump4Bindings to interact with the Sensapex uMp-4 platform.
 """
@@ -19,11 +19,11 @@ from ephys_link.util.common import (
 )
 
 
-class Ump4Bindings(BaseBindings):
-    """Bindings for UMP-4 platform"""
+class Ump3Bindings(BaseBindings):
+    """Bindings for UMP-3 platform"""
 
     def __init__(self) -> None:
-        """Initialize UMP-4 bindings."""
+        """Initialize UMP-3 bindings."""
 
         # Establish connection to Sensapex API (exit if connection fails).
         UMP.set_library_path(RESOURCES_PATH)
@@ -36,30 +36,36 @@ class Ump4Bindings(BaseBindings):
         return list(map(str, self._ump.list_devices()))
 
     async def get_axes_count(self) -> int:
-        return 4
+        return 3
 
     def get_dimensions(self) -> Vector4:
         return Vector4(x=20, y=20, z=20, w=20)
 
     async def get_position(self, manipulator_id: str) -> Vector4:
-        return um_to_mm(array_to_vector4(self._get_device(manipulator_id).get_pos(1)))
+        manipulator_position = self._get_device(manipulator_id).get_pos(1)
+
+        # Add the depth axis to the end of the position.
+        manipulator_position.append(manipulator_position[0])
+
+        # Convert and return.
+        return um_to_mm(array_to_vector4(manipulator_position))
 
     # noinspection PyTypeChecker
     async def get_angles(self, _: str) -> Vector3:
-        """uMp-4 does not support getting angles so raise an error.
+        """uMp-3 does not support getting angles so raise an error.
 
         :raises: AttributeError
         """
-        error_message = "UMP-4 does not support getting angles"
+        error_message = "UMP-3 does not support getting angles"
         raise AttributeError(error_message)
 
     # noinspection PyTypeChecker
     async def get_shank_count(self, _: str) -> int:
-        """uMp-4 does not support getting shank count so raise an error.
+        """uMp-3 does not support getting shank count so raise an error.
 
         :raises: AttributeError
         """
-        error_message = "UMP-4 does not support getting shank count"
+        error_message = "UMP-3 does not support getting shank count"
         raise AttributeError(error_message)
 
     def get_movement_tolerance(self) -> float:
@@ -75,7 +81,7 @@ class Ump4Bindings(BaseBindings):
             vector4_to_array(target_position_um), scalar_mm_to_um(speed)
         )
 
-        # Wait for movement to finish.
+        # Wait for movement to complete.
         await get_running_loop().run_in_executor(None, movement.finished_event.wait, None)
 
         # Handle interrupted movement.
@@ -88,7 +94,7 @@ class Ump4Bindings(BaseBindings):
     async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
         # Augment current position with depth.
         current_position = await self.get_position(manipulator_id)
-        new_platform_position = current_position.model_copy(update={"w": depth})
+        new_platform_position = current_position.model_copy(update={"x": depth})
 
         # Make the movement.
         final_platform_position = await self.set_position(manipulator_id, new_platform_position, speed)
@@ -102,28 +108,28 @@ class Ump4Bindings(BaseBindings):
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
         # unified   <-  platform
         # +x        <-  +y
-        # +y        <-  -z
-        # +z        <-  +x
-        # +d        <-  +d
+        # +y        <-  -x
+        # +z        <-  -z
+        # +d        <-  +d/x
 
         return Vector4(
             x=platform_space.y,
-            y=self.get_dimensions().z - platform_space.z,
-            z=platform_space.x,
+            y=self.get_dimensions().x - platform_space.x,
+            z=self.get_dimensions().z - platform_space.z,
             w=platform_space.w,
         )
 
     def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
         # platform  <-  unified
-        # +x        <-  +z
+        # +x        <-  -y
         # +y        <-  +x
-        # +z        <-  -y
-        # +d        <-  +d
+        # +z        <-  -z
+        # +d/x      <-  +d
 
         return Vector4(
-            x=unified_space.z,
+            x=self.get_dimensions().y - unified_space.y,
             y=unified_space.x,
-            z=self.get_dimensions().z - unified_space.y,
+            z=self.get_dimensions().z - unified_space.z,
             w=unified_space.w,
         )
 
