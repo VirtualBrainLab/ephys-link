@@ -30,7 +30,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
 dependencies = [
-    "aiohttp==3.10.9",
+    "aiohttp==3.10.10",
     "colorama==0.4.6",
     "platformdirs==4.3.6",
     "pyserial==3.5",
@@ -38,7 +38,7 @@ dependencies = [
     "pythonnet==3.0.4",
     "requests==2.32.3",
     "sensapex==1.400.2",
-    "rich==13.9.2",
+    "rich==13.9.3",
     "vbl-aquarium==0.0.22"
 ]
 
