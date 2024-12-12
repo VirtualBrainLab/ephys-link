@@ -31,13 +31,14 @@ classifiers = [
 dependencies = [
     "aiohttp==3.11.10",
     "colorama==0.4.6",
+    "packaging==24.2",
     "platformdirs==4.3.6",
     "pyserial==3.5",
     "python-socketio[asyncio_client]==5.11.4",
     "requests==2.32.3",
     "sensapex==1.400.3",
     "rich==13.9.4",
-    "vbl-aquarium==0.0.22"
+    "vbl-aquarium==0.0.23"
 ]
 
 [project.urls]
@@ -57,7 +58,7 @@ path = "src/ephys_link/__about__.py"
 exclude = ["/.github", "/.idea"]
 
 [tool.hatch.envs.default]
-python = "3.13"
+python = "3.13.1"
 dependencies = [
 #    "coverage[toml]>=6.5",
 #    "pytest",
