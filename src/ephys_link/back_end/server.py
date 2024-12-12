@@ -50,7 +50,8 @@ class Server:
         server_preamble()
 
         # Check for updates.
-        check_for_updates()
+        if not self._options.ignore_updates:
+            check_for_updates()
 
         # List platform and available manipulators.
         self._console.info_print("PLATFORM", self._platform_handler.get_platform_type())
