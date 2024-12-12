@@ -5,7 +5,7 @@ from os.path import join
 from pathlib import Path
 
 from packaging.version import parse
-from requests import get
+from requests import ConnectionError, ConnectTimeout, get
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
@@ -43,11 +43,14 @@ def server_preamble() -> None:
 
 def check_for_updates() -> None:
     """Check for updates to the Ephys Link."""
-    response = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
-    latest_version = response.json()[0]["name"]
-    if parse(latest_version) > parse(__version__):
-        print(f"Update available: {latest_version} !")
-        print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
+    try:
+        response = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
+        latest_version = response.json()[0]["name"]
+        if parse(latest_version) > parse(__version__):
+            print(f"Update available: {latest_version} !")
+            print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
+    except (ConnectionError, ConnectTimeout):
+        print("Unable to check for updates. Ignore updates or use the the -i flag to disable checks.\n")
 
 
 # Unit conversions
