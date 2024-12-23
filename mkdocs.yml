@@ -12,10 +12,15 @@ theme:
     - navigation.indexes
     - toc.follow
 nav:
-  - About:
+  - Home:
       - index.md
-      - Installation: about/installation.md
-  - "Connecting to Pinpoint":
-      - connecting_to_pinpoint/index.md
-  - "Experiment Automation":
-      - experiment_automation/index.md
+      - Installation: home/installation.md
+  - Usage:
+      - usage/index.md
+      - "Connecting to Pinpoint": usage/connecting_to_pinpoint.md
+      - "Experiment Automation": usage/experiment_automation.md
+  - Development:
+      - development/index.md
+      - "Socket.IO API": development/socketio_api.md
+      - "Adding a Manipulator": development/adding_a_manipulator.md
+      - "Code Organization": development/code_organization.md
