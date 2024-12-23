@@ -60,6 +60,7 @@ exclude = ["/.github", "/.idea"]
 [tool.hatch.envs.default]
 python = "3.13.1"
 dependencies = [
+    "mkdocs-material==9.5.49"
 #    "coverage[toml]>=6.5",
 #    "pytest",
 ]
@@ -76,7 +77,7 @@ dependencies = [
 #]
 
 [tool.hatch.envs.exe]
-python = "3.13"
+python = "3.13.1"
 dependencies = [
     "pyinstaller",
 ]
@@ -86,7 +87,7 @@ build_onefile = "pyinstaller.exe ephys_link.spec -y"
 build_clean = "pyinstaller.exe ephys_link.spec -y --clean"
 
 [tool.hatch.envs.types]
-python = "3.13"
+python = "3.13.1"
 skip-install = true
 dependencies = [
     "mypy",

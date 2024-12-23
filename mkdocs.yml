@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+
+site_name: Ephys Link
+site_url: https://virtualbrainlab.github.io/ephys-link
+theme:
+  name: material
+  features:
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - toc.follow
+nav:
+  - About:
+      - index.md
+      - Installation: about/installation.md
+  - "Connecting to Pinpoint":
+      - connecting_to_pinpoint/index.md
+  - "Experiment Automation":
+      - experiment_automation/index.md

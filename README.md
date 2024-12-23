@@ -45,10 +45,6 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
    connected to the computer. Follow the instructions on that repo for how to
    set up the Arduino.
 
-**NOTE:** Ephys Link is an HTTP server without cross-origin support. The server
-is currently designed to interface with local/desktop instances of Pinpoint. It
-will not work with the web browser versions of Pinpoint at this time.
-
 ## Launch from Pinpoint (Recommended)
 
 Pinpoint comes bundled with the correct version of Ephys Link. If you are using Pinpoint on the same computer your
