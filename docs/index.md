@@ -14,6 +14,37 @@ to communicate with manipulators used in electrophysiology experiments.
 
 <img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/0c7c60b1-0926-4697-a461-221554f82de1" alt="Manipulator and probe in pinpoint moving in sync">
 
-!!! warning "Under Construction"
+<div class="grid cards" markdown>
 
-    This documentation site is still under construction. Expect some pages to be incomplete or missing. Please come back later for more information!
+-   __Get Started__
+
+    ---
+
+    Get started by installing Ephys Link
+
+    [Install](home/installation.md)
+
+-   __Usage__
+
+    ---
+
+    Learn how to use Ephys Link
+
+    [Usage](usage/index.md)
+
+-   __Add a Manipulator__
+
+    ---
+
+    Add a new manipulator to Ephys Link
+
+    [Develop](development/adding_a_manipulator.md)
+
+-   __Learn About Pinpoint__
+
+    ---
+    
+    Pinpoint is a client application that uses Ephys Link
+
+    [Learn More](https://virtualbrainlab.org/pinpoint/installation_and_use.html)
+</div>

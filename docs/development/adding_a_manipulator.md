@@ -22,11 +22,13 @@ the [left-hand cartesian coordinate system](https://www.scratchapixel.com/lesson
 The two functions `platform_space_to_unified_space` and `unified_space_to_platform_space` are used to convert between
 your manipulator's coordinate system and the unified space.
 
-See
-the [Sensapex uMp-4](https://github.com/VirtualBrainLab/ephys-link/blob/main/src/ephys_link/bindings/ump_4_bindings.py)
-binding for an example where the platform has a Python API (Sensapex's SDK) and
-the [New Scale Pathfinder MPM](https://github.com/VirtualBrainLab/ephys-link/blob/main/src/ephys_link/bindings/mpm_bindings.py)
-binding for an example where the platform uses a REST API to an external provider.
+!!! tip
+
+    See
+    the [Sensapex uMp-4](https://github.com/VirtualBrainLab/ephys-link/blob/main/src/ephys_link/bindings/ump_4_bindings.py)
+    binding for an example where the platform has a Python API (Sensapex's SDK) and
+    the [New Scale Pathfinder MPM](https://github.com/VirtualBrainLab/ephys-link/blob/main/src/ephys_link/bindings/mpm_bindings.py)
+    binding for an example where the platform uses a REST API to an external provider.
 
 ## Register the Binding
 
