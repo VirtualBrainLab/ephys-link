@@ -2,8 +2,37 @@
 
 site_name: Ephys Link
 site_url: https://virtualbrainlab.github.io/ephys-link
+repo_url: https://github.com/VirtualBrainLab/ephys-link\
+repo_name: virtualbrainlab/ephys-link
+copyright: Copyright &copy; 2024 Virtual Brain Lab
+extra: 
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/VirtualBrainLab/ephys-link
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ephys-link
+    - icon: fontawesome/solid/globe
+      link: https://virtualbrainlab.org
 theme:
   name: material
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
   features:
     - content.code.copy
     - navigation.tracking
