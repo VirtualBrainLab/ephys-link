@@ -28,7 +28,7 @@ jobs:
         uses: pypa/hatch@install
 
       - name: 🔨 Build Documentation
-        run: hatch run docs-build
+        run: hatch -e docs run build
 
       - name: ⬆️ Upload Artifacts
         uses: actions/upload-pages-artifact@v3

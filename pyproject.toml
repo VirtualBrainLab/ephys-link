@@ -60,16 +60,22 @@ exclude = ["/.github", "/.idea"]
 [tool.hatch.envs.default]
 python = "3.13.1"
 dependencies = [
-    "mkdocs-material==9.5.49",
-    "mkdocstrings-python==1.12.2",
     "pyinstaller==6.11.1",
 ]
 [tool.hatch.envs.default.scripts]
-docs = "mkdocs serve"
-docs-build = "mkdocs build"
+exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
+exe-clean = "pyinstaller.exe ephys_link.spec -y --clean"
 
-build = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
-build-clean = "pyinstaller.exe ephys_link.spec -y --clean"
+[tool.hatch.envs.docs]
+python = "3.13.1"
+skip-install = true
+dependencies = [
+    "mkdocs-material==9.5.49",
+    "mkdocstrings-python==1.12.2",
+]
+[tool.hatch.envs.docs.scripts]
+serve = "mkdocs serve"
+build = "mkdocs build"
 
 [tool.ruff.lint]
 extend-ignore = ["DTZ005"]
