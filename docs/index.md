@@ -14,3 +14,6 @@ to communicate with manipulators used in electrophysiology experiments.
 
 <img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/0c7c60b1-0926-4697-a461-221554f82de1" alt="Manipulator and probe in pinpoint moving in sync">
 
+!!! warning "Under Construction"
+
+    This documentation site is still under construction. Expect some pages to be incomplete or missing. Please come back later for more information!
