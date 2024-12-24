@@ -34,4 +34,4 @@ pipx install ephys-link
 
 ## Install for Development
 
-See [development documentation](../development/index.md/#installing-for-development) for more information.
+See [development documentation](../development/index.md#installing-for-development) for more information.

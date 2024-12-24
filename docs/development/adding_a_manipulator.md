@@ -1,10 +1,11 @@
 By the end of this section, you will be able to add a manipulator platform to Ephys Link and control it using the server
-API. This is a software development guide and assumes you have experience with Python.
+API. This is a software development guide and assumes you have experience with Python. It is encouraged to
+read [how the system works first](../home/how_it_works.md) before proceeding.
 
 ## Set Up for Development
 
 1. Fork the [Ephys Link repository](https://github.com/VirtualBrainLab/ephys-link).
-2. Follow the instructions for [installing Ephys Link for development](index.md/#installing-for-development) to get all
+2. Follow the instructions for [installing Ephys Link for development](index.md#installing-for-development) to get all
    the necessary dependencies and tools set up. In this case, you'll want to clone your fork.
 
 ## Create a Manipulator Binding
