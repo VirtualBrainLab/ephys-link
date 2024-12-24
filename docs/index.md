@@ -14,19 +14,3 @@ to communicate with manipulators used in electrophysiology experiments.
 
 <img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/0c7c60b1-0926-4697-a461-221554f82de1" alt="Manipulator and probe in pinpoint moving in sync">
 
-**Supported Manipulators:**
-
-| Manufacturer | Model                                                   |
-|--------------|---------------------------------------------------------|
-| Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3 (Coming Soon!)</li> </ul> |
-| New Scale    | <ul> <li>Pathfinder MPM Control v2.8+</li> </ul>        |
-| Scientifica  | <ul> <li>InVivoStar (Coming Soon!)</li> </ul>           |
-| LabMaker     | <ul> <li>(Coming Soon!)</li> </ul>                      |
-
-Ephys Link is an open and extensible platform. It is designed to easily support integration with other manipulators.
-
-For more information regarding the server's implementation and how the code is organized, see
-the [package's development documentation](https://virtualbrainlab.org/ephys_link/development.html).
-
-For detailed descriptions of the server's API, see
-the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
