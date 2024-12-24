@@ -60,11 +60,13 @@ exclude = ["/.github", "/.idea"]
 [tool.hatch.envs.default]
 python = "3.13.1"
 dependencies = [
-    "mkdocs-material==9.5.49"
+    "mkdocs-material==9.5.49",
+    "mkdocstrings-python==1.12.2"
 #    "coverage[toml]>=6.5",
 #    "pytest",
 ]
-#[tool.hatch.envs.default.scripts]
+[tool.hatch.envs.default.scripts]
+docs = "mkdocs serve"
 #test = "pytest {args:tests}"
 #test-cov = "coverage run -m pytest {args:tests}"
 #cov-report = [
