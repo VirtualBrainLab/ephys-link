@@ -18,12 +18,18 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
       - name: 📦 Install Hatch
         uses: pypa/hatch@install
-      
+
       - name: 🔨 Build Documentation
         run: hatch run docs-build
-      
+
       - name: ⬆️ Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:
