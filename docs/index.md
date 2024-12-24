@@ -16,35 +16,36 @@ to communicate with manipulators used in electrophysiology experiments.
 
 <div class="grid cards" markdown>
 
--   __Get Started__
+-   __:fontawesome-solid-download: Get Started__
 
     ---
 
-    Get started by installing Ephys Link
+    Install Ephys Link and get started in seconds
 
-    [Install](home/installation.md)
 
--   __Usage__
+    [:octicons-arrow-right-24: Install](home/installation.md)
 
-    ---
-
-    Learn how to use Ephys Link
-
-    [Usage](usage/index.md)
-
--   __Add a Manipulator__
+-   __:fontawesome-solid-computer: Usage__
 
     ---
 
-    Add a new manipulator to Ephys Link
+    Learn how to use Ephys Link to control your manipulators
 
-    [Develop](development/adding_a_manipulator.md)
+    [:octicons-arrow-right-24: Usage](usage/index.md)
 
--   __Learn About Pinpoint__
+-   __:fontawesome-regular-square-plus: Add a Manipulator Platform__
+
+    ---
+
+    Add a new manipulator platform to Ephys Link to enable control
+
+    [:octicons-arrow-right-24: Develop](development/adding_a_manipulator.md)
+
+-   __:fontawesome-solid-book-open: Learn About Pinpoint__
 
     ---
     
-    Pinpoint is a client application that uses Ephys Link
+    Pinpoint is an experiment planning and automation tool that uses Ephys Link
 
-    [Learn More](https://virtualbrainlab.org/pinpoint/installation_and_use.html)
+    [:octicons-arrow-right-24: Learn More](https://virtualbrainlab.org/pinpoint/installation_and_use.html)
 </div>

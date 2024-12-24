@@ -8,7 +8,7 @@ Ephys Link is a server that runs in the background.
     on [connecting from Pinpoint](connecting_to_pinpoint.md) and using Ephys Link
     for [experiment automation](experiment_automation.md).
 
-There are different ways of launching Ephys Link depending on it was installed.
+There are different ways of launching Ephys Link depending on its installation.
 
 ## Standalone Executable (GUI)
 
@@ -43,7 +43,7 @@ EphysLink-vX.X.X.exe -b
 Use the actual name of the executable you downloaded. The `-b` or `--background` flag will launch the server without the
 configuration window and read configuration from CLI arguments.
 
-Here are some examples of how to start Ephys Link with specific platform (replace `EphysLink.exe` with the actual name
+Here are some examples of how to start Ephys Link with a specific platform (replace `EphysLink.exe` with the actual name
 of the executable you downloaded):
 
 | Manipulator Platform                   | Command                              |
@@ -55,4 +55,5 @@ More options can be viewed by running `EphysLink.exe -h`.
 
 ## Python Package
 
-Ephys Link can be invoked from the command line with the same arguments as the standalone executable using the `ephys-link` binary (or `el` for short).
+Ephys Link can be invoked from the command line with the same arguments as the standalone executable using the
+`ephys-link` binary (or `el` for short).
