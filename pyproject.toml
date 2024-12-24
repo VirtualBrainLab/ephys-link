@@ -61,60 +61,15 @@ exclude = ["/.github", "/.idea"]
 python = "3.13.1"
 dependencies = [
     "mkdocs-material==9.5.49",
-    "mkdocstrings-python==1.12.2"
-#    "coverage[toml]>=6.5",
-#    "pytest",
+    "mkdocstrings-python==1.12.2",
+    "pyinstaller==6.11.1",
 ]
 [tool.hatch.envs.default.scripts]
 docs = "mkdocs serve"
-#test = "pytest {args:tests}"
-#test-cov = "coverage run -m pytest {args:tests}"
-#cov-report = [
-#    "- coverage combine",
-#    "coverage report",
-#]
-#cov = [
-#    "test-cov",
-#    "cov-report",
-#]
+docs-build = "mkdocs build"
 
-[tool.hatch.envs.exe]
-python = "3.13.1"
-dependencies = [
-    "pyinstaller",
-]
-[tool.hatch.envs.exe.scripts]
 build = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
-build_onefile = "pyinstaller.exe ephys_link.spec -y"
-build_clean = "pyinstaller.exe ephys_link.spec -y --clean"
-
-[tool.hatch.envs.types]
-python = "3.13.1"
-skip-install = true
-dependencies = [
-    "mypy",
-]
-[tool.hatch.envs.types.scripts]
-check = "mypy --strict --install-types --non-interactive --ignore-missing-imports {args:src/ephys_link tests}"
-
-#[tool.coverage.run]
-#source_pkgs = ["ephys_link", "tests"]
-#branch = true
-#parallel = true
-#omit = [
-#    "src/ephys_link/__about__.py",
-#]
-#
-#[tool.coverage.paths]
-#ephys_link = ["src/ephys_link", "*/ephys-link/src/ephys_link"]
-#tests = ["tests", "*/ephys-link/tests"]
-#
-#[tool.coverage.report]
-#exclude_lines = [
-#    "no cov",
-#    "if __name__ == .__main__.:",
-#    "if TYPE_CHECKING:",
-#]
+build-clean = "pyinstaller.exe ephys_link.spec -y --clean"
 
 [tool.ruff.lint]
 extend-ignore = ["DTZ005"]
