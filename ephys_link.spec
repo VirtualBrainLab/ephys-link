@@ -46,7 +46,7 @@ if options.dir:
         target_arch=None,
         codesign_identity=None,
         entitlements_file=None,
-        icon='assets\\icon.ico',
+        icon='docs\\assets\\favicon.ico',
     )
     # noinspection PyUnresolvedReferences
     coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=True, upx_exclude=[], name=FILE_NAME)

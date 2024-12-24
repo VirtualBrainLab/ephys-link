@@ -8,20 +8,22 @@
 
 <!-- [![Build](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/build.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/build.yml) -->
 
-<img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/0c7c60b1-0926-4697-a461-221554f82de1" alt="Manipulator and probe in pinpoint moving in sync">
-
 The [Electrophysiology Manipulator Link](https://github.com/VirtualBrainLab/ephys-link)
 (or Ephys Link for short) is a Python [Socket.IO](https://socket.io/docs/v4/#what-socketio-is) server that allows any
 Socket.IO-compliant application (such
 as [Pinpoint](https://github.com/VirtualBrainLab/Pinpoint))
 to communicate with manipulators used in electrophysiology experiments.
 
+<img width="100%" src="https://github.com/VirtualBrainLab/ephys-link/assets/82800265/0c7c60b1-0926-4697-a461-221554f82de1" alt="Manipulator and probe in pinpoint moving in sync">
+
 **Supported Manipulators:**
 
-| Manufacturer | Model                                                                   |
-|--------------|-------------------------------------------------------------------------|
-| Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3</li> </ul>                                |
-| New Scale    | <ul> <li>Pathfinder MPM Control v2.8+</li> <li>M3-USB-3:1-EP</li> </ul> |
+| Manufacturer | Model                                                   |
+|--------------|---------------------------------------------------------|
+| Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3 (Coming Soon!)</li> </ul> |
+| New Scale    | <ul> <li>Pathfinder MPM Control v2.8+</li> </ul>        |
+| Scientifica  | <ul> <li>InVivoStar (Coming Soon!)</li> </ul>           |
+| LabMaker     | <ul> <li>(Coming Soon!)</li> </ul>                      |
 
 Ephys Link is an open and extensible platform. It is designed to easily support integration with other manipulators.
 
@@ -44,10 +46,6 @@ the [API reference](https://virtualbrainlab.org/api_reference_ephys_link.html).
    the [StopSignal](https://github.com/VirtualBrainLab/StopSignal) sketch is
    connected to the computer. Follow the instructions on that repo for how to
    set up the Arduino.
-
-**NOTE:** Ephys Link is an HTTP server without cross-origin support. The server
-is currently designed to interface with local/desktop instances of Pinpoint. It
-will not work with the web browser versions of Pinpoint at this time.
 
 ## Launch from Pinpoint (Recommended)
 

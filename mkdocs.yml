@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+
+site_name: Ephys Link
+site_url: https://virtualbrainlab.github.io/ephys-link
+repo_url: https://github.com/VirtualBrainLab/ephys-link\
+repo_name: virtualbrainlab/ephys-link
+copyright: Copyright &copy; 2024 Virtual Brain Lab
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/VirtualBrainLab/ephys-link
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ephys-link
+    - icon: fontawesome/solid/globe
+      link: https://virtualbrainlab.org
+theme:
+  name: material
+  logo: assets/icon.png
+  favicon: assets/favicon.ico
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - content.code.copy
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - toc.follow
+extra_css:
+  - stylesheets/extra.css
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [ src ]
+          options:
+            docstring_style: sphinx
+nav:
+  - Home:
+      - index.md
+      - Installation: home/installation.md
+      - "How it Works": home/how_it_works.md
+      - "Supported Manipulators": home/supported_manipulators.md
+      - Contact: home/contact.md
+  - Usage:
+      - usage/index.md
+      - "Connecting to Pinpoint": usage/connecting_to_pinpoint.md
+      - "Experiment Automation": usage/experiment_automation.md
+  - Development:
+      - development/index.md
+      - "Socket.IO API": development/socketio_api.md
+      - "Adding a Manipulator": development/adding_a_manipulator.md
+      - "Code Organization": development/code_organization.md

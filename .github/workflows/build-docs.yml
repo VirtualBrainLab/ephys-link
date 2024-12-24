@@ -1,0 +1,36 @@
+name: Build Documentation
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    name: Build
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: 📦 Install Hatch
+        uses: pypa/hatch@install
+
+      - name: 🔨 Build Documentation
+        run: hatch -e docs run build
+
+      - name: ⬆️ Upload Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "site"
