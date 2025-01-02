@@ -1,3 +1,5 @@
+# Adding a Manipulator
+
 By the end of this section, you will be able to add a manipulator platform to Ephys Link and control it using the server
 API. This is a software development guide and assumes you have experience with Python. It is encouraged to
 read [how the system works first](../home/how_it_works.md) before proceeding.

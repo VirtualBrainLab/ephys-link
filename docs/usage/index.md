@@ -1,4 +1,4 @@
-# Launching Ephys Link
+# Starting Ephys Link
 
 Ephys Link is a server that runs in the background.
 

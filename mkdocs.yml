@@ -72,6 +72,12 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 plugins:
   - search
+  - gen-files:
+      scripts:
+        - scripts/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
   - mkdocstrings:
       handlers:
         python:
@@ -92,13 +98,12 @@ nav:
           - home/supported_manipulators.md
       - home/contact.md
   - Usage:
-      - usage/launching_ephys_link.md
+      - usage/index.md
       - usage/connecting_to_pinpoint.md
       - usage/experiment_automation.md
   - Development:
       - development/index.md
-      - "Socket.IO API": development/socketio_api.md
-      - "Adding a Manipulator": development/adding_a_manipulator.md
-      - "Code Organization": development/code_organization.md
-      - "Source Code Documentation":
-          - development/source_code_documentation/index.md
+      - development/socketio_api.md
+      - development/adding_a_manipulator.md
+      - development/code_organization.md
+      - Source Code Reference: reference/
