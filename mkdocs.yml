@@ -47,6 +47,7 @@ theme:
     - toc.follow
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/mkdocstrings.css
 markdown_extensions:
   - admonition
   - attr_list
@@ -75,6 +76,8 @@ plugins:
           paths: [ src ]
           options:
             docstring_style: sphinx
+          import:
+            - https://virtualbrainlab.github.io/vbl-aquarium/objects.inv
 nav:
   - Home:
       - index.md
@@ -91,3 +94,5 @@ nav:
       - "Socket.IO API": development/socketio_api.md
       - "Adding a Manipulator": development/adding_a_manipulator.md
       - "Code Organization": development/code_organization.md
+      - "Source Code Documentation":
+          - development/source_code_documentation/index.md

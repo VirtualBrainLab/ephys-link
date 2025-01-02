@@ -2,7 +2,8 @@
 
 Definition of the methods a platform binding class must implement to be used by Ephys Link.
 
-Usage: Implement the BaseBindings class when defining a platform binding to ensure it supports the necessary methods.
+Usage:
+    Implement the BaseBindings class when defining a platform binding to ensure it supports the necessary methods.
 """
 
 from abc import ABC, abstractmethod

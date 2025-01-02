@@ -38,7 +38,7 @@ dependencies = [
     "requests==2.32.3",
     "sensapex==1.400.3",
     "rich==13.9.4",
-    "vbl-aquarium==0.0.23"
+    "vbl-aquarium==1.0.0b1"
 ]
 
 [project.urls]
@@ -71,7 +71,7 @@ python = "3.13.1"
 skip-install = true
 dependencies = [
     "mkdocs-material==9.5.49",
-    "mkdocstrings-python==1.12.2",
+    "mkdocstrings-python==1.13.0",
 ]
 [tool.hatch.envs.docs.scripts]
 serve = "mkdocs serve"
