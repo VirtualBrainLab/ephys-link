@@ -11,7 +11,7 @@ from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.back_end.server import Server
 from ephys_link.front_end.cli import CLI
 from ephys_link.front_end.gui import GUI
-from ephys_link.util.console import Console
+from ephys_link.utils.console import Console
 
 
 def main() -> None:

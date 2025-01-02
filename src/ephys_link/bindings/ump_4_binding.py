@@ -8,8 +8,8 @@ from asyncio import get_running_loop
 from sensapex import UMP, SensapexDevice
 from vbl_aquarium.models.unity import Vector3, Vector4
 
-from ephys_link.util.base_binding import BaseBinding
-from ephys_link.util.common import (
+from ephys_link.utils.base_binding import BaseBinding
+from ephys_link.utils.common import (
     RESOURCES_PATH,
     array_to_vector4,
     scalar_mm_to_um,

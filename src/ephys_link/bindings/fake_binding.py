@@ -1,7 +1,7 @@
 from vbl_aquarium.models.unity import Vector3, Vector4
 
-from ephys_link.util.base_binding import BaseBinding
-from ephys_link.util.common import array_to_vector4
+from ephys_link.utils.base_binding import BaseBinding
+from ephys_link.utils.common import array_to_vector4
 
 
 class FakeBinding(BaseBinding):

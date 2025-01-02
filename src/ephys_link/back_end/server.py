@@ -15,8 +15,8 @@ from vbl_aquarium.models.ephys_link import (
 from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.util.common import PORT, check_for_updates, server_preamble
-from ephys_link.util.console import Console
+from ephys_link.utils.common import PORT, check_for_updates, server_preamble
+from ephys_link.utils.console import Console
 
 
 class Server:

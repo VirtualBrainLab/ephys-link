@@ -28,9 +28,9 @@ from ephys_link.__about__ import __version__
 from ephys_link.bindings.fake_binding import FakeBinding
 from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.bindings.ump_4_binding import Ump4Binding
-from ephys_link.util.base_binding import BaseBinding
-from ephys_link.util.common import vector4_to_array
-from ephys_link.util.console import Console
+from ephys_link.utils.base_binding import BaseBinding
+from ephys_link.utils.common import vector4_to_array
+from ephys_link.utils.console import Console
 
 
 class PlatformHandler:

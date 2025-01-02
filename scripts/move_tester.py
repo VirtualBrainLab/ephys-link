@@ -4,7 +4,7 @@ from vbl_aquarium.models.ephys_link import EphysLinkOptions, SetDepthRequest
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.util.console import Console
+from ephys_link.utils.console import Console
 
 c = Console(enable_debug=True)
 p = PlatformHandler(EphysLinkOptions(type="pathfinder-mpm"), c)
