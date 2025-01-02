@@ -1,3 +1,5 @@
+# Connecting to Pinpoint
+
 [Pinpoint](https://github.com/VirtualBrainLab/Pinpoint) is a tool for planning electrophysiology recordings and other
 _in vivo_ insertions, as well as tracking the position of probes in real-time inside the brain.
 

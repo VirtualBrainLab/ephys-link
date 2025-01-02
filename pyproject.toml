@@ -72,6 +72,9 @@ skip-install = true
 dependencies = [
     "mkdocs-material==9.5.49",
     "mkdocstrings-python==1.13.0",
+    "mkdocs-gen-files==0.5.0",
+    "mkdocs-literate-nav==0.6.1",
+    "mkdocs-section-index==0.3.9"
 ]
 [tool.hatch.envs.docs.scripts]
 serve = "mkdocs serve"

@@ -1,3 +1,5 @@
+# Experiment Automation
+
 Pinpoint and Ephys Link can work together to automate manual procedures in electrophysiology experiments. Follow the
 [instructions on Pinpoint's documentation](https://virtualbrainlab.org//pinpoint/tutorials/tutorial_ephys_copilot.html)
 to use automation in your next experiment!

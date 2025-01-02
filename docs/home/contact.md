@@ -1,3 +1,5 @@
+# Contact
+
 Kenneth J. Yang is the primary developer and maintainer of Ephys Link. You can find his contact information on the
 VBL [about page](https://virtualbrainlab.org/about/overview.html) along with Daniel Birman's (the co-developer of Ephys Link).
 

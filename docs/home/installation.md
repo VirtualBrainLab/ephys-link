@@ -1,3 +1,5 @@
+# Installation
+
 ## Prerequisites
 
 1. An **x86 Windows PC is required** to run the server.
