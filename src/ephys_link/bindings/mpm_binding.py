@@ -13,11 +13,11 @@ from typing import Any
 from requests import JSONDecodeError, get, put
 from vbl_aquarium.models.unity import Vector3, Vector4
 
-from ephys_link.util.base_bindings import BaseBindings
+from ephys_link.util.base_binding import BaseBinding
 from ephys_link.util.common import scalar_mm_to_um, vector4_to_array
 
 
-class MPMBinding(BaseBindings):
+class MPMBinding(BaseBinding):
     """Bindings for New Scale Pathfinder MPM HTTP server platform."""
 
     # Valid New Scale manipulator IDs

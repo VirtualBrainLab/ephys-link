@@ -25,10 +25,10 @@ from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
-from ephys_link.bindings.fake_bindings import FakeBindings
-from ephys_link.bindings.mpm_bindings import MPMBinding
-from ephys_link.bindings.ump_4_bindings import Ump4Bindings
-from ephys_link.util.base_bindings import BaseBindings
+from ephys_link.bindings.fake_binding import FakeBinding
+from ephys_link.bindings.mpm_binding import MPMBinding
+from ephys_link.bindings.ump_4_binding import Ump4Binding
+from ephys_link.util.base_binding import BaseBinding
 from ephys_link.util.common import vector4_to_array
 from ephys_link.util.console import Console
 
@@ -58,7 +58,7 @@ class PlatformHandler:
         # Generate a Pinpoint ID for proxy usage.
         self._pinpoint_id = str(uuid4())[:8]
 
-    def _match_platform_type(self, options: EphysLinkOptions) -> BaseBindings:
+    def _match_platform_type(self, options: EphysLinkOptions) -> BaseBinding:
         """Match the platform type to the appropriate bindings.
 
         :param options: CLI options.
@@ -68,11 +68,11 @@ class PlatformHandler:
         """
         match options.type:
             case "ump-4":
-                return Ump4Bindings()
+                return Ump4Binding()
             case "pathfinder-mpm":
                 return MPMBinding(options.mpm_port)
             case "fake":
-                return FakeBindings()
+                return FakeBinding()
             case _:
                 error_message = f'Platform type "{options.type}" not recognized.'
                 self._console.critical_print(error_message)

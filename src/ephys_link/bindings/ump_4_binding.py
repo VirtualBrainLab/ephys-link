@@ -8,7 +8,7 @@ from asyncio import get_running_loop
 from sensapex import UMP, SensapexDevice
 from vbl_aquarium.models.unity import Vector3, Vector4
 
-from ephys_link.util.base_bindings import BaseBindings
+from ephys_link.util.base_binding import BaseBinding
 from ephys_link.util.common import (
     RESOURCES_PATH,
     array_to_vector4,
@@ -19,7 +19,7 @@ from ephys_link.util.common import (
 )
 
 
-class Ump4Bindings(BaseBindings):
+class Ump4Binding(BaseBinding):
     """Bindings for UMP-4 platform"""
 
     def __init__(self) -> None:

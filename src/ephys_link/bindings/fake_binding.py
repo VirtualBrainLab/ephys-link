@@ -1,10 +1,10 @@
 from vbl_aquarium.models.unity import Vector3, Vector4
 
-from ephys_link.util.base_bindings import BaseBindings
+from ephys_link.util.base_binding import BaseBinding
 from ephys_link.util.common import array_to_vector4
 
 
-class FakeBindings(BaseBindings):
+class FakeBinding(BaseBinding):
     def __init__(self) -> None:
         """Initialize fake manipulator infos."""
 

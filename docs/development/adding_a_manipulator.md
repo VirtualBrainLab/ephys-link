@@ -13,7 +13,7 @@ read [how the system works first](../home/how_it_works.md) before proceeding.
 ## Create a Manipulator Binding
 
 Manipulators are added to Ephys Link through bindings. A binding is a Python class that extends the abstract base class
-`BaseBinding` and defines the functions Ephys Link expects from a platform.
+[`BaseBinding`][ephys_link.util.base_binding] and defines the functions Ephys Link expects from a platform.
 
 Create a new Python module in `src/ephys_link/bindings` for your manipulator. Make a class that extends
 `BaseBinding`. Most IDEs will automatically import the necessary classes and tell you the methods you need to
@@ -22,8 +22,11 @@ implement. These functions have signature documentation describing what they sho
 As described in the [system overview](../home/how_it_works.md), Ephys Link converts all manipulator movement into a
 common "unified space" which is
 the [left-hand cartesian coordinate system](https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/coordinate-systems.html).
-The two functions `platform_space_to_unified_space` and `unified_space_to_platform_space` are used to convert between
-your manipulator's coordinate system and the unified space.
+The two functions [
+`platform_space_to_unified_space`](../../reference/ephys_link/util/base_binding/#ephys_link.util.base_binding.BaseBinding.platform_space_to_unified_space)
+and [
+`unified_space_to_platform_space`](../../reference/ephys_link/util/base_binding/#ephys_link.util.base_binding.BaseBinding.unified_space_to_platform_space)
+are used to convert between your manipulator's coordinate system and the unified space.
 
 !!! tip
 

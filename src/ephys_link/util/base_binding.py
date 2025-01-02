@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 
-class BaseBindings(ABC):
+class BaseBinding(ABC):
     """Base class to enforce bindings manipulator platforms will support.
 
     No need to catch exceptions as the Platform Handler will catch them.
