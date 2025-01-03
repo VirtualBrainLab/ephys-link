@@ -22,7 +22,7 @@ on [connecting from Pinpoint](../usage/connecting_to_pinpoint.md).
 
 Download the latest executable from the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
 
-Then see the [usage documentation](../usage/index.md) for how to run the server.
+Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
 
 ## Install as a Python package
 
@@ -36,7 +36,7 @@ or with [pipx](https://pipx.pypa.io/stable/) (recommended)
 pipx install ephys-link
 ```
 
-Then see the [usage documentation](../usage/index.md) for how to run the server.
+Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
 
 ## Install for Development
 
