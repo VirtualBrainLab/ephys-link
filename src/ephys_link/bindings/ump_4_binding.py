@@ -10,7 +10,7 @@ from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.common import (
-    RESOURCES_PATH,
+    RESOURCES_DIRECTORY,
     array_to_vector4,
     scalar_mm_to_um,
     um_to_mm,
@@ -26,7 +26,7 @@ class Ump4Binding(BaseBinding):
         """Initialize UMP-4 bindings."""
 
         # Establish connection to Sensapex API (exit if connection fails).
-        UMP.set_library_path(RESOURCES_PATH)
+        UMP.set_library_path(RESOURCES_DIRECTORY)
         self._ump = UMP.get_ump()
         if self._ump is None:
             error_message = "Unable to connect to uMp"

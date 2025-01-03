@@ -1,8 +1,7 @@
 # ruff: noqa: T201
 """Commonly used utility functions and constants."""
 
-from os.path import join
-from pathlib import Path
+from os.path import abspath, dirname, join
 
 from packaging.version import parse
 from requests import ConnectionError, ConnectTimeout, get
@@ -23,7 +22,9 @@ ASCII = r"""
 """
 
 # Absolute path to the resource folder.
-RESOURCES_PATH = join(str(Path(__file__).parent.parent.absolute()), "resources")
+PACKAGE_DIRECTORY = dirname(dirname(abspath(__file__)))
+RESOURCES_DIRECTORY = join(PACKAGE_DIRECTORY, "resources")
+BINDINGS_DIRECTORY = join(RESOURCES_DIRECTORY, "bindings")
 
 # Ephys Link Port
 PORT = 3000
