@@ -25,12 +25,12 @@ from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
-from ephys_link.bindings.fake_bindings import FakeBindings
-from ephys_link.bindings.mpm_bindings import MPMBinding
-from ephys_link.bindings.ump_4_bindings import Ump4Bindings
-from ephys_link.util.base_bindings import BaseBindings
-from ephys_link.util.common import vector4_to_array
-from ephys_link.util.console import Console
+from ephys_link.bindings.fake_binding import FakeBinding
+from ephys_link.bindings.mpm_binding import MPMBinding
+from ephys_link.bindings.ump_4_binding import Ump4Binding
+from ephys_link.utils.base_binding import BaseBinding
+from ephys_link.utils.common import vector4_to_array
+from ephys_link.utils.console import Console
 
 
 class PlatformHandler:
@@ -39,10 +39,10 @@ class PlatformHandler:
     def __init__(self, options: EphysLinkOptions, console: Console) -> None:
         """Initialize platform handler.
 
-        :param options: CLI options.
-        :type options: EphysLinkOptions
+        Args:
+            options: CLI options.
+            console: Console instance.
         """
-
         # Store the CLI options.
         self._options = options
 
@@ -58,21 +58,22 @@ class PlatformHandler:
         # Generate a Pinpoint ID for proxy usage.
         self._pinpoint_id = str(uuid4())[:8]
 
-    def _match_platform_type(self, options: EphysLinkOptions) -> BaseBindings:
+    def _match_platform_type(self, options: EphysLinkOptions) -> BaseBinding:
         """Match the platform type to the appropriate bindings.
 
-        :param options: CLI options.
-        :type options: EphysLinkOptions
-        :returns: Bindings for the specified platform type.
-        :rtype: :class:`ephys_link.util.base_bindings.BaseBindings`
+        Args:
+            options: CLI options.
+
+        Returns:
+            Bindings for the specified platform type.
         """
         match options.type:
             case "ump-4":
-                return Ump4Bindings()
+                return Ump4Binding()
             case "pathfinder-mpm":
                 return MPMBinding(options.mpm_port)
             case "fake":
-                return FakeBindings()
+                return FakeBinding()
             case _:
                 error_message = f'Platform type "{options.type}" not recognized.'
                 self._console.critical_print(error_message)
@@ -84,24 +85,24 @@ class PlatformHandler:
     def get_version() -> str:
         """Get Ephys Link's version.
 
-        :returns: Ephys Link's version.
-        :rtype: str
+        Returns:
+            Ephys Link's version.
         """
         return __version__
 
     def get_pinpoint_id(self) -> PinpointIdResponse:
         """Get the Pinpoint ID for proxy usage.
 
-        :returns: Pinpoint ID response.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.PinpointIDResponse`
+        Returns:
+            Pinpoint ID response.
         """
         return PinpointIdResponse(pinpoint_id=self._pinpoint_id, is_requester=False)
 
     def get_platform_type(self) -> str:
         """Get the manipulator platform type connected to Ephys Link.
 
-        :returns: Platform type config identifier (see CLI options for examples).
-        :rtype: str
+        Returns:
+            Platform type config identifier (see CLI options for examples).
         """
         return str(self._options.type)
 
@@ -110,8 +111,8 @@ class PlatformHandler:
     async def get_manipulators(self) -> GetManipulatorsResponse:
         """Get a list of available manipulators on the current handler.
 
-        :returns: List of manipulator IDs, number of axes, dimensions of manipulators (mm), and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.GetManipulatorsResponse`
+        Returns:
+            List of manipulator IDs, number of axes, dimensions of manipulators (mm), and an error message if any.
         """
         try:
             manipulators = await self._bindings.get_manipulators()
@@ -130,10 +131,11 @@ class PlatformHandler:
     async def get_position(self, manipulator_id: str) -> PositionalResponse:
         """Get the current translation position of a manipulator in unified coordinates (mm).
 
-        :param manipulator_id: Manipulator ID.
-        :type manipulator_id: str
-        :returns: Current position of the manipulator and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.PositionalResponse`
+        Args:
+            manipulator_id: Manipulator ID.
+
+        Returns:
+            Current position of the manipulator and an error message if any.
         """
         try:
             unified_position = self._bindings.platform_space_to_unified_space(
@@ -148,10 +150,11 @@ class PlatformHandler:
     async def get_angles(self, manipulator_id: str) -> AngularResponse:
         """Get the current rotation angles of a manipulator in Yaw, Pitch, Roll (degrees).
 
-        :param manipulator_id: Manipulator ID.
-        :type manipulator_id: str
-        :returns: Current angles of the manipulator and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.AngularResponse`
+        Args:
+            manipulator_id: Manipulator ID.
+
+        Returns:
+            Current angles of the manipulator and an error message if any.
         """
         try:
             angles = await self._bindings.get_angles(manipulator_id)
@@ -164,10 +167,11 @@ class PlatformHandler:
     async def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         """Get the number of shanks on a manipulator.
 
-        :param manipulator_id: Manipulator ID.
-        :type manipulator_id: str
-        :returns: Number of shanks on the manipulator and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.ShankCountResponse`
+        Args:
+            manipulator_id: Manipulator ID.
+
+        Returns:
+            Number of shanks on the manipulator and an error message if any.
         """
         try:
             shank_count = await self._bindings.get_shank_count(manipulator_id)
@@ -180,10 +184,11 @@ class PlatformHandler:
     async def set_position(self, request: SetPositionRequest) -> PositionalResponse:
         """Move a manipulator to a specified translation position in unified coordinates (mm).
 
-        :param request: Request to move a manipulator to a specified position.
-        :type request: :class:`vbl_aquarium.models.ephys_link.GotoPositionRequest`
-        :returns: Final position of the manipulator and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.Position`
+        Args:
+            request: Request to move a manipulator to a specified position.
+
+        Returns:
+            Final position of the manipulator and an error message if any.
         """
         try:
             # Disallow setting manipulator position while inside the brain.
@@ -224,10 +229,11 @@ class PlatformHandler:
     async def set_depth(self, request: SetDepthRequest) -> SetDepthResponse:
         """Move a manipulator's depth translation stage to a specific value (mm).
 
-        :param request: Request to move a manipulator to a specified depth.
-        :type request: :class:`vbl_aquarium.models.ephys_link.DriveToDepthRequest`
-        :returns: Final depth of the manipulator and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.DriveToDepthResponse`
+        Args:
+            request: Request to move a manipulator to a specified depth.
+
+        Returns:
+            Final depth of the manipulator and an error message if any.
         """
         try:
             # Move to the new depth.
@@ -257,10 +263,11 @@ class PlatformHandler:
 
         This should restrict the manipulator's movement to just the depth axis.
 
-        :param request: Request to set a manipulator's inside brain state.
-        :type request: :class:`vbl_aquarium.models.ephys_link.InsideBrainRequest`
-        :returns: Inside brain state of the manipulator and an error message if any.
-        :rtype: :class:`vbl_aquarium.models.ephys_link.BooleanStateResponse`
+        Args:
+            request: Request to set
+
+        Returns:
+            Inside brain state of the manipulator and an error message if any.
         """
         try:
             if request.inside:
@@ -276,10 +283,11 @@ class PlatformHandler:
     async def stop(self, manipulator_id: str) -> str:
         """Stop a manipulator.
 
-        :param manipulator_id: Manipulator ID.
-        :type manipulator_id: str
-        :returns: Error message if any.
-        :rtype: str
+        Args:
+            manipulator_id: Manipulator ID.
+
+        Returns:
+            Error message if any.
         """
         try:
             await self._bindings.stop(manipulator_id)
@@ -292,8 +300,8 @@ class PlatformHandler:
     async def stop_all(self) -> str:
         """Stop all manipulators.
 
-        :returns: Error message if any.
-        :rtype: str
+        Returns:
+            Error message if any.
         """
         try:
             for manipulator_id in await self._bindings.get_manipulators():

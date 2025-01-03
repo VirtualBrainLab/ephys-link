@@ -1,6 +1,11 @@
 """Command-line interface for the Electrophysiology Manipulator Link.
 
-Usage: instantiate CLI and call parse_args() to get the parsed arguments.
+Usage:
+    Instantiate CLI and call `parse_args()` to get the parsed arguments.
+
+    ```python
+    CLI().parse_args()
+    ```
 """
 
 from argparse import ArgumentParser
@@ -92,7 +97,7 @@ class CLI:
     def parse_args(self) -> EphysLinkOptions:
         """Parse arguments and return them
 
-        :returns: Parsed arguments
-        :rtype: EphysLinkOptions
+        Returns:
+            Parsed arguments
         """
         return EphysLinkOptions(**vars(self._parser.parse_args()))

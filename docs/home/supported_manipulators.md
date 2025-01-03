@@ -1,3 +1,5 @@
+# Supported Manipulators
+
 This is a current list of planned and supported manipulators in Ephys Link. If you use a manipulator that is not listed
 here, we suggest reaching out to your manipulator's manufacturer to request support for Ephys Link. Direct them to
 contact [Kenneth Yang and Daniel Birman](https://virtualbrainlab.org/about/overview.html)!

@@ -7,7 +7,8 @@ This section describes:
 
 - [The Socket.IO server's API](socketio_api.md) and how to communicate with Ephys Link from a client application
 - How to [add a new manipulator](adding_a_manipulator.md) to Ephys Link
-- General [code organization](code_organization.md) and development practices for Ephys Link
+- General [code organization](code_organization.md) for Ephys Link
+- Auto generated [source code reference](../reference/SUMMARY.md) intended for developers who are maintaining Ephys Link
 
 ## Installing for Development
 

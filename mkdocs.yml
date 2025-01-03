@@ -43,10 +43,13 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
-    - navigation.indexes
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
     - toc.follow
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/mkdocstrings.css
 markdown_extensions:
   - admonition
   - attr_list
@@ -69,25 +72,38 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 plugins:
   - search
+  - gen-files:
+      scripts:
+        - scripts/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
   - mkdocstrings:
       handlers:
         python:
           paths: [ src ]
           options:
-            docstring_style: sphinx
+            docstring_style: google
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://virtualbrainlab.github.io/vbl-aquarium/objects.inv
 nav:
   - Home:
-      - index.md
-      - Installation: home/installation.md
-      - "How it Works": home/how_it_works.md
-      - "Supported Manipulators": home/supported_manipulators.md
-      - Contact: home/contact.md
+      - About: index.md
+      - Getting Started:
+          - Installation: home/installation.md
+          - home/how_it_works.md
+          - home/supported_manipulators.md
+      - home/contact.md
   - Usage:
       - usage/index.md
-      - "Connecting to Pinpoint": usage/connecting_to_pinpoint.md
-      - "Experiment Automation": usage/experiment_automation.md
+      - usage/connecting_to_pinpoint.md
+      - usage/experiment_automation.md
   - Development:
       - development/index.md
-      - "Socket.IO API": development/socketio_api.md
-      - "Adding a Manipulator": development/adding_a_manipulator.md
-      - "Code Organization": development/code_organization.md
+      - development/socketio_api.md
+      - development/adding_a_manipulator.md
+      - development/code_organization.md
+      - Source Code Reference: reference/

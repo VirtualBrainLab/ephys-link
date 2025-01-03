@@ -1,6 +1,11 @@
 """Graphical User Interface for Ephys Link.
 
-Usage: create a GUI instance and call get_options() to get the options.
+Usage:
+    Create a GUI instance and call `get_options()` to get the options.
+
+    ```python
+    GUI().get_options()
+    ```
 """
 
 from json import load
@@ -53,7 +58,11 @@ class GUI:
         self._submit = False
 
     def get_options(self) -> EphysLinkOptions:
-        """Get options from GUI."""
+        """Get options from GUI.
+
+        Returns:
+            Options gathered from the GUI.
+        """
 
         # Launch GUI.
         self._build_gui()

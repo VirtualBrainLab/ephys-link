@@ -13,11 +13,11 @@ from typing import Any
 from requests import JSONDecodeError, get, put
 from vbl_aquarium.models.unity import Vector3, Vector4
 
-from ephys_link.util.base_bindings import BaseBindings
-from ephys_link.util.common import scalar_mm_to_um, vector4_to_array
+from ephys_link.utils.base_binding import BaseBinding
+from ephys_link.utils.common import scalar_mm_to_um, vector4_to_array
 
 
-class MPMBinding(BaseBindings):
+class MPMBinding(BaseBinding):
     """Bindings for New Scale Pathfinder MPM HTTP server platform."""
 
     # Valid New Scale manipulator IDs
@@ -75,8 +75,8 @@ class MPMBinding(BaseBindings):
     def __init__(self, port: int) -> None:
         """Initialize connection to MPM HTTP server.
 
-        :param port: Port number for MPM HTTP server.
-        :type port: int
+        Args:
+            port: Port number for MPM HTTP server.
         """
         self._url = f"http://localhost:{port}"
         self._movement_stopped = False
