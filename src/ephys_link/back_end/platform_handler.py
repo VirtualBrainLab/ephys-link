@@ -4,7 +4,8 @@
 Responsible for performing the various manipulator commands.
 Instantiates the appropriate bindings based on the platform type and uses them to perform the commands.
 
-Usage: Instantiate PlatformHandler with the platform type and call the desired command.
+Usage:
+    Instantiate PlatformHandler with the platform type and call the desired command.
 """
 
 from uuid import uuid4
@@ -22,7 +23,6 @@ from vbl_aquarium.models.ephys_link import (
     SetPositionRequest,
     ShankCountResponse,
 )
-from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.bindings.fake_binding import FakeBinding
@@ -79,15 +79,7 @@ class PlatformHandler:
                 self._console.critical_print(error_message)
                 raise ValueError(error_message)
 
-    # Ephys Link metadata.
-
-    def get_pinpoint_id(self) -> PinpointIdResponse:
-        """Get the Pinpoint ID for proxy usage.
-
-        Returns:
-            Pinpoint ID response.
-        """
-        return PinpointIdResponse(pinpoint_id=self._pinpoint_id, is_requester=False)
+    # Platform metadata.
 
     def get_display_name(self) -> str:
         """Get the display name for the platform.
