@@ -13,11 +13,12 @@ read [how the system works first](../home/how_it_works.md) before proceeding.
 ## Create a Manipulator Binding
 
 Manipulators are added to Ephys Link through bindings. A binding is a Python class that extends the abstract base class
-[`BaseBinding`][ephys_link.util.base_binding] and defines the functions Ephys Link expects from a platform.
+[`BaseBinding`][ephys_link.utils.base_binding] and defines the functions Ephys Link expects from a platform.
 
 Create a new Python module in `src/ephys_link/bindings` for your manipulator. Make a class that extends
 `BaseBinding`. Most IDEs will automatically import the necessary classes and tell you the methods you need to
-implement. These functions have signature documentation describing what they should do.
+implement. These functions have signature documentation describing what they should do. See the reference for
+[`BaseBinding`][ephys_link.utils.base_binding] for more information.
 
 As described in the [system overview](../home/how_it_works.md), Ephys Link converts all manipulator movement into a
 common "unified space" which is

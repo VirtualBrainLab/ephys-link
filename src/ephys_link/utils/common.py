@@ -58,58 +58,73 @@ def check_for_updates() -> None:
 
 def scalar_mm_to_um(mm: float) -> float:
     """Convert scalar values of millimeters to micrometers.
-
-    :param mm: Scalar value in millimeters.
-    :type mm: float
-    :returns: Scalar value in micrometers.
-    :rtype: float
+    
+    Args:
+        mm: Scalar value in millimeters.
+    
+    Returns:
+        Scalar value in micrometers.
     """
     return mm * 1_000
 
 
 def vector_mm_to_um(mm: Vector4) -> Vector4:
     """Convert vector values of millimeters to micrometers.
-
-    :param mm: Vector in millimeters.
-    :type mm: Vector4
-    :returns: Vector in micrometers.
-    :rtype: Vector4
+    
+    Args:
+        mm: Vector in millimeters.
+        
+    Returns:
+        Vector in micrometers.
     """
     return mm * 1_000
 
 
 def um_to_mm(um: Vector4) -> Vector4:
     """Convert micrometers to millimeters.
-
-    :param um: Length in micrometers.
-    :type um: Vector4
-    :returns: Length in millimeters.
-    :rtype: Vector4
+    
+    Args:
+        um: Length in micrometers.
+        
+    Returns:
+        Length in millimeters.
     """
     return um / 1_000
 
 
 def vector4_to_array(vector4: Vector4) -> list[float]:
-    """Convert a Vector4 to a list of floats.
-
-    :param vector4: Vector4 to convert.
-    :type vector4: :class:`vbl_aquarium.models.unity.Vector4`
-    :return: List of floats.
-    :rtype: list[float]
+    """Convert a [Vector4][vbl_aquarium.models.unity.Vector4] to a list of floats.
+    
+    Args:
+        vector4: [Vector4][vbl_aquarium.models.unity.Vector4] to convert.
+        
+    Returns:
+        List of floats.
     """
     return [vector4.x, vector4.y, vector4.z, vector4.w]
 
 
 def array_to_vector4(array: list[float]) -> Vector4:
-    """Convert a list of floats to a Vector4.
-
-    :param array: List of floats.
-    :type array: list[float]
-    :return: First four elements of the list as a Vector4 padded with zeros if necessary.
-    :rtype: :class:`vbl_aquarium.models.unity.Vector4`
+    """Convert a list of floats to a [Vector4][vbl_aquarium.models.unity.Vector4].
+    
+    Args:
+        array: List of floats.
+        
+    Returns:
+        First four elements of the list as a Vector4 padded with zeros if necessary.
     """
-
     def get_element(this_array: list[float], index: int) -> float:
+        """Safely get an element from an array.
+        
+        Return 0 if the index is out of bounds.
+        
+        Args:
+            this_array: Array to get the element from.
+            index: Index to get.
+            
+        Returns:
+            Element at the index or 0 if the index is out of bounds.
+        """
         try:
             return this_array[index]
         except IndexError:

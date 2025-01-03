@@ -1,9 +1,9 @@
-# ruff: noqa: T201
 """Console class for printing messages to the console.
 
 Configure the console to print error and debug messages.
 
-Usage: Create a Console object and call the appropriate method to print messages.
+Usage:
+    Create a Console object and call the appropriate method to print messages.
 """
 
 from logging import DEBUG, ERROR, INFO, basicConfig, getLogger
@@ -16,8 +16,8 @@ class Console:
     def __init__(self, *, enable_debug: bool) -> None:
         """Initialize console properties.
 
-        :param enable_debug: Enable debug mode.
-        :type enable_debug: bool
+        Args:
+            enable_debug: Enable debug mode.
         """
         # Repeat message fields.
         self._last_message = (0, "", "")
@@ -38,72 +38,67 @@ class Console:
     def debug_print(self, label: str, msg: str) -> None:
         """Print a debug message to the console.
 
-        :param label: Label for the debug message.
-        :type label: str
-        :param msg: Debug message to print.
-        :type msg: str
+        Args:
+            label: Label for the debug message.
+            msg: Debug message to print.
         """
         self._repeatable_log(DEBUG, f"[b green]{label}", f"[green]{msg}")
 
     def info_print(self, label: str, msg: str) -> None:
         """Print info to console.
-
-        :param label: Label for the message.
-        :type label: str
-        :param msg: Message to print.
-        :type msg: str
+        
+        Args:
+            label: Label for the message.
+            msg: Message to print.
         """
         self._repeatable_log(INFO, f"[b blue]{label}", msg)
 
     def error_print(self, label: str, msg: str) -> None:
         """Print an error message to the console.
-
-        :param label: Label for the error message.
-        :type label: str
-        :param msg: Error message to print.
-        :type msg: str
+        
+        Args:
+            label: Label for the error message.
+            msg: Error message to print.
         """
         self._repeatable_log(ERROR, f"[b red]{label}", f"[red]{msg}")
 
     def critical_print(self, msg: str) -> None:
         """Print a critical message to the console.
-
-        :param msg: Critical message to print.
-        :type msg: str
+        
+        Args:
+            msg: Critical message to print.
         """
         self._log.critical(f"[b i red]{msg}")
 
     @staticmethod
     def pretty_exception(exception: Exception) -> str:
         """Pretty print an exception.
-
-        :param exception: Exception to pretty print.
-        :type exception: Exception
-        :return: Pretty printed exception.
-        :rtype: str
+        
+        Args:
+            exception: Exception to pretty print.
+        
+        Returns:
+            Pretty printed exception.
         """
         return f"{type(exception).__name__}: {exception}"
 
     def exception_error_print(self, label: str, exception: Exception) -> None:
         """Print an error message with exception details to the console.
-
-        :param label: Label for the error message.
-        :type label: str
-        :param exception: Exception to print.
-        :type exception: Exception
+        
+        Args:
+            label: Label for the error message.
+            exception: Exception to print.
         """
         self._log.exception(f"[b magenta]{label}:[/] [magenta]{Console.pretty_exception(exception)}")
 
     # Helper methods.
     def _repeatable_log(self, log_type: int, label: str, message: str) -> None:
         """Add a row to the output table.
-
-        :param log_type: Type of log.
-        :type log_type: int
-        :param label: Label for the message.
-        :type label: str
-        :param message: Message.
-        :type message: str
+        
+        Args:
+            log_type: Type of log.
+            label: Label for the message.
+            message: Message.
         """
 
         # Compute if this is a repeated message.

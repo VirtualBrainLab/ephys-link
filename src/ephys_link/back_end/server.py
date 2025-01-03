@@ -21,7 +21,13 @@ from ephys_link.utils.console import Console
 
 class Server:
     def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler, console: Console) -> None:
-        """Initialize server fields based on options and platform handler."""
+        """Initialize server fields based on options and platform handler.
+        
+        Args:
+            options: Launch options object.
+            platform_handler: Platform handler instance.
+            console: Console instance.
+        """
 
         # Save fields.
         self._options = options
@@ -44,8 +50,11 @@ class Server:
         # Bind events.
         self._sio.on("*", self.platform_event_handler)
 
-    # Server launch.
     def launch(self) -> None:
+        """Launch the server.
+        
+        Based on the options, either connect to a proxy or launch the server locally.
+        """
         # Preamble.
         server_preamble()
 
@@ -75,14 +84,31 @@ class Server:
 
     # Helper functions.
     def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:
-        """Return a response for a malformed request."""
+        """Return a response for a malformed request.
+        
+        Args:
+            request: Original request.
+            data: Request data.
+        
+        Returns:
+            Response for a malformed request.
+        """
         self._console.error_print("MALFORMED REQUEST", f"{request}: {data}")
         return dumps({"error": "Malformed request."})
 
     async def _run_if_data_available(
         self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: tuple[tuple[Any], ...]
     ) -> str:
-        """Run a function if data is available."""
+        """Run a function if data is available.
+        
+        Args:
+            function: Function to run.
+            event: Event name.
+            data: Event data.
+        
+        Returns:
+            Response data from function.
+        """
         request_data = data[1]
         if request_data:
             return str((await function(str(request_data))).to_json_string())
@@ -95,7 +121,17 @@ class Server:
         event: str,
         data: tuple[tuple[Any], ...],
     ) -> str:
-        """Run a function if data parses."""
+        """Run a function if data parses.
+        
+        Args:
+            function: Function to run.
+            data_type: Data type to parse.
+            event: Event name.
+            data: Event data.
+            
+        Returns:
+            Response data from function.
+        """
         request_data = data[1]
         if request_data:
             try:
@@ -112,14 +148,14 @@ class Server:
     # Event Handlers.
 
     async def connect(self, sid: str, _: str) -> bool:
-        """Handle connections to the server
-
-        :param sid: Socket session ID.
-        :type sid: str
-        :param _: Extra connection data (unused).
-        :type _: str
-        :returns: False on error to refuse connection, True otherwise.
-        :rtype: bool
+        """Handle connections to the server.
+        
+        Args:
+            sid: Socket session ID.
+            _: Extra connection data (unused).
+            
+        Returns:
+            False on error to refuse connection, True otherwise.
         """
         self._console.info_print("CONNECTION REQUEST", sid)
 
@@ -134,10 +170,10 @@ class Server:
         return False
 
     async def disconnect(self, sid: str) -> None:
-        """Handle disconnections from the server
+        """Handle disconnections from the server.
 
-        :param sid: Socket session ID.
-        :type sid: str
+        Args:
+            sid: Socket session ID.
         """
         self._console.info_print("DISCONNECTED", sid)
 
@@ -149,14 +185,16 @@ class Server:
 
     # noinspection PyTypeChecker
     async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:
-        """Handle events from the server
-
-        :param event: Event name.
-        :type event: str
-        :param args: Event arguments.
-        :type args: tuple[Any]
-        :returns: Response data.
-        :rtype: str
+        """Handle events from the server.
+        
+        Matches incoming events based on the Socket.IO API.
+        
+        Args:
+            event: Event name.
+            args: Event arguments.
+            
+        Returns:
+            Response data.
         """
 
         # Log event.

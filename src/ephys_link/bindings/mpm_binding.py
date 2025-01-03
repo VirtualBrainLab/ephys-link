@@ -75,8 +75,8 @@ class MPMBinding(BaseBinding):
     def __init__(self, port: int) -> None:
         """Initialize connection to MPM HTTP server.
 
-        :param port: Port number for MPM HTTP server.
-        :type port: int
+        Args:
+            port: Port number for MPM HTTP server.
         """
         self._url = f"http://localhost:{port}"
         self._movement_stopped = False

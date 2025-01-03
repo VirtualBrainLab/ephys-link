@@ -48,7 +48,8 @@ class Ump4Binding(BaseBinding):
     async def get_angles(self, _: str) -> Vector3:
         """uMp-4 does not support getting angles so raise an error.
 
-        :raises: AttributeError
+        Raises:
+            AttributeError: uMp-4 does not support getting angles.
         """
         error_message = "UMP-4 does not support getting angles"
         raise AttributeError(error_message)
@@ -56,8 +57,9 @@ class Ump4Binding(BaseBinding):
     # noinspection PyTypeChecker
     async def get_shank_count(self, _: str) -> int:
         """uMp-4 does not support getting shank count so raise an error.
-
-        :raises: AttributeError
+        
+        Raises:
+            AttributeError: uMp-4 does not support getting shank count.
         """
         error_message = "UMP-4 does not support getting shank count"
         raise AttributeError(error_message)

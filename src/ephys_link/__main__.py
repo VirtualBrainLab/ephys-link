@@ -2,7 +2,10 @@
 
 Responsible for gathering launch options, instantiating the appropriate interface, and starting the application.
 
-Usage: call main() to start.
+Usage:
+    ```python
+    main()
+    ```
 """
 
 from sys import argv
