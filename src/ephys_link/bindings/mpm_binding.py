@@ -72,7 +72,7 @@ class MPMBinding(BaseBinding):
     COARSE_SPEED_THRESHOLD = 0.1
     INSERTION_SPEED_LIMIT = 9_000
 
-    def __init__(self, port: int) -> None:
+    def __init__(self, port: int = 8080) -> None:
         """Initialize connection to MPM HTTP server.
 
         Args:
@@ -82,7 +82,7 @@ class MPMBinding(BaseBinding):
         self._movement_stopped = False
 
     def get_display_name(self) -> str:
-        return "New Scale Pathfinder MPM HTTP server"
+        return "Pathfinder MPM Control v2.8.8+"
 
     def get_cli_name(self) -> str:
         return "pathfinder-mpm"

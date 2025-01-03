@@ -1,13 +1,17 @@
 # ruff: noqa: T201
 """Commonly used utility functions and constants."""
 
+from importlib import import_module
+from inspect import getmembers, isclass
 from os.path import abspath, dirname, join
+from pkgutil import iter_modules
 
 from packaging.version import parse
 from requests import ConnectionError, ConnectTimeout, get
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.__about__ import __version__
+from ephys_link.utils.base_binding import BaseBinding
 
 # Ephys Link ASCII.
 ASCII = r"""
@@ -24,7 +28,7 @@ ASCII = r"""
 # Absolute path to the resource folder.
 PACKAGE_DIRECTORY = dirname(dirname(abspath(__file__)))
 RESOURCES_DIRECTORY = join(PACKAGE_DIRECTORY, "resources")
-BINDINGS_DIRECTORY = join(RESOURCES_DIRECTORY, "bindings")
+BINDINGS_DIRECTORY = join(PACKAGE_DIRECTORY, "bindings")
 
 # Ephys Link Port
 PORT = 3000
@@ -52,6 +56,29 @@ def check_for_updates() -> None:
             print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
     except (ConnectionError, ConnectTimeout):
         print("Unable to check for updates. Ignore updates or use the the -i flag to disable checks.\n")
+
+
+def get_bindings() -> list[type[BaseBinding]]:
+    """Get all binding classes from the bindings directory.
+    
+    Returns:
+        List of binding classes.
+    """
+    return [
+        binding_type
+        for module in iter_modules([BINDINGS_DIRECTORY])
+        for _, binding_type in getmembers(import_module(f"ephys_link.bindings.{module.name}"), isclass)
+        if issubclass(binding_type, BaseBinding) and binding_type != BaseBinding
+    ]
+
+
+def get_binding_display_to_cli_name() -> dict[str, str]:
+    """Get mapping of display to CLI option names of the available platform bindings.
+
+    Returns:
+        Dictionary of platform binding display name to CLI option name.
+    """
+    return {binding_type().get_display_name(): binding_type().get_cli_name() for binding_type in get_bindings()}
 
 
 # Unit conversions

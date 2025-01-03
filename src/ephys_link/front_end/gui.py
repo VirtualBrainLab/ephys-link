@@ -18,6 +18,7 @@ from tkinter import CENTER, RIGHT, BooleanVar, E, IntVar, StringVar, Tk, ttk
 from platformdirs import user_config_dir
 from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
+from ephys_link.utils.common import get_binding_display_to_cli_name
 from ephys_link.__about__ import __version__ as version
 
 # Define options path.
@@ -152,37 +153,14 @@ class GUI:
         # Platform type.
         platform_type_settings = ttk.LabelFrame(mainframe, text="Platform Type", padding=3)
         platform_type_settings.grid(column=0, row=1, sticky="news")
-
-        ttk.Radiobutton(
-            platform_type_settings,
-            text="Sensapex uMp-4",
-            variable=self._type,
-            value="ump-4",
-        ).grid(column=0, row=0, sticky="we")
-        ttk.Radiobutton(
-            platform_type_settings,
-            text="Sensapex uMp-3",
-            variable=self._type,
-            value="ump-3",
-        ).grid(column=0, row=1, sticky="we")
-        ttk.Radiobutton(
-            platform_type_settings,
-            text="Pathfinder MPM Control v2.8.8+",
-            variable=self._type,
-            value="pathfinder-mpm",
-        ).grid(column=0, row=2, sticky="we")
-        ttk.Radiobutton(
-            platform_type_settings,
-            text="New Scale M3-USB-3:1-EP",
-            variable=self._type,
-            value="new-scale",
-        ).grid(column=0, row=3, sticky="we")
-        ttk.Radiobutton(
-            platform_type_settings,
-            text="Fake Platform",
-            variable=self._type,
-            value="fake",
-        ).grid(column=0, row=4, sticky="we")
+        
+        for index, (display_name, cli_name) in enumerate(get_binding_display_to_cli_name().items()):
+            ttk.Radiobutton(
+                platform_type_settings,
+                text=display_name,
+                variable=self._type,
+                value=cli_name,
+            ).grid(column=0, row=index, sticky="we")
 
         # ---
 

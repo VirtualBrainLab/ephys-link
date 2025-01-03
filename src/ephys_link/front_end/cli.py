@@ -46,7 +46,7 @@ class CLI:
             type=str,
             dest="type",
             default="ump-4",
-            help='Manipulator type (i.e. "ump-4", "ump-3", "pathfinder-mpm", "new-scale", "fake"). Default: "ump-4".',
+            help='Manipulator type (i.e. "ump-4", "pathfinder-mpm", "fake"). Default: "ump-4".',
         )
         self._parser.add_argument(
             "-d",
