@@ -80,5 +80,8 @@ dependencies = [
 serve = "mkdocs serve"
 build = "mkdocs build"
 
+[tool.ruff]
+unsafe-fixes = true
+
 [tool.ruff.lint]
 extend-ignore = ["DTZ005"]

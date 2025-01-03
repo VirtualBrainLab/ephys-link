@@ -20,6 +20,12 @@ class FakeBinding(BaseBinding):
             Vector3(x=-135, y=30, z=0),
         ]
 
+    def get_display_name(self) -> str:
+        return "Fake Manipulator"
+
+    def get_cli_name(self) -> str:
+        return "fake"
+
     async def get_manipulators(self) -> list[str]:
         return list(map(str, range(8)))
 

@@ -32,6 +32,12 @@ class Ump4Binding(BaseBinding):
             error_message = "Unable to connect to uMp"
             raise ValueError(error_message)
 
+    def get_display_name(self) -> str:
+        return "Sensapex uMp-4"
+
+    def get_cli_name(self) -> str:
+        return "ump-4"
+
     async def get_manipulators(self) -> list[str]:
         return list(map(str, self._ump.list_devices()))
 

@@ -81,6 +81,12 @@ class MPMBinding(BaseBinding):
         self._url = f"http://localhost:{port}"
         self._movement_stopped = False
 
+    def get_display_name(self) -> str:
+        return "New Scale Pathfinder MPM HTTP server"
+
+    def get_cli_name(self) -> str:
+        return "pathfinder-mpm"
+
     async def get_manipulators(self) -> list[str]:
         return [manipulator["Id"] for manipulator in (await self._query_data())["ProbeArray"]]
 

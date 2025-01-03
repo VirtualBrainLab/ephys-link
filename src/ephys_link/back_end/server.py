@@ -6,11 +6,12 @@ Directs events to the platform handler or handles them directly.
 Usage:
     Instantiate Server with the appropriate options, platform handler, and console.
     Then call `launch()` to start the server.
-    
+
     ```python
     Server(options, platform_handler, console).launch()
     ```
 """
+
 from asyncio import get_event_loop, run
 from collections.abc import Callable, Coroutine
 from json import JSONDecodeError, dumps, loads
