@@ -93,7 +93,7 @@ nav:
   - Home:
       - About: index.md
       - Getting Started:
-          - home/installation.md
+          - Installation: home/installation.md
           - home/how_it_works.md
           - home/supported_manipulators.md
       - home/contact.md
