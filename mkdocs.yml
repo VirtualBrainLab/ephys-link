@@ -94,11 +94,12 @@ nav:
       - About: index.md
       - Getting Started:
           - Installation: home/installation.md
+          - Starting Ephys Link: usage/starting_ephys_link.md
           - home/how_it_works.md
           - home/supported_manipulators.md
       - home/contact.md
   - Usage:
-      - usage/index.md
+      - usage/starting_ephys_link.md
       - usage/connecting_to_pinpoint.md
       - usage/experiment_automation.md
   - Development:
