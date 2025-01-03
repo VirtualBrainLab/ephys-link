@@ -2,7 +2,7 @@
 
 Usage:
     Instantiate CLI and call `parse_args()` to get the parsed arguments.
-    
+
     ```python
     CLI().parse_args()
     ```

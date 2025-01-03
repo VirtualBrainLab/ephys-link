@@ -57,7 +57,7 @@ class Ump4Binding(BaseBinding):
     # noinspection PyTypeChecker
     async def get_shank_count(self, _: str) -> int:
         """uMp-4 does not support getting shank count so raise an error.
-        
+
         Raises:
             AttributeError: uMp-4 does not support getting shank count.
         """

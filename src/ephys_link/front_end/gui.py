@@ -2,7 +2,7 @@
 
 Usage:
     Create a GUI instance and call `get_options()` to get the options.
-    
+
     ```python
     GUI().get_options()
     ```
@@ -59,7 +59,7 @@ class GUI:
 
     def get_options(self) -> EphysLinkOptions:
         """Get options from GUI.
-        
+
         Returns:
             Options gathered from the GUI.
         """

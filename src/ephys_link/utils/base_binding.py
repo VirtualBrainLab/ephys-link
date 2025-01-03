@@ -20,7 +20,7 @@ class BaseBinding(ABC):
     @abstractmethod
     async def get_manipulators(self) -> list[str]:
         """Get a list of available manipulators on the current platform.
-        
+
         Returns:
             List of manipulator IDs.
         """
@@ -28,7 +28,7 @@ class BaseBinding(ABC):
     @abstractmethod
     async def get_axes_count(self) -> int:
         """Get the number of axes for the current platform.
-        
+
         Returns:
             Number of axes.
         """
@@ -38,7 +38,7 @@ class BaseBinding(ABC):
         """Get the dimensions of the manipulators on the current platform (mm).
 
         For 3-axis manipulators, copy the dimension of the axis parallel to the probe into w.
-        
+
         Returns:
             Dimensions of the manipulators.
         """
@@ -49,10 +49,10 @@ class BaseBinding(ABC):
 
         These will be the translation values of the manipulator (mm), so they may need to be rotated to unified space.
         For 3-axis manipulators, copy the position of the axis parallel to the probe into w.
-        
+
         Args:
             manipulator_id: Manipulator ID.
-            
+
         Returns:
             Current position of the manipulator in platform space (mm).
         """
@@ -60,10 +60,10 @@ class BaseBinding(ABC):
     @abstractmethod
     async def get_angles(self, manipulator_id: str) -> Vector3:
         """Get the current rotation angles of a manipulator in Yaw, Pitch, Roll (degrees).
-        
+
         Args:
             manipulator_id: Manipulator ID.
-            
+
         Returns:
             Current angles of the manipulator.
         """
@@ -71,10 +71,10 @@ class BaseBinding(ABC):
     @abstractmethod
     async def get_shank_count(self, manipulator_id: str) -> int:
         """Get the number of shanks on a manipulator.
-        
+
         Args:
             manipulator_id: Manipulator ID.
-            
+
         Returns:
             Number of shanks on the manipulator.
         """
@@ -82,7 +82,7 @@ class BaseBinding(ABC):
     @abstractmethod
     def get_movement_tolerance(self) -> float:
         """Get the tolerance for how close the final position must be to the target position in a movement (mm).
-        
+
         Returns:
             Movement tolerance (mm).
         """
@@ -93,12 +93,12 @@ class BaseBinding(ABC):
 
         This will directly set the position in the original platform space.
         For 3-axis manipulators, the first 3 values of the position will be used.
-        
+
         Args:
             manipulator_id: Manipulator ID.
             position: Platform space position to set the manipulator to (mm).
             speed: Speed to move the manipulator to the position (mm/s).
-            
+
         Returns:
             Final position of the manipulator in platform space (mm).
         """
@@ -108,12 +108,12 @@ class BaseBinding(ABC):
         """Set the depth of a manipulator.
 
         This will directly set the depth stage in the original platform space.
-        
+
         Args:
             manipulator_id: Manipulator ID.
             depth: Depth to set the manipulator to (mm).
             speed: Speed to move the manipulator to the depth (mm/s).
-            
+
         Returns:
             Final depth of the manipulator in platform space (mm).
         """
@@ -121,7 +121,7 @@ class BaseBinding(ABC):
     @abstractmethod
     async def stop(self, manipulator_id: str) -> None:
         """Stop a manipulator.
-        
+
         Args:
             manipulator_id: Manipulator ID.
         """
@@ -134,10 +134,10 @@ class BaseBinding(ABC):
 
         Unified coordinate space is the standard left-handed cartesian coordinate system
         with an additional depth axis pointing from the base of the probe to the tip.
-        
+
         Args:
             platform_space: Platform space coordinates.
-            
+
         Returns:
             Unified space coordinates.
         """
@@ -147,10 +147,10 @@ class BaseBinding(ABC):
         """Convert unified space coordinates to platform space coordinates.
 
         This is an axes-swapping transformation.
-        
+
         Args:
             unified_space: Unified space coordinates.
-            
+
         Returns:
             Platform space coordinates.
         """

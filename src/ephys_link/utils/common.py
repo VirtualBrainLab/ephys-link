@@ -58,10 +58,10 @@ def check_for_updates() -> None:
 
 def scalar_mm_to_um(mm: float) -> float:
     """Convert scalar values of millimeters to micrometers.
-    
+
     Args:
         mm: Scalar value in millimeters.
-    
+
     Returns:
         Scalar value in micrometers.
     """
@@ -70,10 +70,10 @@ def scalar_mm_to_um(mm: float) -> float:
 
 def vector_mm_to_um(mm: Vector4) -> Vector4:
     """Convert vector values of millimeters to micrometers.
-    
+
     Args:
         mm: Vector in millimeters.
-        
+
     Returns:
         Vector in micrometers.
     """
@@ -82,10 +82,10 @@ def vector_mm_to_um(mm: Vector4) -> Vector4:
 
 def um_to_mm(um: Vector4) -> Vector4:
     """Convert micrometers to millimeters.
-    
+
     Args:
         um: Length in micrometers.
-        
+
     Returns:
         Length in millimeters.
     """
@@ -94,10 +94,10 @@ def um_to_mm(um: Vector4) -> Vector4:
 
 def vector4_to_array(vector4: Vector4) -> list[float]:
     """Convert a [Vector4][vbl_aquarium.models.unity.Vector4] to a list of floats.
-    
+
     Args:
         vector4: [Vector4][vbl_aquarium.models.unity.Vector4] to convert.
-        
+
     Returns:
         List of floats.
     """
@@ -106,22 +106,23 @@ def vector4_to_array(vector4: Vector4) -> list[float]:
 
 def array_to_vector4(array: list[float]) -> Vector4:
     """Convert a list of floats to a [Vector4][vbl_aquarium.models.unity.Vector4].
-    
+
     Args:
         array: List of floats.
-        
+
     Returns:
         First four elements of the list as a Vector4 padded with zeros if necessary.
     """
+
     def get_element(this_array: list[float], index: int) -> float:
         """Safely get an element from an array.
-        
+
         Return 0 if the index is out of bounds.
-        
+
         Args:
             this_array: Array to get the element from.
             index: Index to get.
-            
+
         Returns:
             Element at the index or 0 if the index is out of bounds.
         """

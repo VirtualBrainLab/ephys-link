@@ -22,7 +22,7 @@ from ephys_link.utils.console import Console
 class Server:
     def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler, console: Console) -> None:
         """Initialize server fields based on options and platform handler.
-        
+
         Args:
             options: Launch options object.
             platform_handler: Platform handler instance.
@@ -52,7 +52,7 @@ class Server:
 
     def launch(self) -> None:
         """Launch the server.
-        
+
         Based on the options, either connect to a proxy or launch the server locally.
         """
         # Preamble.
@@ -85,11 +85,11 @@ class Server:
     # Helper functions.
     def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:
         """Return a response for a malformed request.
-        
+
         Args:
             request: Original request.
             data: Request data.
-        
+
         Returns:
             Response for a malformed request.
         """
@@ -100,12 +100,12 @@ class Server:
         self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: tuple[tuple[Any], ...]
     ) -> str:
         """Run a function if data is available.
-        
+
         Args:
             function: Function to run.
             event: Event name.
             data: Event data.
-        
+
         Returns:
             Response data from function.
         """
@@ -122,13 +122,13 @@ class Server:
         data: tuple[tuple[Any], ...],
     ) -> str:
         """Run a function if data parses.
-        
+
         Args:
             function: Function to run.
             data_type: Data type to parse.
             event: Event name.
             data: Event data.
-            
+
         Returns:
             Response data from function.
         """
@@ -149,11 +149,11 @@ class Server:
 
     async def connect(self, sid: str, _: str) -> bool:
         """Handle connections to the server.
-        
+
         Args:
             sid: Socket session ID.
             _: Extra connection data (unused).
-            
+
         Returns:
             False on error to refuse connection, True otherwise.
         """
@@ -186,13 +186,13 @@ class Server:
     # noinspection PyTypeChecker
     async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:
         """Handle events from the server.
-        
+
         Matches incoming events based on the Socket.IO API.
-        
+
         Args:
             event: Event name.
             args: Event arguments.
-            
+
         Returns:
             Response data.
         """

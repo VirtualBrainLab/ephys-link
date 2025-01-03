@@ -38,7 +38,7 @@ class PlatformHandler:
 
     def __init__(self, options: EphysLinkOptions, console: Console) -> None:
         """Initialize platform handler.
-        
+
         Args:
             options: CLI options.
             console: Console instance.
@@ -60,10 +60,10 @@ class PlatformHandler:
 
     def _match_platform_type(self, options: EphysLinkOptions) -> BaseBinding:
         """Match the platform type to the appropriate bindings.
-        
+
         Args:
             options: CLI options.
-            
+
         Returns:
             Bindings for the specified platform type.
         """
@@ -84,7 +84,7 @@ class PlatformHandler:
     @staticmethod
     def get_version() -> str:
         """Get Ephys Link's version.
-        
+
         Returns:
             Ephys Link's version.
         """
@@ -92,7 +92,7 @@ class PlatformHandler:
 
     def get_pinpoint_id(self) -> PinpointIdResponse:
         """Get the Pinpoint ID for proxy usage.
-        
+
         Returns:
             Pinpoint ID response.
         """
@@ -100,7 +100,7 @@ class PlatformHandler:
 
     def get_platform_type(self) -> str:
         """Get the manipulator platform type connected to Ephys Link.
-        
+
         Returns:
             Platform type config identifier (see CLI options for examples).
         """
@@ -110,7 +110,7 @@ class PlatformHandler:
 
     async def get_manipulators(self) -> GetManipulatorsResponse:
         """Get a list of available manipulators on the current handler.
-        
+
         Returns:
             List of manipulator IDs, number of axes, dimensions of manipulators (mm), and an error message if any.
         """
@@ -130,10 +130,10 @@ class PlatformHandler:
 
     async def get_position(self, manipulator_id: str) -> PositionalResponse:
         """Get the current translation position of a manipulator in unified coordinates (mm).
-        
+
         Args:
             manipulator_id: Manipulator ID.
-            
+
         Returns:
             Current position of the manipulator and an error message if any.
         """
@@ -149,10 +149,10 @@ class PlatformHandler:
 
     async def get_angles(self, manipulator_id: str) -> AngularResponse:
         """Get the current rotation angles of a manipulator in Yaw, Pitch, Roll (degrees).
-        
+
         Args:
             manipulator_id: Manipulator ID.
-            
+
         Returns:
             Current angles of the manipulator and an error message if any.
         """
@@ -166,10 +166,10 @@ class PlatformHandler:
 
     async def get_shank_count(self, manipulator_id: str) -> ShankCountResponse:
         """Get the number of shanks on a manipulator.
-        
+
         Args:
             manipulator_id: Manipulator ID.
-            
+
         Returns:
             Number of shanks on the manipulator and an error message if any.
         """
@@ -183,10 +183,10 @@ class PlatformHandler:
 
     async def set_position(self, request: SetPositionRequest) -> PositionalResponse:
         """Move a manipulator to a specified translation position in unified coordinates (mm).
-        
+
         Args:
             request: Request to move a manipulator to a specified position.
-            
+
         Returns:
             Final position of the manipulator and an error message if any.
         """
@@ -228,10 +228,10 @@ class PlatformHandler:
 
     async def set_depth(self, request: SetDepthRequest) -> SetDepthResponse:
         """Move a manipulator's depth translation stage to a specific value (mm).
-        
+
         Args:
             request: Request to move a manipulator to a specified depth.
-            
+
         Returns:
             Final depth of the manipulator and an error message if any.
         """
@@ -262,10 +262,10 @@ class PlatformHandler:
         """Mark a manipulator as inside the brain or not.
 
         This should restrict the manipulator's movement to just the depth axis.
-        
+
         Args:
             request: Request to set
-            
+
         Returns:
             Inside brain state of the manipulator and an error message if any.
         """
@@ -282,10 +282,10 @@ class PlatformHandler:
 
     async def stop(self, manipulator_id: str) -> str:
         """Stop a manipulator.
-        
+
         Args:
             manipulator_id: Manipulator ID.
-            
+
         Returns:
             Error message if any.
         """
@@ -299,7 +299,7 @@ class PlatformHandler:
 
     async def stop_all(self) -> str:
         """Stop all manipulators.
-        
+
         Returns:
             Error message if any.
         """

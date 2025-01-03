@@ -46,7 +46,7 @@ class Console:
 
     def info_print(self, label: str, msg: str) -> None:
         """Print info to console.
-        
+
         Args:
             label: Label for the message.
             msg: Message to print.
@@ -55,7 +55,7 @@ class Console:
 
     def error_print(self, label: str, msg: str) -> None:
         """Print an error message to the console.
-        
+
         Args:
             label: Label for the error message.
             msg: Error message to print.
@@ -64,7 +64,7 @@ class Console:
 
     def critical_print(self, msg: str) -> None:
         """Print a critical message to the console.
-        
+
         Args:
             msg: Critical message to print.
         """
@@ -73,10 +73,10 @@ class Console:
     @staticmethod
     def pretty_exception(exception: Exception) -> str:
         """Pretty print an exception.
-        
+
         Args:
             exception: Exception to pretty print.
-        
+
         Returns:
             Pretty printed exception.
         """
@@ -84,7 +84,7 @@ class Console:
 
     def exception_error_print(self, label: str, exception: Exception) -> None:
         """Print an error message with exception details to the console.
-        
+
         Args:
             label: Label for the error message.
             exception: Exception to print.
@@ -94,7 +94,7 @@ class Console:
     # Helper methods.
     def _repeatable_log(self, log_type: int, label: str, message: str) -> None:
         """Add a row to the output table.
-        
+
         Args:
             log_type: Type of log.
             label: Label for the message.
