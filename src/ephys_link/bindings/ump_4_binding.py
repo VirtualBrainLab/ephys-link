@@ -38,7 +38,7 @@ class Ump4Binding(BaseBinding):
     async def get_axes_count(self) -> int:
         return 4
 
-    def get_dimensions(self) -> Vector4:
+    async def get_dimensions(self) -> Vector4:
         return Vector4(x=20, y=20, z=20, w=20)
 
     async def get_position(self, manipulator_id: str) -> Vector4:

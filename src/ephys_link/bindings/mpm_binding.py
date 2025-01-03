@@ -87,7 +87,7 @@ class MPMBinding(BaseBinding):
     async def get_axes_count(self) -> int:
         return 3
 
-    def get_dimensions(self) -> Vector4:
+    async def get_dimensions(self) -> Vector4:
         return Vector4(x=15, y=15, z=15, w=15)
 
     async def get_position(self, manipulator_id: str) -> Vector4:

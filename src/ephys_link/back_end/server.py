@@ -14,6 +14,7 @@ from vbl_aquarium.models.ephys_link import (
 )
 from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 
+from ephys_link.__about__ import __version__
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.utils.common import PORT, check_for_updates, server_preamble
 from ephys_link.utils.console import Console
@@ -63,7 +64,7 @@ class Server:
             check_for_updates()
 
         # List platform and available manipulators.
-        self._console.info_print("PLATFORM", self._platform_handler.get_platform_type())
+        self._console.info_print("PLATFORM", self._platform_handler.get_display_name())
         self._console.info_print(
             "MANIPULATORS",
             str(get_event_loop().run_until_complete(self._platform_handler.get_manipulators()).manipulators),
@@ -204,11 +205,11 @@ class Server:
         match event:
             # Server metadata.
             case "get_version":
-                return self._platform_handler.get_version()
+                return __version__
             case "get_pinpoint_id":
                 return str(self._platform_handler.get_pinpoint_id().to_json_string())
-            case "get_platform_type":
-                return self._platform_handler.get_platform_type()
+            case "get_platform_info":
+                return (await self._platform_handler.get_platform_info()).to_json_string()
 
             # Manipulator commands.
             case "get_manipulators":

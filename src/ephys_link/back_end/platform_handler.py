@@ -14,6 +14,7 @@ from vbl_aquarium.models.ephys_link import (
     BooleanStateResponse,
     EphysLinkOptions,
     GetManipulatorsResponse,
+    PlatformInfo,
     PositionalResponse,
     SetDepthRequest,
     SetDepthResponse,
@@ -24,7 +25,6 @@ from vbl_aquarium.models.ephys_link import (
 from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.models.unity import Vector4
 
-from ephys_link.__about__ import __version__
 from ephys_link.bindings.fake_binding import FakeBinding
 from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.bindings.ump_4_binding import Ump4Binding
@@ -81,15 +81,6 @@ class PlatformHandler:
 
     # Ephys Link metadata.
 
-    @staticmethod
-    def get_version() -> str:
-        """Get Ephys Link's version.
-
-        Returns:
-            Ephys Link's version.
-        """
-        return __version__
-
     def get_pinpoint_id(self) -> PinpointIdResponse:
         """Get the Pinpoint ID for proxy usage.
 
@@ -98,13 +89,26 @@ class PlatformHandler:
         """
         return PinpointIdResponse(pinpoint_id=self._pinpoint_id, is_requester=False)
 
-    def get_platform_type(self) -> str:
+    def get_display_name(self) -> str:
+        """Get the display name for the platform.
+
+        Returns:
+            Display name for the platform.
+        """
+        return self._bindings.get_display_name()
+
+    async def get_platform_info(self) -> PlatformInfo:
         """Get the manipulator platform type connected to Ephys Link.
 
         Returns:
             Platform type config identifier (see CLI options for examples).
         """
-        return str(self._options.type)
+        return PlatformInfo(
+            name=self._bindings.get_display_name(),
+            cli_name=self._bindings.get_cli_name(),
+            axes_count=await self._bindings.get_axes_count(),
+            dimensions=await self._bindings.get_dimensions(),
+        )
 
     # Manipulator commands.
 
@@ -112,21 +116,15 @@ class PlatformHandler:
         """Get a list of available manipulators on the current handler.
 
         Returns:
-            List of manipulator IDs, number of axes, dimensions of manipulators (mm), and an error message if any.
+            List of manipulator IDs or an error message if any.
         """
         try:
             manipulators = await self._bindings.get_manipulators()
-            num_axes = await self._bindings.get_axes_count()
-            dimensions = self._bindings.get_dimensions()
         except Exception as e:
             self._console.exception_error_print("Get Manipulators", e)
             return GetManipulatorsResponse(error=self._console.pretty_exception(e))
         else:
-            return GetManipulatorsResponse(
-                manipulators=manipulators,
-                num_axes=num_axes,
-                dimensions=dimensions,
-            )
+            return GetManipulatorsResponse(manipulators=manipulators)
 
     async def get_position(self, manipulator_id: str) -> PositionalResponse:
         """Get the current translation position of a manipulator in unified coordinates (mm).
