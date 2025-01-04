@@ -60,7 +60,7 @@ def check_for_updates() -> None:
 
 def get_bindings() -> list[type[BaseBinding]]:
     """Get all binding classes from the bindings directory.
-    
+
     Returns:
         List of binding classes.
     """
@@ -78,7 +78,7 @@ def get_binding_display_to_cli_name() -> dict[str, str]:
     Returns:
         Dictionary of platform binding display name to CLI option name.
     """
-    return {binding_type().get_display_name(): binding_type().get_cli_name() for binding_type in get_bindings()}
+    return {binding_type.get_display_name(): binding_type.get_cli_name() for binding_type in get_bindings()}
 
 
 # Unit conversions

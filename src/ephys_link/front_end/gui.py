@@ -18,8 +18,8 @@ from tkinter import CENTER, RIGHT, BooleanVar, E, IntVar, StringVar, Tk, ttk
 from platformdirs import user_config_dir
 from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
-from ephys_link.utils.common import get_binding_display_to_cli_name
 from ephys_link.__about__ import __version__ as version
+from ephys_link.utils.common import get_binding_display_to_cli_name
 
 # Define options path.
 OPTIONS_DIR = join(user_config_dir(), "VBL", "Ephys Link")
@@ -153,7 +153,7 @@ class GUI:
         # Platform type.
         platform_type_settings = ttk.LabelFrame(mainframe, text="Platform Type", padding=3)
         platform_type_settings.grid(column=0, row=1, sticky="news")
-        
+
         for index, (display_name, cli_name) in enumerate(get_binding_display_to_cli_name().items()):
             ttk.Radiobutton(
                 platform_type_settings,

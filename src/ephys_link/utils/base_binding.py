@@ -17,16 +17,21 @@ class BaseBinding(ABC):
     No need to catch exceptions as the [Platform Handler][ephys_link.back_end.platform_handler] will catch them.
     """
 
+    def __init__(self, *args, **kwargs):
+        """Initialize the platform binding with any necessary arguments."""
+
+    @staticmethod
     @abstractmethod
-    def get_display_name(self) -> str:
+    def get_display_name() -> str:
         """Get the full display name of the platform.
 
         Returns:
             Full display name of the platform.
         """
 
+    @staticmethod
     @abstractmethod
-    def get_cli_name(self) -> str:
+    def get_cli_name() -> str:
         """Get the name of the platform for CLI usage.
 
         This is the value used to identify the platform when using the `-t` flag in the CLI.

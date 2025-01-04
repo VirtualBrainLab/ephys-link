@@ -5,9 +5,10 @@ from ephys_link.utils.common import array_to_vector4
 
 
 class FakeBinding(BaseBinding):
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         """Initialize fake manipulator infos."""
 
+        super().__init__(*args, **kwargs)
         self._positions = [Vector4() for _ in range(8)]
         self._angles = [
             Vector3(x=90, y=60, z=0),
@@ -20,10 +21,12 @@ class FakeBinding(BaseBinding):
             Vector3(x=-135, y=30, z=0),
         ]
 
-    def get_display_name(self) -> str:
+    @staticmethod
+    def get_display_name() -> str:
         return "Fake Manipulator"
 
-    def get_cli_name(self) -> str:
+    @staticmethod
+    def get_cli_name() -> str:
         return "fake"
 
     async def get_manipulators(self) -> list[str]:

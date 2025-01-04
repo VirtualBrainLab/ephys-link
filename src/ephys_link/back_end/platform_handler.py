@@ -25,11 +25,8 @@ from vbl_aquarium.models.ephys_link import (
 )
 from vbl_aquarium.models.unity import Vector4
 
-from ephys_link.bindings.fake_binding import FakeBinding
-from ephys_link.bindings.mpm_binding import MPMBinding
-from ephys_link.bindings.ump_4_binding import Ump4Binding
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.common import vector4_to_array
+from ephys_link.utils.common import get_bindings, vector4_to_array
 from ephys_link.utils.console import Console
 
 
@@ -50,7 +47,7 @@ class PlatformHandler:
         self._console = console
 
         # Define bindings based on platform type.
-        self._bindings = self._match_platform_type(options)
+        self._bindings = self._get_binding_instance(options)
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
@@ -58,26 +55,33 @@ class PlatformHandler:
         # Generate a Pinpoint ID for proxy usage.
         self._pinpoint_id = str(uuid4())[:8]
 
-    def _match_platform_type(self, options: EphysLinkOptions) -> BaseBinding:
+    def _get_binding_instance(self, options: EphysLinkOptions) -> BaseBinding:
         """Match the platform type to the appropriate bindings.
 
         Args:
             options: CLI options.
 
+        Raises:
+            ValueError: If the platform type is not recognized.
+
         Returns:
             Bindings for the specified platform type.
         """
-        match options.type:
-            case "ump-4":
-                return Ump4Binding()
-            case "pathfinder-mpm":
-                return MPMBinding(options.mpm_port)
-            case "fake":
-                return FakeBinding()
-            case _:
-                error_message = f'Platform type "{options.type}" not recognized.'
-                self._console.critical_print(error_message)
-                raise ValueError(error_message)
+        for binding_type in get_bindings():
+            binding_cli_name = binding_type.get_cli_name()
+
+            if binding_cli_name == options.type:
+                # Pass in HTTP port for Pathfinder MPM.
+                if binding_cli_name == "pathfinder-mpm":
+                    return binding_type(options.mpm_port)
+
+                # Otherwise just return the binding.
+                return binding_type()
+
+        # Raise an error if the platform type is not recognized.
+        error_message = f'Platform type "{options.type}" not recognized.'
+        self._console.critical_print(error_message)
+        raise ValueError(error_message)
 
     # Platform metadata.
 
