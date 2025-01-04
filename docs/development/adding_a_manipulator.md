@@ -53,8 +53,9 @@ returns `ump-4` because the CLI launch command is `ephys_link.exe -b -t ump-4`.
 Sometimes you may want to pass extra data to your binding on initialization. For example, New Scale Pathfinder MPM
 bindings needs to know what the HTTP server port is. To add custom arguments, define them as arguments on the `__init__`
 method of your binding then pass in the appropriate data when the binding is instantiated in the [
-`_get_binding_instance`]() method of the [`PlatformHandler`][ephys_link.back_end.platform_handler]. Use [New Scale
-Pathfinder MPM's binding][ephys_link.bindings.mpm_binding] as an example for how to do this.
+`_get_binding_instance`](https://github.com/VirtualBrainLab/ephys-link/blob/f79c1ec68ec1805e1a4e231e1934127893f7bd20/src/ephys_link/back_end/platform_handler.py#L58)
+method of the [`PlatformHandler`][ephys_link.back_end.platform_handler].
+Use [New Scale Pathfinder MPM's binding][ephys_link.bindings.mpm_binding] as an example for how to do this.
 
 ## Test Your Binding
 
