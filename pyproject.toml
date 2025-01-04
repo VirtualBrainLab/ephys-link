@@ -61,10 +61,13 @@ exclude = ["/.github", "/.idea"]
 python = "3.13.1"
 dependencies = [
     "pyinstaller==6.11.1",
+    "basedpyright==1.23.1"
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
 exe-clean = "pyinstaller.exe ephys_link.spec -y --clean"
+check = "basedpyright"
+check-watched = "basedpyright --watch"
 
 [tool.hatch.envs.docs]
 python = "3.13.1"
@@ -83,5 +86,6 @@ build = "mkdocs build"
 [tool.ruff]
 unsafe-fixes = true
 
-[tool.ruff.lint]
-extend-ignore = ["DTZ005"]
+[tool.basedpyright]
+include = ["src/ephys_link"]
+strict = ["src/ephys_link"]
