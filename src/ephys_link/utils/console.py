@@ -7,11 +7,13 @@ Usage:
 """
 
 from logging import DEBUG, ERROR, INFO, basicConfig, getLogger
+from typing import final
 
 from rich.logging import RichHandler
 from rich.traceback import install
 
 
+@final
 class Console:
     def __init__(self, *, enable_debug: bool) -> None:
         """Initialize console properties.
@@ -33,7 +35,7 @@ class Console:
         self._log.setLevel(DEBUG if enable_debug else INFO)
 
         # Install Rich traceback.
-        install()
+        _=install()
 
     def debug_print(self, label: str, msg: str) -> None:
         """Print a debug message to the console.
