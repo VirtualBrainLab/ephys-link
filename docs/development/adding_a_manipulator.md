@@ -13,7 +13,7 @@ read [how the system works first](../home/how_it_works.md) before proceeding.
 ## Create a Manipulator Binding
 
 Manipulators are added to Ephys Link through bindings. A binding is a Python class that extends the abstract base class
-[`BaseBinding`][ephys_link.utils.base_binding] and defines the functions Ephys Link expects from a platform.
+[`BaseBinding`][ephys_link.utils.base_binding] and defines the methods Ephys Link expects from a platform.
 
 Create a new Python module in `src/ephys_link/bindings` for your manipulator. Make a class that extends
 [`BaseBinding`][ephys_link.utils.base_binding]. Most IDEs will automatically import the necessary classes and tell you
@@ -23,7 +23,7 @@ descriptions of the expected behavior.
 As described in the [system overview](../home/how_it_works.md), Ephys Link converts all manipulator movement into a
 common "unified space" which is
 the [left-hand cartesian coordinate system](https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/coordinate-systems.html).
-The two functions [
+The two methods [
 `platform_space_to_unified_space`](../../reference/ephys_link/utils/base_binding/#ephys_link.utils.base_binding.BaseBinding.platform_space_to_unified_space)
 and [
 `unified_space_to_platform_space`](../../reference/ephys_link/utils/base_binding/#ephys_link.utils.base_binding.BaseBinding.unified_space_to_platform_space)
@@ -37,19 +37,29 @@ are used to convert between your manipulator's coordinate system and the unified
     the [New Scale Pathfinder MPM](https://github.com/VirtualBrainLab/ephys-link/blob/main/src/ephys_link/bindings/mpm_bindings.py)
     binding for an example where the platform uses a REST API to an external provider.
 
-## Register the Binding
+### Binding Names
 
-To make Ephys Link aware of your new binding, you'll need to register it in
-`src/ephys_link/back_end/platform_handler.py`. In the function [
-`_match_platform_type`](https://github.com/VirtualBrainLab/ephys-link/blob/c00be57bb552e5d0466b1cfebd0a54d555f12650/src/ephys_link/back_end/platform_handler.py#L69),
-add a new `case` to the `match` statement that returns an instance of your binding when matched to the desired CLI name
-for your platform. For example, to use Sensapex's uMp-4 the CLI launch command is `ephys_link.exe -b -t ump-4`,
-therefore the matching case statement is `ump-4`.
+The two naming methods [
+`get_display_name`](../../reference/ephys_link/utils/base_binding/#ephys_link.utils.base_binding.BaseBinding.get_display_name)
+and [
+`get_cli_name`](../../reference/ephys_link/utils/base_binding/#ephys_link.utils.base_binding.BaseBinding.get_cli_name)
+are used to identify the binding in the user interface. As described by their documentation, `get_display_name` should
+return a human-readable name for the binding, while `get_cli_name` should return the name used to launch the binding
+from the command line (what is passed to the `-t` flag). For example, Sensapex uMp-4 manipulator's `get_cli_name`
+returns `ump-4` because the CLI launch command is `ephys_link.exe -b -t ump-4`.
+
+### Custom Additional Arguments
+
+Sometimes you may want to pass extra data to your binding on initialization. For example, New Scale Pathfinder MPM
+bindings needs to know what the HTTP server port is. To add custom arguments, define them as arguments on the `__init__`
+method of your binding then pass in the appropriate data when the binding is instantiated in the [
+`_get_binding_instance`]() method of the [`PlatformHandler`][ephys_link.back_end.platform_handler]. Use [New Scale
+Pathfinder MPM's binding][ephys_link.bindings.mpm_binding] as an example for how to do this.
 
 ## Test Your Binding
 
 Once you've implemented your binding, you can test it by running Ephys Link using your binding
-`ephys_link -b -t <your_manipulator>`. You can interact with it using the Socket.IO API or Pinpoint.
+`ephys_link -b -t <cli_name>`. You can interact with it using the [Socket.IO API](socketio_api.md) or Pinpoint.
 
 ## Submit Your Changes
 

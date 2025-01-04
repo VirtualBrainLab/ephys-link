@@ -10,7 +10,7 @@ from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.common import (
-    RESOURCES_PATH,
+    RESOURCES_DIRECTORY,
     array_to_vector4,
     scalar_mm_to_um,
     um_to_mm,
@@ -22,15 +22,24 @@ from ephys_link.utils.common import (
 class Ump4Binding(BaseBinding):
     """Bindings for UMP-4 platform"""
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         """Initialize UMP-4 bindings."""
 
         # Establish connection to Sensapex API (exit if connection fails).
-        UMP.set_library_path(RESOURCES_PATH)
+        super().__init__(*args, **kwargs)
+        UMP.set_library_path(RESOURCES_DIRECTORY)
         self._ump = UMP.get_ump()
         if self._ump is None:
             error_message = "Unable to connect to uMp"
             raise ValueError(error_message)
+
+    @staticmethod
+    def get_display_name() -> str:
+        return "Sensapex uMp-4"
+
+    @staticmethod
+    def get_cli_name() -> str:
+        return "ump-4"
 
     async def get_manipulators(self) -> list[str]:
         return list(map(str, self._ump.list_devices()))
@@ -38,7 +47,7 @@ class Ump4Binding(BaseBinding):
     async def get_axes_count(self) -> int:
         return 4
 
-    def get_dimensions(self) -> Vector4:
+    async def get_dimensions(self) -> Vector4:
         return Vector4(x=20, y=20, z=20, w=20)
 
     async def get_position(self, manipulator_id: str) -> Vector4:

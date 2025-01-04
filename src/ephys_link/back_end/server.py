@@ -1,7 +1,22 @@
+"""Socket.IO Server.
+
+Responsible to managing the Socket.IO connection and events.
+Directs events to the platform handler or handles them directly.
+
+Usage:
+    Instantiate Server with the appropriate options, platform handler, and console.
+    Then call `launch()` to start the server.
+
+    ```python
+    Server(options, platform_handler, console).launch()
+    ```
+"""
+
 from asyncio import get_event_loop, run
 from collections.abc import Callable, Coroutine
 from json import JSONDecodeError, dumps, loads
 from typing import Any
+from uuid import uuid4
 
 from aiohttp.web import Application, run_app
 from pydantic import ValidationError
@@ -12,8 +27,10 @@ from vbl_aquarium.models.ephys_link import (
     SetInsideBrainRequest,
     SetPositionRequest,
 )
+from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 
+from ephys_link.__about__ import __version__
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.utils.common import PORT, check_for_updates, server_preamble
 from ephys_link.utils.console import Console
@@ -47,6 +64,9 @@ class Server:
         # Store connected client.
         self._client_sid: str = ""
 
+        # Generate Pinpoint ID for proxy usage.
+        self._pinpoint_id = str(uuid4())[:8]
+
         # Bind events.
         self._sio.on("*", self.platform_event_handler)
 
@@ -63,7 +83,7 @@ class Server:
             check_for_updates()
 
         # List platform and available manipulators.
-        self._console.info_print("PLATFORM", self._platform_handler.get_platform_type())
+        self._console.info_print("PLATFORM", self._platform_handler.get_display_name())
         self._console.info_print(
             "MANIPULATORS",
             str(get_event_loop().run_until_complete(self._platform_handler.get_manipulators()).manipulators),
@@ -71,7 +91,7 @@ class Server:
 
         # Launch server
         if self._options.use_proxy:
-            self._console.info_print("PINPOINT ID", self._platform_handler.get_pinpoint_id().pinpoint_id)
+            self._console.info_print("PINPOINT ID", self._pinpoint_id)
 
             async def connect_proxy() -> None:
                 # noinspection HttpUrlsUsage
@@ -204,11 +224,11 @@ class Server:
         match event:
             # Server metadata.
             case "get_version":
-                return self._platform_handler.get_version()
+                return __version__
             case "get_pinpoint_id":
-                return str(self._platform_handler.get_pinpoint_id().to_json_string())
-            case "get_platform_type":
-                return self._platform_handler.get_platform_type()
+                return PinpointIdResponse(pinpoint_id=self._pinpoint_id, is_requester=False).to_json_string()
+            case "get_platform_info":
+                return (await self._platform_handler.get_platform_info()).to_json_string()
 
             # Manipulator commands.
             case "get_manipulators":

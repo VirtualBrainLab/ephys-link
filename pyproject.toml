@@ -38,7 +38,7 @@ dependencies = [
     "requests==2.32.3",
     "sensapex==1.400.3",
     "rich==13.9.4",
-    "vbl-aquarium==1.0.0b1"
+    "vbl-aquarium==1.0.0b3"
 ]
 
 [project.urls]
@@ -79,6 +79,9 @@ dependencies = [
 [tool.hatch.envs.docs.scripts]
 serve = "mkdocs serve"
 build = "mkdocs build"
+
+[tool.ruff]
+unsafe-fixes = true
 
 [tool.ruff.lint]
 extend-ignore = ["DTZ005"]

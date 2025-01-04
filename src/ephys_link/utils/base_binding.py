@@ -17,12 +17,27 @@ class BaseBinding(ABC):
     No need to catch exceptions as the [Platform Handler][ephys_link.back_end.platform_handler] will catch them.
     """
 
+    def __init__(self, *args, **kwargs):
+        """Initialize the platform binding with any necessary arguments."""
+
+    @staticmethod
     @abstractmethod
-    async def get_manipulators(self) -> list[str]:
-        """Get a list of available manipulators on the current platform.
+    def get_display_name() -> str:
+        """Get the full display name of the platform.
 
         Returns:
-            List of manipulator IDs.
+            Full display name of the platform.
+        """
+
+    @staticmethod
+    @abstractmethod
+    def get_cli_name() -> str:
+        """Get the name of the platform for CLI usage.
+
+        This is the value used to identify the platform when using the `-t` flag in the CLI.
+
+        Returns:
+            Name of the platform to use on the CLI.
         """
 
     @abstractmethod
@@ -34,13 +49,21 @@ class BaseBinding(ABC):
         """
 
     @abstractmethod
-    def get_dimensions(self) -> Vector4:
+    async def get_dimensions(self) -> Vector4:
         """Get the dimensions of the manipulators on the current platform (mm).
 
         For 3-axis manipulators, copy the dimension of the axis parallel to the probe into w.
 
         Returns:
             Dimensions of the manipulators.
+        """
+
+    @abstractmethod
+    async def get_manipulators(self) -> list[str]:
+        """Get a list of available manipulators on the current platform.
+
+        Returns:
+            List of manipulator IDs.
         """
 
     @abstractmethod

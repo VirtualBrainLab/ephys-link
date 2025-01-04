@@ -4,7 +4,8 @@
 Responsible for performing the various manipulator commands.
 Instantiates the appropriate bindings based on the platform type and uses them to perform the commands.
 
-Usage: Instantiate PlatformHandler with the platform type and call the desired command.
+Usage:
+    Instantiate PlatformHandler with the platform type and call the desired command.
 """
 
 from uuid import uuid4
@@ -14,6 +15,7 @@ from vbl_aquarium.models.ephys_link import (
     BooleanStateResponse,
     EphysLinkOptions,
     GetManipulatorsResponse,
+    PlatformInfo,
     PositionalResponse,
     SetDepthRequest,
     SetDepthResponse,
@@ -21,15 +23,10 @@ from vbl_aquarium.models.ephys_link import (
     SetPositionRequest,
     ShankCountResponse,
 )
-from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.models.unity import Vector4
 
-from ephys_link.__about__ import __version__
-from ephys_link.bindings.fake_binding import FakeBinding
-from ephys_link.bindings.mpm_binding import MPMBinding
-from ephys_link.bindings.ump_4_binding import Ump4Binding
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.common import vector4_to_array
+from ephys_link.utils.common import get_bindings, vector4_to_array
 from ephys_link.utils.console import Console
 
 
@@ -50,7 +47,7 @@ class PlatformHandler:
         self._console = console
 
         # Define bindings based on platform type.
-        self._bindings = self._match_platform_type(options)
+        self._bindings = self._get_binding_instance(options)
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
@@ -58,53 +55,56 @@ class PlatformHandler:
         # Generate a Pinpoint ID for proxy usage.
         self._pinpoint_id = str(uuid4())[:8]
 
-    def _match_platform_type(self, options: EphysLinkOptions) -> BaseBinding:
+    def _get_binding_instance(self, options: EphysLinkOptions) -> BaseBinding:
         """Match the platform type to the appropriate bindings.
 
         Args:
             options: CLI options.
 
+        Raises:
+            ValueError: If the platform type is not recognized.
+
         Returns:
             Bindings for the specified platform type.
         """
-        match options.type:
-            case "ump-4":
-                return Ump4Binding()
-            case "pathfinder-mpm":
-                return MPMBinding(options.mpm_port)
-            case "fake":
-                return FakeBinding()
-            case _:
-                error_message = f'Platform type "{options.type}" not recognized.'
-                self._console.critical_print(error_message)
-                raise ValueError(error_message)
+        for binding_type in get_bindings():
+            binding_cli_name = binding_type.get_cli_name()
 
-    # Ephys Link metadata.
+            if binding_cli_name == options.type:
+                # Pass in HTTP port for Pathfinder MPM.
+                if binding_cli_name == "pathfinder-mpm":
+                    return binding_type(options.mpm_port)
 
-    @staticmethod
-    def get_version() -> str:
-        """Get Ephys Link's version.
+                # Otherwise just return the binding.
+                return binding_type()
 
-        Returns:
-            Ephys Link's version.
-        """
-        return __version__
+        # Raise an error if the platform type is not recognized.
+        error_message = f'Platform type "{options.type}" not recognized.'
+        self._console.critical_print(error_message)
+        raise ValueError(error_message)
 
-    def get_pinpoint_id(self) -> PinpointIdResponse:
-        """Get the Pinpoint ID for proxy usage.
+    # Platform metadata.
+
+    def get_display_name(self) -> str:
+        """Get the display name for the platform.
 
         Returns:
-            Pinpoint ID response.
+            Display name for the platform.
         """
-        return PinpointIdResponse(pinpoint_id=self._pinpoint_id, is_requester=False)
+        return self._bindings.get_display_name()
 
-    def get_platform_type(self) -> str:
+    async def get_platform_info(self) -> PlatformInfo:
         """Get the manipulator platform type connected to Ephys Link.
 
         Returns:
             Platform type config identifier (see CLI options for examples).
         """
-        return str(self._options.type)
+        return PlatformInfo(
+            name=self._bindings.get_display_name(),
+            cli_name=self._bindings.get_cli_name(),
+            axes_count=await self._bindings.get_axes_count(),
+            dimensions=await self._bindings.get_dimensions(),
+        )
 
     # Manipulator commands.
 
@@ -112,21 +112,15 @@ class PlatformHandler:
         """Get a list of available manipulators on the current handler.
 
         Returns:
-            List of manipulator IDs, number of axes, dimensions of manipulators (mm), and an error message if any.
+            List of manipulator IDs or an error message if any.
         """
         try:
             manipulators = await self._bindings.get_manipulators()
-            num_axes = await self._bindings.get_axes_count()
-            dimensions = self._bindings.get_dimensions()
         except Exception as e:
             self._console.exception_error_print("Get Manipulators", e)
             return GetManipulatorsResponse(error=self._console.pretty_exception(e))
         else:
-            return GetManipulatorsResponse(
-                manipulators=manipulators,
-                num_axes=num_axes,
-                dimensions=dimensions,
-            )
+            return GetManipulatorsResponse(manipulators=manipulators)
 
     async def get_position(self, manipulator_id: str) -> PositionalResponse:
         """Get the current translation position of a manipulator in unified coordinates (mm).
