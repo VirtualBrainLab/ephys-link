@@ -25,7 +25,11 @@ def preamble() -> None:
 
 
 def check_for_updates(console: Console) -> None:
-    """Check for updates to the Ephys Link."""
+    """Check for updates to the Ephys Link.
+    
+    Args:
+        console: Console instance for printing messages.
+    """
     try:
         response = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
         latest_version = str(response.json()[0]["name"])  # pyright: ignore [reportAny]
