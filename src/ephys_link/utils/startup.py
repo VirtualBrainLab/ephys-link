@@ -26,7 +26,7 @@ def preamble() -> None:
 
 def check_for_updates(console: Console) -> None:
     """Check for updates to the Ephys Link.
-    
+
     Args:
         console: Console instance for printing messages.
     """
