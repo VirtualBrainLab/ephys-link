@@ -84,6 +84,7 @@ serve = "mkdocs serve"
 build = "mkdocs build"
 
 [tool.ruff]
+exclude = ["typings"]
 unsafe-fixes = true
 
 [tool.basedpyright]

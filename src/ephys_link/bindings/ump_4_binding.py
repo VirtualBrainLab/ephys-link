@@ -1,3 +1,4 @@
+# pyright: strict, reportMissingTypeStubs=false
 """Bindings for Sensapex uMp-4 platform.
 
 Usage: Instantiate Ump4Bindings to interact with the Sensapex uMp-4 platform.
@@ -29,7 +30,7 @@ class Ump4Binding(BaseBinding):
 
         # Establish connection to Sensapex API (exit if connection fails).
         UMP.set_library_path(RESOURCES_DIRECTORY)
-        self._ump = UMP.get_ump()
+        self._ump = UMP.get_ump()  # pyright: ignore [reportUnknownMemberType]
 
     @staticmethod
     @override
@@ -55,7 +56,7 @@ class Ump4Binding(BaseBinding):
 
     @override
     async def get_position(self, manipulator_id: str) -> Vector4:
-        return um_to_mm(list_to_vector4(self._get_device(manipulator_id).get_pos(1)))
+        return um_to_mm(list_to_vector4(self._get_device(manipulator_id).get_pos(1)))  # pyright: ignore [reportUnknownMemberType]
 
     @override
     async def get_angles(self, manipulator_id: str) -> NoReturn:
@@ -87,7 +88,7 @@ class Ump4Binding(BaseBinding):
         target_position_um = vector_mm_to_um(position)
 
         # Request movement.
-        movement = self._get_device(manipulator_id).goto_pos(
+        movement = self._get_device(manipulator_id).goto_pos(  # pyright: ignore [reportUnknownMemberType]
             vector4_to_array(target_position_um), scalar_mm_to_um(speed)
         )
 
@@ -96,15 +97,15 @@ class Ump4Binding(BaseBinding):
 
         # Handle interrupted movement.
         if movement.interrupted:
-            error_message = f"Manipulator {manipulator_id} interrupted: {movement.interrupt_reason}"
+            error_message = f"Manipulator {manipulator_id} interrupted: {movement.interrupt_reason}"  # pyright: ignore [reportUnknownMemberType]
             raise RuntimeError(error_message)
 
         # Handle empty end position.
-        if not movement.last_pos:
+        if not movement.last_pos:  # pyright: ignore [reportUnknownMemberType]
             error_message = f"Manipulator {manipulator_id} did not reach target position"
             raise RuntimeError(error_message)
 
-        return um_to_mm(list_to_vector4(movement.last_pos))
+        return um_to_mm(list_to_vector4(movement.last_pos))  # pyright: ignore [reportArgumentType, reportUnknownMemberType]
 
     @override
     async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
@@ -154,4 +155,4 @@ class Ump4Binding(BaseBinding):
 
     # Helper methods.
     def _get_device(self, manipulator_id: str) -> SensapexDevice:
-        return self._ump.get_device(int(manipulator_id))
+        return self._ump.get_device(int(manipulator_id))  # pyright: ignore [reportUnknownMemberType]
