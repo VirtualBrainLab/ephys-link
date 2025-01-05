@@ -1,4 +1,3 @@
-# pyright: strict, reportAny=false
 """Bindings for New Scale Pathfinder MPM HTTP server platform.
 
 MPM works slightly differently than the other platforms since it operates in stereotactic coordinates.
@@ -95,7 +94,7 @@ class MPMBinding(BaseBinding):
 
     @override
     async def get_manipulators(self) -> list[str]:
-        return [manipulator["Id"] for manipulator in (await self._query_data())["ProbeArray"]]
+        return [manipulator["Id"] for manipulator in (await self._query_data())["ProbeArray"]]  # pyright: ignore [reportAny]
 
     @override
     async def get_axes_count(self) -> int:
@@ -107,8 +106,8 @@ class MPMBinding(BaseBinding):
 
     @override
     async def get_position(self, manipulator_id: str) -> Vector4:
-        manipulator_data = await self._manipulator_data(manipulator_id)
-        stage_z = manipulator_data["Stage_Z"]
+        manipulator_data: dict[str, float] = await self._manipulator_data(manipulator_id)
+        stage_z: float = manipulator_data["Stage_Z"]
 
         await sleep(self.POLL_INTERVAL)  # Wait for the stage to stabilize.
 
@@ -121,10 +120,10 @@ class MPMBinding(BaseBinding):
 
     @override
     async def get_angles(self, manipulator_id: str) -> Vector3:
-        manipulator_data = await self._manipulator_data(manipulator_id)
+        manipulator_data: dict[str, float] = await self._manipulator_data(manipulator_id)
 
         # Apply PosteriorAngle to Polar to get the correct angle.
-        adjusted_polar = manipulator_data["Polar"] - (await self._query_data())["PosteriorAngle"]
+        adjusted_polar: int = manipulator_data["Polar"] - (await self._query_data())["PosteriorAngle"]
 
         return Vector3(
             x=adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
@@ -134,7 +133,7 @@ class MPMBinding(BaseBinding):
 
     @override
     async def get_shank_count(self, manipulator_id: str) -> int:
-        return int((await self._manipulator_data(manipulator_id))["ShankCount"])
+        return int((await self._manipulator_data(manipulator_id))["ShankCount"])  # pyright: ignore [reportAny]
 
     @override
     def get_movement_tolerance(self) -> float:
@@ -281,7 +280,7 @@ class MPMBinding(BaseBinding):
     async def _query_data(self) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         try:
             # noinspection PyTypeChecker
-            return (await get_running_loop().run_in_executor(None, get, self._url)).json()
+            return (await get_running_loop().run_in_executor(None, get, self._url)).json()  # pyright: ignore [reportAny]
         except ConnectionError as connectionError:
             error_message = f"Unable to connect to MPM HTTP server: {connectionError}"
             raise RuntimeError(error_message) from connectionError

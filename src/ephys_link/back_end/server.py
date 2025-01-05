@@ -1,4 +1,3 @@
-# pyright: strict, reportExplicitAny=false, reportMissingTypeStubs=false
 """Socket.IO Server.
 
 Responsible to managing the Socket.IO connection and events.
@@ -21,7 +20,7 @@ from uuid import uuid4
 
 from aiohttp.web import Application, run_app
 from pydantic import ValidationError
-from socketio import AsyncClient, AsyncServer
+from socketio import AsyncClient, AsyncServer  # pyright: ignore [reportMissingTypeStubs]
 from vbl_aquarium.models.ephys_link import (
     EphysLinkOptions,
     SetDepthRequest,
@@ -121,7 +120,7 @@ class Server:
             run_app(self._app, port=PORT)
 
     # Helper functions.
-    def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:
+    def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:  # pyright: ignore [reportExplicitAny]
         """Return a response for a malformed request.
 
         Args:
@@ -135,7 +134,10 @@ class Server:
         return dumps({"error": "Malformed request."})
 
     async def _run_if_data_available(
-        self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: tuple[tuple[Any], ...]
+        self,
+        function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]],  # pyright: ignore [reportExplicitAny]
+        event: str,
+        data: tuple[tuple[Any], ...],  # pyright: ignore [reportExplicitAny]
     ) -> str:
         """Run a function if data is available.
 
@@ -154,10 +156,10 @@ class Server:
 
     async def _run_if_data_parses(
         self,
-        function: Callable[[INPUT_TYPE], Coroutine[Any, Any, OUTPUT_TYPE]],
+        function: Callable[[INPUT_TYPE], Coroutine[Any, Any, OUTPUT_TYPE]],  # pyright: ignore [reportExplicitAny]
         data_type: type[INPUT_TYPE],
         event: str,
-        data: tuple[tuple[Any], ...],
+        data: tuple[tuple[Any], ...],  # pyright: ignore [reportExplicitAny]
     ) -> str:
         """Run a function if data parses.
 
@@ -221,7 +223,7 @@ class Server:
         else:
             self._console.error_print("DISCONNECTION", f"Client {sid} disconnected without being connected.")
 
-    async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:
+    async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:  # pyright: ignore [reportExplicitAny]
         """Handle events from the server.
 
         Matches incoming events based on the Socket.IO API.

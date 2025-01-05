@@ -1,4 +1,3 @@
-# ruff: noqa: BLE001
 """Manipulator platform handler.
 
 Responsible for performing the various manipulator commands.
@@ -119,7 +118,7 @@ class PlatformHandler:
         """
         try:
             manipulators = await self._bindings.get_manipulators()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Manipulators", e)
             return GetManipulatorsResponse(error=self._console.pretty_exception(e))
         else:
@@ -138,7 +137,7 @@ class PlatformHandler:
             unified_position = self._bindings.platform_space_to_unified_space(
                 await self._bindings.get_position(manipulator_id)
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Position", e)
             return PositionalResponse(error=str(e))
         else:
@@ -155,7 +154,7 @@ class PlatformHandler:
         """
         try:
             angles = await self._bindings.get_angles(manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Angles", e)
             return AngularResponse(error=self._console.pretty_exception(e))
         else:
@@ -172,7 +171,7 @@ class PlatformHandler:
         """
         try:
             shank_count = await self._bindings.get_shank_count(manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Shank Count", e)
             return ShankCountResponse(error=self._console.pretty_exception(e))
         else:
@@ -217,7 +216,7 @@ class PlatformHandler:
                     )
                     self._console.error_print("Set Position", error_message)
                     return PositionalResponse(error=error_message)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Set Position", e)
             return PositionalResponse(error=self._console.pretty_exception(e))
         else:
@@ -249,7 +248,7 @@ class PlatformHandler:
                 )
                 self._console.error_print("Set Depth", error_message)
                 return SetDepthResponse(error=error_message)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Set Depth", e)
             return SetDepthResponse(error=self._console.pretty_exception(e))
         else:
@@ -271,7 +270,7 @@ class PlatformHandler:
                 self._inside_brain.add(request.manipulator_id)
             else:
                 self._inside_brain.discard(request.manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Set Inside Brain", e)
             return BooleanStateResponse(error=self._console.pretty_exception(e))
         else:
@@ -288,7 +287,7 @@ class PlatformHandler:
         """
         try:
             await self._bindings.stop(manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Stop", e)
             return self._console.pretty_exception(e)
         else:
@@ -303,7 +302,7 @@ class PlatformHandler:
         try:
             for manipulator_id in await self._bindings.get_manipulators():
                 await self._bindings.stop(manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Stop", e)
             return self._console.pretty_exception(e)
         else:

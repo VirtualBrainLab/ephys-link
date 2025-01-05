@@ -1,4 +1,3 @@
-# pyright: strict, reportMissingTypeStubs=false
 """Bindings for Sensapex uMp-4 platform.
 
 Usage: Instantiate Ump4Bindings to interact with the Sensapex uMp-4 platform.
@@ -7,7 +6,7 @@ Usage: Instantiate Ump4Bindings to interact with the Sensapex uMp-4 platform.
 from asyncio import get_running_loop
 from typing import NoReturn, final, override
 
-from sensapex import UMP, SensapexDevice
+from sensapex import UMP, SensapexDevice  # pyright: ignore [reportMissingTypeStubs]
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
