@@ -61,7 +61,7 @@ class FakeBinding(BaseBinding):
         pass
 
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
-        pass
+        return platform_space
 
     def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
-        pass
+        return unified_space

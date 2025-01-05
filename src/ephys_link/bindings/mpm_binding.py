@@ -1,3 +1,4 @@
+# pyright: strict, reportAny=false
 """Bindings for New Scale Pathfinder MPM HTTP server platform.
 
 MPM works slightly differently than the other platforms since it operates in stereotactic coordinates.
@@ -8,7 +9,7 @@ Usage: Instantiate MPMBindings to interact with the New Scale Pathfinder MPM HTT
 
 from asyncio import get_running_loop, sleep
 from json import dumps
-from typing import Any
+from typing import Any, final, override
 
 from requests import JSONDecodeError, get, put
 from vbl_aquarium.models.unity import Vector3, Vector4
@@ -17,6 +18,7 @@ from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.common import scalar_mm_to_um, vector4_to_array
 
 
+@final
 class MPMBinding(BaseBinding):
     """Bindings for New Scale Pathfinder MPM HTTP server platform."""
 
@@ -82,22 +84,28 @@ class MPMBinding(BaseBinding):
         self._movement_stopped = False
 
     @staticmethod
+    @override
     def get_display_name() -> str:
         return "Pathfinder MPM Control v2.8.8+"
 
     @staticmethod
+    @override
     def get_cli_name() -> str:
         return "pathfinder-mpm"
 
+    @override
     async def get_manipulators(self) -> list[str]:
         return [manipulator["Id"] for manipulator in (await self._query_data())["ProbeArray"]]
 
+    @override
     async def get_axes_count(self) -> int:
         return 3
 
+    @override
     def get_dimensions(self) -> Vector4:
         return Vector4(x=15, y=15, z=15, w=15)
 
+    @override
     async def get_position(self, manipulator_id: str) -> Vector4:
         manipulator_data = await self._manipulator_data(manipulator_id)
         stage_z = manipulator_data["Stage_Z"]
@@ -111,6 +119,7 @@ class MPMBinding(BaseBinding):
             w=stage_z,
         )
 
+    @override
     async def get_angles(self, manipulator_id: str) -> Vector3:
         manipulator_data = await self._manipulator_data(manipulator_id)
 
@@ -123,12 +132,15 @@ class MPMBinding(BaseBinding):
             z=manipulator_data["ShankOrientation"],
         )
 
+    @override
     async def get_shank_count(self, manipulator_id: str) -> int:
         return int((await self._manipulator_data(manipulator_id))["ShankCount"])
 
+    @override
     def get_movement_tolerance(self) -> float:
         return 0.01
 
+    @override
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
         # Keep track of the previous position to check if the manipulator stopped advancing.
         current_position = await self.get_position(manipulator_id)
@@ -185,6 +197,7 @@ class MPMBinding(BaseBinding):
         # Return the final position.
         return await self.get_position(manipulator_id)
 
+    @override
     async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
         # Keep track of the previous depth to check if the manipulator stopped advancing unexpectedly.
         current_depth = (await self.get_position(manipulator_id)).w
@@ -225,11 +238,16 @@ class MPMBinding(BaseBinding):
         # Return the final depth.
         return float((await self.get_position(manipulator_id)).w)
 
+    @override
     async def stop(self, manipulator_id: str) -> None:
-        request = {"PutId": "ProbeStop", "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id)}
+        request: dict[str, str | int | float] = {
+            "PutId": "ProbeStop",
+            "Probe": self.VALID_MANIPULATOR_IDS.index(manipulator_id),
+        }
         await self._put_request(request)
         self._movement_stopped = True
 
+    @override
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
         # unified   <-  platform
         # +x        <-  -x
@@ -244,6 +262,7 @@ class MPMBinding(BaseBinding):
             w=self.get_dimensions().w - platform_space.w,
         )
 
+    @override
     def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
         # platform  <-  unified
         # +x        <-  -x
@@ -259,8 +278,9 @@ class MPMBinding(BaseBinding):
         )
 
     # Helper functions.
-    async def _query_data(self) -> Any:
+    async def _query_data(self) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         try:
+            # noinspection PyTypeChecker
             return (await get_running_loop().run_in_executor(None, get, self._url)).json()
         except ConnectionError as connectionError:
             error_message = f"Unable to connect to MPM HTTP server: {connectionError}"
@@ -269,8 +289,8 @@ class MPMBinding(BaseBinding):
             error_message = f"Unable to decode JSON response from MPM HTTP server: {jsonDecodeError}"
             raise ValueError(error_message) from jsonDecodeError
 
-    async def _manipulator_data(self, manipulator_id: str) -> Any:
-        probe_data = (await self._query_data())["ProbeArray"]
+    async def _manipulator_data(self, manipulator_id: str) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
+        probe_data: list[dict[str, Any]] = (await self._query_data())["ProbeArray"]  # pyright: ignore [reportExplicitAny]
         for probe in probe_data:
             if probe["Id"] == manipulator_id:
                 return probe
@@ -279,8 +299,8 @@ class MPMBinding(BaseBinding):
         error_message = f"Manipulator {manipulator_id} not found."
         raise ValueError(error_message)
 
-    async def _put_request(self, request: dict[str, Any]) -> None:
-        await get_running_loop().run_in_executor(None, put, self._url, dumps(request))
+    async def _put_request(self, request: dict[str, Any]) -> None:  # pyright: ignore [reportExplicitAny]
+        _ = await get_running_loop().run_in_executor(None, put, self._url, dumps(request))
 
     def _is_vector_close(self, target: Vector4, current: Vector4) -> bool:
         return all(abs(axis) <= self.get_movement_tolerance() for axis in vector4_to_array(target - current)[:3])
