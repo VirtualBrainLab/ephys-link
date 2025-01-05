@@ -4,14 +4,15 @@ Usage: Instantiate Ump4Bindings to interact with the Sensapex uMp-4 platform.
 """
 
 from asyncio import get_running_loop
+from typing import NoReturn, final, override
 
 from sensapex import UMP, SensapexDevice
-from vbl_aquarium.models.unity import Vector3, Vector4
+from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.common import (
     RESOURCES_DIRECTORY,
-    array_to_vector4,
+    list_to_vector4,
     scalar_mm_to_um,
     um_to_mm,
     vector4_to_array,
@@ -19,6 +20,7 @@ from ephys_link.utils.common import (
 )
 
 
+@final
 class Ump4Binding(BaseBinding):
     """Bindings for UMP-4 platform"""
 
@@ -28,32 +30,35 @@ class Ump4Binding(BaseBinding):
         # Establish connection to Sensapex API (exit if connection fails).
         UMP.set_library_path(RESOURCES_DIRECTORY)
         self._ump = UMP.get_ump()
-        if self._ump is None:
-            error_message = "Unable to connect to uMp"
-            raise ValueError(error_message)
 
     @staticmethod
+    @override
     def get_display_name() -> str:
         return "Sensapex uMp-4"
 
     @staticmethod
+    @override
     def get_cli_name() -> str:
         return "ump-4"
 
+    @override
     async def get_manipulators(self) -> list[str]:
         return list(map(str, self._ump.list_devices()))
 
+    @override
     async def get_axes_count(self) -> int:
         return 4
 
-    async def get_dimensions(self) -> Vector4:
+    @override
+    def get_dimensions(self) -> Vector4:
         return Vector4(x=20, y=20, z=20, w=20)
 
+    @override
     async def get_position(self, manipulator_id: str) -> Vector4:
-        return um_to_mm(array_to_vector4(self._get_device(manipulator_id).get_pos(1)))
+        return um_to_mm(list_to_vector4(self._get_device(manipulator_id).get_pos(1)))
 
-    # noinspection PyTypeChecker
-    async def get_angles(self, _: str) -> Vector3:
+    @override
+    async def get_angles(self, manipulator_id: str) -> NoReturn:
         """uMp-4 does not support getting angles so raise an error.
 
         Raises:
@@ -62,8 +67,8 @@ class Ump4Binding(BaseBinding):
         error_message = "UMP-4 does not support getting angles"
         raise AttributeError(error_message)
 
-    # noinspection PyTypeChecker
-    async def get_shank_count(self, _: str) -> int:
+    @override
+    async def get_shank_count(self, manipulator_id: str) -> NoReturn:
         """uMp-4 does not support getting shank count so raise an error.
 
         Raises:
@@ -72,10 +77,11 @@ class Ump4Binding(BaseBinding):
         error_message = "UMP-4 does not support getting shank count"
         raise AttributeError(error_message)
 
+    @override
     def get_movement_tolerance(self) -> float:
         return 0.001
 
-    # noinspection DuplicatedCode
+    @override
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
         # Convert position to micrometers.
         target_position_um = vector_mm_to_um(position)
@@ -86,15 +92,21 @@ class Ump4Binding(BaseBinding):
         )
 
         # Wait for movement to finish.
-        await get_running_loop().run_in_executor(None, movement.finished_event.wait, None)
+        _ = await get_running_loop().run_in_executor(None, movement.finished_event.wait, None)
 
         # Handle interrupted movement.
         if movement.interrupted:
             error_message = f"Manipulator {manipulator_id} interrupted: {movement.interrupt_reason}"
             raise RuntimeError(error_message)
 
-        return um_to_mm(array_to_vector4(movement.last_pos))
+        # Handle empty end position.
+        if not movement.last_pos:
+            error_message = f"Manipulator {manipulator_id} did not reach target position"
+            raise RuntimeError(error_message)
 
+        return um_to_mm(list_to_vector4(movement.last_pos))
+
+    @override
     async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
         # Augment current position with depth.
         current_position = await self.get_position(manipulator_id)
@@ -106,9 +118,11 @@ class Ump4Binding(BaseBinding):
         # Return the final depth.
         return float(final_platform_position.w)
 
+    @override
     async def stop(self, manipulator_id: str) -> None:
         self._get_device(manipulator_id).stop()
 
+    @override
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
         # unified   <-  platform
         # +x        <-  +y
@@ -123,6 +137,7 @@ class Ump4Binding(BaseBinding):
             w=platform_space.w,
         )
 
+    @override
     def unified_space_to_platform_space(self, unified_space: Vector4) -> Vector4:
         # platform  <-  unified
         # +x        <-  +z

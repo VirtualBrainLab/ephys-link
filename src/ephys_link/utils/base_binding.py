@@ -46,7 +46,7 @@ class BaseBinding(ABC):
         """
 
     @abstractmethod
-    async def get_dimensions(self) -> Vector4:
+    def get_dimensions(self) -> Vector4:
         """Get the dimensions of the manipulators on the current platform (mm).
 
         For 3-axis manipulators, copy the dimension of the axis parallel to the probe into w.

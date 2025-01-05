@@ -50,7 +50,7 @@ def check_for_updates() -> None:
     """Check for updates to the Ephys Link."""
     try:
         response = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
-        latest_version = str(response.json()[0]["name"]) # pyright: ignore [reportAny]
+        latest_version = str(response.json()[0]["name"])  # pyright: ignore [reportAny]
         if parse(latest_version) > parse(__version__):
             print(f"Update available: {latest_version} !")
             print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
@@ -132,17 +132,17 @@ def vector4_to_array(vector4: Vector4) -> list[float]:
     return [vector4.x, vector4.y, vector4.z, vector4.w]
 
 
-def array_to_vector4(array: list[float]) -> Vector4:
+def list_to_vector4(float_list: list[float | int]) -> Vector4:
     """Convert a list of floats to a [Vector4][vbl_aquarium.models.unity.Vector4].
 
     Args:
-        array: List of floats.
+        float_list: List of floats.
 
     Returns:
         First four elements of the list as a Vector4 padded with zeros if necessary.
     """
 
-    def get_element(this_array: list[float], index: int) -> float:
+    def get_element(this_array: list[float | int], index: int) -> float:
         """Safely get an element from an array.
 
         Return 0 if the index is out of bounds.
@@ -160,8 +160,8 @@ def array_to_vector4(array: list[float]) -> Vector4:
             return 0.0
 
     return Vector4(
-        x=get_element(array, 0),
-        y=get_element(array, 1),
-        z=get_element(array, 2),
-        w=get_element(array, 3),
+        x=get_element(float_list, 0),
+        y=get_element(float_list, 1),
+        z=get_element(float_list, 2),
+        w=get_element(float_list, 3),
     )

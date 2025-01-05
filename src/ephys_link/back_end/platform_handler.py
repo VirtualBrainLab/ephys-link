@@ -104,7 +104,7 @@ class PlatformHandler:
             name=self._bindings.get_display_name(),
             cli_name=self._bindings.get_cli_name(),
             axes_count=await self._bindings.get_axes_count(),
-            dimensions=await self._bindings.get_dimensions(),
+            dimensions=self._bindings.get_dimensions(),
         )
 
     # Manipulator commands.

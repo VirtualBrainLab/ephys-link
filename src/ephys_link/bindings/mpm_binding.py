@@ -72,7 +72,7 @@ class MPMBinding(BaseBinding):
     COARSE_SPEED_THRESHOLD = 0.1
     INSERTION_SPEED_LIMIT = 9_000
 
-    def __init__(self, port: int = 8080, *args, **kwargs) -> None:
+    def __init__(self, port: int = 8080) -> None:
         """Initialize connection to MPM HTTP server.
 
         Args:
@@ -95,7 +95,7 @@ class MPMBinding(BaseBinding):
     async def get_axes_count(self) -> int:
         return 3
 
-    async def get_dimensions(self) -> Vector4:
+    def get_dimensions(self) -> Vector4:
         return Vector4(x=15, y=15, z=15, w=15)
 
     async def get_position(self, manipulator_id: str) -> Vector4:

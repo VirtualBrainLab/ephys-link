@@ -1,7 +1,7 @@
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.common import array_to_vector4
+from ephys_link.utils.common import list_to_vector4
 
 
 class FakeBinding(BaseBinding):
@@ -35,7 +35,7 @@ class FakeBinding(BaseBinding):
         return 4
 
     def get_dimensions(self) -> Vector4:
-        return array_to_vector4([20] * 4)
+        return list_to_vector4([20] * 4)
 
     async def get_position(self, manipulator_id: str) -> Vector4:
         return self._positions[int(manipulator_id)]

@@ -35,7 +35,7 @@ class Console:
         self._log.setLevel(DEBUG if enable_debug else INFO)
 
         # Install Rich traceback.
-        _=install()
+        _ = install()
 
     def debug_print(self, label: str, msg: str) -> None:
         """Print a debug message to the console.

@@ -14,6 +14,7 @@ from os.path import exists, join
 from socket import gethostbyname, gethostname
 from sys import exit
 from tkinter import CENTER, RIGHT, BooleanVar, E, IntVar, StringVar, Tk, ttk
+from typing import final
 
 from platformdirs import user_config_dir
 from vbl_aquarium.models.ephys_link import EphysLinkOptions
@@ -27,6 +28,7 @@ OPTIONS_FILENAME = "options.json"
 OPTIONS_PATH = join(OPTIONS_DIR, OPTIONS_FILENAME)
 
 
+@final
 class GUI:
     """Graphical User Interface for Ephys Link.
 
@@ -44,7 +46,7 @@ class GUI:
         # Read options.
         if exists(OPTIONS_PATH):
             with open(OPTIONS_PATH) as options_file:
-                options = EphysLinkOptions(**load(options_file))
+                options = EphysLinkOptions(**load(options_file))  # pyright: ignore [reportAny]
 
         # Load options into GUI variables.
         self._ignore_updates = BooleanVar(value=options.ignore_updates)
@@ -87,7 +89,7 @@ class GUI:
         # Save options.
         makedirs(OPTIONS_DIR, exist_ok=True)
         with open(OPTIONS_PATH, "w+") as options_file:
-            options_file.write(options.model_dump_json())
+            _ = options_file.write(options.model_dump_json())
 
         # Return options
         return options
@@ -99,10 +101,10 @@ class GUI:
 
         mainframe = ttk.Frame(self._root, padding=3)
         mainframe.grid(column=0, row=0, sticky="news")
-        self._root.columnconfigure(0, weight=1)
-        self._root.rowconfigure(0, weight=1)
-        mainframe.columnconfigure(0, weight=1)
-        mainframe.rowconfigure(0, weight=1)
+        _ = self._root.columnconfigure(0, weight=1)
+        _ = self._root.rowconfigure(0, weight=1)
+        _ = mainframe.columnconfigure(0, weight=1)
+        _ = mainframe.rowconfigure(0, weight=1)
 
         # Server serving settings.
 
