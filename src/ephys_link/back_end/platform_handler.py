@@ -8,6 +8,7 @@ Usage:
     Instantiate PlatformHandler with the platform type and call the desired command.
 """
 
+from typing import final
 from uuid import uuid4
 
 from vbl_aquarium.models.ephys_link import (
@@ -31,6 +32,7 @@ from ephys_link.utils.common import get_bindings, vector4_to_array
 from ephys_link.utils.console import Console
 
 
+@final
 class PlatformHandler:
     """Handler for platform commands."""
 
