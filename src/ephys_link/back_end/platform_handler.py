@@ -27,8 +27,9 @@ from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.common import get_bindings, vector4_to_array
 from ephys_link.utils.console import Console
+from ephys_link.utils.converters import vector4_to_array
+from ephys_link.utils.startup import get_bindings
 
 
 @final

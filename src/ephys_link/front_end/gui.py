@@ -20,7 +20,7 @@ from platformdirs import user_config_dir
 from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
 from ephys_link.__about__ import __version__ as version
-from ephys_link.utils.common import get_binding_display_to_cli_name
+from ephys_link.utils.startup import get_binding_display_to_cli_name
 
 # Define options path.
 OPTIONS_DIR = join(user_config_dir(), "VBL", "Ephys Link")

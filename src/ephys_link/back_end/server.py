@@ -32,8 +32,8 @@ from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 
 from ephys_link.__about__ import __version__
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.utils.common import PORT, check_for_updates, server_preamble
 from ephys_link.utils.console import Console
+from ephys_link.utils.constants import PORT
 
 # Server message generic types.
 INPUT_TYPE = TypeVar("INPUT_TYPE", bound=VBLBaseModel)
@@ -86,12 +86,6 @@ class Server:
 
         Based on the options, either connect to a proxy or launch the server locally.
         """
-        # Preamble.
-        server_preamble()
-
-        # Check for updates.
-        if not self._options.ignore_updates:
-            check_for_updates()
 
         # List platform and available manipulators.
         self._console.info_print("PLATFORM", self._platform_handler.get_display_name())

@@ -3,7 +3,7 @@ from typing import final, override
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.common import list_to_vector4
+from ephys_link.utils.converters import list_to_vector4
 
 
 @final

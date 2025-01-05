@@ -14,7 +14,7 @@ from requests import JSONDecodeError, get, put
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.common import scalar_mm_to_um, vector4_to_array
+from ephys_link.utils.converters import scalar_mm_to_um, vector4_to_array
 
 
 @final

@@ -29,14 +29,13 @@ writing a manipulator binding.
 ## Static Analysis
 
 The project is strictly type checked using [`hatch fmt` (ruff)](https://hatch.pypa.io/1.9/config/static-analysis/)
-and [basedpyright](https://docs.basedpyright.com/latest/). All PR's are checked against these tools.
+and [basedpyright](https://docs.basedpyright.com/latest/). All PRs are checked against these tools.
 
 While they are very helpful in enforcing good code, they can be annoying when working with libraries that inherently
 return `Any` (like HTTP requests) or are not strictly statically typed. In those situations we have added inline
 comments to ignore specific checks. We try to only use this in scenarios where missing typing information came from
-external sources, and it is not possible to make local type hints. We also do not make stubs since they would be
-challenging to maintain.
+external sources, and it is not possible to make local type hints. Do not use file-wide ignores under any circumstances.
+We also do not make stubs since they would be challenging to maintain.
 
 We encourage using the type checker as a tool to help strengthen your code and only apply inline comments to ignore
-specific instances where external libraries cause errors. Do not use file-wide ignores unless absolutely necessary (for
-example, `common.py` bypasses ruff's "no `print`" check to print the server's startup).
+specific instances where external libraries cause errors. 

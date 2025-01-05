@@ -10,8 +10,8 @@ from sensapex import UMP, SensapexDevice  # pyright: ignore [reportMissingTypeSt
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.common import (
-    RESOURCES_DIRECTORY,
+from ephys_link.utils.constants import RESOURCES_DIRECTORY
+from ephys_link.utils.converters import (
     list_to_vector4,
     scalar_mm_to_um,
     um_to_mm,
