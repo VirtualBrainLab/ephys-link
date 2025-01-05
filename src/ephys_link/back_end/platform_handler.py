@@ -1,4 +1,3 @@
-# ruff: noqa: BLE001
 """Manipulator platform handler.
 
 Responsible for performing the various manipulator commands.
@@ -8,6 +7,7 @@ Usage:
     Instantiate PlatformHandler with the platform type and call the desired command.
 """
 
+from typing import final
 from uuid import uuid4
 
 from vbl_aquarium.models.ephys_link import (
@@ -25,11 +25,14 @@ from vbl_aquarium.models.ephys_link import (
 )
 from vbl_aquarium.models.unity import Vector4
 
+from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.common import get_bindings, vector4_to_array
 from ephys_link.utils.console import Console
+from ephys_link.utils.converters import vector4_to_array
+from ephys_link.utils.startup import get_bindings
 
 
+@final
 class PlatformHandler:
     """Handler for platform commands."""
 
@@ -73,7 +76,7 @@ class PlatformHandler:
             if binding_cli_name == options.type:
                 # Pass in HTTP port for Pathfinder MPM.
                 if binding_cli_name == "pathfinder-mpm":
-                    return binding_type(options.mpm_port)
+                    return MPMBinding(options.mpm_port)
 
                 # Otherwise just return the binding.
                 return binding_type()
@@ -103,7 +106,7 @@ class PlatformHandler:
             name=self._bindings.get_display_name(),
             cli_name=self._bindings.get_cli_name(),
             axes_count=await self._bindings.get_axes_count(),
-            dimensions=await self._bindings.get_dimensions(),
+            dimensions=self._bindings.get_dimensions(),
         )
 
     # Manipulator commands.
@@ -116,7 +119,7 @@ class PlatformHandler:
         """
         try:
             manipulators = await self._bindings.get_manipulators()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Manipulators", e)
             return GetManipulatorsResponse(error=self._console.pretty_exception(e))
         else:
@@ -135,7 +138,7 @@ class PlatformHandler:
             unified_position = self._bindings.platform_space_to_unified_space(
                 await self._bindings.get_position(manipulator_id)
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Position", e)
             return PositionalResponse(error=str(e))
         else:
@@ -152,7 +155,7 @@ class PlatformHandler:
         """
         try:
             angles = await self._bindings.get_angles(manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Angles", e)
             return AngularResponse(error=self._console.pretty_exception(e))
         else:
@@ -169,7 +172,7 @@ class PlatformHandler:
         """
         try:
             shank_count = await self._bindings.get_shank_count(manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Shank Count", e)
             return ShankCountResponse(error=self._console.pretty_exception(e))
         else:
@@ -214,7 +217,7 @@ class PlatformHandler:
                     )
                     self._console.error_print("Set Position", error_message)
                     return PositionalResponse(error=error_message)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Set Position", e)
             return PositionalResponse(error=self._console.pretty_exception(e))
         else:
@@ -246,7 +249,7 @@ class PlatformHandler:
                 )
                 self._console.error_print("Set Depth", error_message)
                 return SetDepthResponse(error=error_message)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Set Depth", e)
             return SetDepthResponse(error=self._console.pretty_exception(e))
         else:
@@ -268,7 +271,7 @@ class PlatformHandler:
                 self._inside_brain.add(request.manipulator_id)
             else:
                 self._inside_brain.discard(request.manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Set Inside Brain", e)
             return BooleanStateResponse(error=self._console.pretty_exception(e))
         else:
@@ -285,7 +288,7 @@ class PlatformHandler:
         """
         try:
             await self._bindings.stop(manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Stop", e)
             return self._console.pretty_exception(e)
         else:
@@ -300,7 +303,7 @@ class PlatformHandler:
         try:
             for manipulator_id in await self._bindings.get_manipulators():
                 await self._bindings.stop(manipulator_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Stop", e)
             return self._console.pretty_exception(e)
         else:

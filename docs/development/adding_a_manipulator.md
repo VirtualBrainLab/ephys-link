@@ -9,6 +9,7 @@ read [how the system works first](../home/how_it_works.md) before proceeding.
 1. Fork the [Ephys Link repository](https://github.com/VirtualBrainLab/ephys-link).
 2. Follow the instructions for [installing Ephys Link for development](index.md#installing-for-development) to get all
    the necessary dependencies and tools set up. In this case, you'll want to clone your fork.
+3. (Optional) Familiarize yourself with the [repo's organization](code_organization.md).
 
 ## Create a Manipulator Binding
 
@@ -61,6 +62,12 @@ Use [New Scale Pathfinder MPM's binding][ephys_link.bindings.mpm_binding] as an 
 
 Once you've implemented your binding, you can test it by running Ephys Link using your binding
 `ephys_link -b -t <cli_name>`. You can interact with it using the [Socket.IO API](socketio_api.md) or Pinpoint.
+
+## Code standards
+
+We use automatic static analyzers to check code quality. See
+the [corresponding section in the code organization documentation](code_organization.md#static-analysis) for more
+information.
 
 ## Submit Your Changes
 

@@ -15,12 +15,12 @@ Usage:
 from asyncio import get_event_loop, run
 from collections.abc import Callable, Coroutine
 from json import JSONDecodeError, dumps, loads
-from typing import Any
+from typing import Any, TypeVar, final
 from uuid import uuid4
 
 from aiohttp.web import Application, run_app
 from pydantic import ValidationError
-from socketio import AsyncClient, AsyncServer
+from socketio import AsyncClient, AsyncServer  # pyright: ignore [reportMissingTypeStubs]
 from vbl_aquarium.models.ephys_link import (
     EphysLinkOptions,
     SetDepthRequest,
@@ -32,10 +32,15 @@ from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 
 from ephys_link.__about__ import __version__
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.utils.common import PORT, check_for_updates, server_preamble
 from ephys_link.utils.console import Console
+from ephys_link.utils.constants import PORT
+
+# Server message generic types.
+INPUT_TYPE = TypeVar("INPUT_TYPE", bound=VBLBaseModel)
+OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", bound=VBLBaseModel)
 
 
+@final
 class Server:
     def __init__(self, options: EphysLinkOptions, platform_handler: PlatformHandler, console: Console) -> None:
         """Initialize server fields based on options and platform handler.
@@ -54,12 +59,18 @@ class Server:
         # Initialize based on proxy usage.
         self._sio: AsyncServer | AsyncClient = AsyncClient() if self._options.use_proxy else AsyncServer()
         if not self._options.use_proxy:
+            # Exit if _sio is not a Server.
+            if not isinstance(self._sio, AsyncServer):
+                error = "Server not initialized."
+                self._console.critical_print(error)
+                raise TypeError(error)
+
             self._app = Application()
-            self._sio.attach(self._app)
+            self._sio.attach(self._app)  # pyright: ignore [reportUnknownMemberType]
 
             # Bind connection events.
-            self._sio.on("connect", self.connect)
-            self._sio.on("disconnect", self.disconnect)
+            _ = self._sio.on("connect", self.connect)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
+            _ = self._sio.on("disconnect", self.disconnect)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
 
         # Store connected client.
         self._client_sid: str = ""
@@ -68,19 +79,13 @@ class Server:
         self._pinpoint_id = str(uuid4())[:8]
 
         # Bind events.
-        self._sio.on("*", self.platform_event_handler)
+        _ = self._sio.on("*", self.platform_event_handler)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
 
     def launch(self) -> None:
         """Launch the server.
 
         Based on the options, either connect to a proxy or launch the server locally.
         """
-        # Preamble.
-        server_preamble()
-
-        # Check for updates.
-        if not self._options.ignore_updates:
-            check_for_updates()
 
         # List platform and available manipulators.
         self._console.info_print("PLATFORM", self._platform_handler.get_display_name())
@@ -94,8 +99,14 @@ class Server:
             self._console.info_print("PINPOINT ID", self._pinpoint_id)
 
             async def connect_proxy() -> None:
+                # Exit if _sio is not a proxy client.
+                if not isinstance(self._sio, AsyncClient):
+                    error = "Proxy client not initialized."
+                    self._console.critical_print(error)
+                    raise TypeError(error)
+
                 # noinspection HttpUrlsUsage
-                await self._sio.connect(f"http://{self._options.proxy_address}:{PORT}")
+                await self._sio.connect(f"http://{self._options.proxy_address}:{PORT}")  # pyright: ignore [reportUnknownMemberType]
                 await self._sio.wait()
 
             run(connect_proxy())
@@ -103,7 +114,7 @@ class Server:
             run_app(self._app, port=PORT)
 
     # Helper functions.
-    def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:
+    def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:  # pyright: ignore [reportExplicitAny]
         """Return a response for a malformed request.
 
         Args:
@@ -117,7 +128,10 @@ class Server:
         return dumps({"error": "Malformed request."})
 
     async def _run_if_data_available(
-        self, function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]], event: str, data: tuple[tuple[Any], ...]
+        self,
+        function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]],  # pyright: ignore [reportExplicitAny]
+        event: str,
+        data: tuple[tuple[Any], ...],  # pyright: ignore [reportExplicitAny]
     ) -> str:
         """Run a function if data is available.
 
@@ -136,10 +150,10 @@ class Server:
 
     async def _run_if_data_parses(
         self,
-        function: Callable[[VBLBaseModel], Coroutine[Any, Any, VBLBaseModel]],
-        data_type: type[VBLBaseModel],
+        function: Callable[[INPUT_TYPE], Coroutine[Any, Any, OUTPUT_TYPE]],  # pyright: ignore [reportExplicitAny]
+        data_type: type[INPUT_TYPE],
         event: str,
-        data: tuple[tuple[Any], ...],
+        data: tuple[tuple[Any], ...],  # pyright: ignore [reportExplicitAny]
     ) -> str:
         """Run a function if data parses.
 
@@ -203,8 +217,7 @@ class Server:
         else:
             self._console.error_print("DISCONNECTION", f"Client {sid} disconnected without being connected.")
 
-    # noinspection PyTypeChecker
-    async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:
+    async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:  # pyright: ignore [reportExplicitAny]
         """Handle events from the server.
 
         Matches incoming events based on the Socket.IO API.
