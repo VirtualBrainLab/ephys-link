@@ -25,6 +25,7 @@ from vbl_aquarium.models.ephys_link import (
 )
 from vbl_aquarium.models.unity import Vector4
 
+from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.common import get_bindings, vector4_to_array
 from ephys_link.utils.console import Console
@@ -73,7 +74,7 @@ class PlatformHandler:
             if binding_cli_name == options.type:
                 # Pass in HTTP port for Pathfinder MPM.
                 if binding_cli_name == "pathfinder-mpm":
-                    return binding_type(options.mpm_port)
+                    return MPMBinding(options.mpm_port)
 
                 # Otherwise just return the binding.
                 return binding_type()

@@ -78,7 +78,6 @@ class MPMBinding(BaseBinding):
         Args:
             port: Port number for MPM HTTP server.
         """
-        super().__init__(*args, **kwargs)
         self._url = f"http://localhost:{port}"
         self._movement_stopped = False
 

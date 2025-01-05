@@ -22,11 +22,10 @@ from ephys_link.utils.common import (
 class Ump4Binding(BaseBinding):
     """Bindings for UMP-4 platform"""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self) -> None:
         """Initialize UMP-4 bindings."""
 
         # Establish connection to Sensapex API (exit if connection fails).
-        super().__init__(*args, **kwargs)
         UMP.set_library_path(RESOURCES_DIRECTORY)
         self._ump = UMP.get_ump()
         if self._ump is None:

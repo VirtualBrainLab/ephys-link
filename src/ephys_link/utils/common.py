@@ -50,7 +50,7 @@ def check_for_updates() -> None:
     """Check for updates to the Ephys Link."""
     try:
         response = get("https://api.github.com/repos/VirtualBrainLab/ephys-link/tags", timeout=10)
-        latest_version = str(response.json()[0]["name"])
+        latest_version = str(response.json()[0]["name"]) # pyright: ignore [reportAny]
         if parse(latest_version) > parse(__version__):
             print(f"Update available: {latest_version} !")
             print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
