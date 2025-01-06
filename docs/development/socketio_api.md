@@ -83,7 +83,6 @@ Response:
 |--------------------|-------|------------------------------------------------------------------------------------|
 | `get_manipulators` | None  | [`GetManipulatorResponse`][vbl_aquarium.models.ephys_link.GetManipulatorsResponse] |
 
-
 __Example:__
 
 Input: N/A
@@ -107,3 +106,47 @@ Response:
   "Error": "No manipulators found"
 }
 ```
+
+### Get Manipulator Position
+
+| Event          | Input                     | Return                                                                    |
+|----------------|---------------------------|---------------------------------------------------------------------------|
+| `get_position` | Manipulator ID (`string`) | [`PositionalResponse`][vbl_aquarium.models.ephys_link.PositionalResponse] |
+
+__Example:__
+
+Input:
+
+- "1"
+- "A"
+
+Response:
+
+```json
+{
+  "Position": {
+    "x": 12.45,
+    "y": 7.89,
+    "z": 0.81,
+    "w": 8.12
+  },
+  "Error": ""
+}
+```
+
+```json
+{
+  "Position": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0,
+    "w": 0.0
+  },
+  "Error": "Unable to Read Manipulator Position"
+}
+```
+
+## Notes
+
+- In the examples, the error response messages are generic examples. The actual error strings you see will be driven by
+  what exceptions are raised by the binding.
