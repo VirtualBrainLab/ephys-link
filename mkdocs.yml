@@ -97,7 +97,9 @@ nav:
           - Starting Ephys Link: usage/starting_ephys_link.md
           - home/how_it_works.md
           - home/supported_manipulators.md
-      - home/contact.md
+      - Help:
+          - Contact: home/contact.md
+          - home/citing.md
   - Usage:
       - usage/starting_ephys_link.md
       - usage/connecting_to_pinpoint.md
