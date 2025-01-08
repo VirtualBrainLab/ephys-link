@@ -83,11 +83,13 @@ Response:
 |--------------------|-------|------------------------------------------------------------------------------------|
 | `get_manipulators` | None  | [`GetManipulatorResponse`][vbl_aquarium.models.ephys_link.GetManipulatorsResponse] |
 
-__Example:__
+__Examples:__
 
 Input: N/A
 
 Response:
+
+- Normal:
 
 ```json
 {
@@ -99,6 +101,8 @@ Response:
   "Error": ""
 }
 ```
+
+- Error:
 
 ```json
 {
@@ -113,14 +117,16 @@ Response:
 |----------------|---------------------------|---------------------------------------------------------------------------|
 | `get_position` | Manipulator ID (`string`) | [`PositionalResponse`][vbl_aquarium.models.ephys_link.PositionalResponse] |
 
-__Example:__
+__Examples:__
 
 Input:
 
-- "1"
-- "A"
+- `"1"`
+- `"A"`
 
 Response:
+
+- Normal:
 
 ```json
 {
@@ -134,6 +140,8 @@ Response:
 }
 ```
 
+- Error:
+
 ```json
 {
   "Position": {
@@ -143,6 +151,188 @@ Response:
     "w": 0.0
   },
   "Error": "Unable to Read Manipulator Position"
+}
+```
+
+### Get Manipulator Angles
+
+| Event        | Input                     | Return                                                              |
+|--------------|---------------------------|---------------------------------------------------------------------|
+| `get_angles` | Manipulator ID (`string`) | [`AngularResponse`][vbl_aquarium.models.ephys_link.AngularResponse] |
+
+__Examples:__
+
+Input:
+
+- `"1"`
+- `"A"`
+
+Response:
+
+- Normal:
+
+```json
+    {
+  "Angles": {
+    "x": 45.0,
+    "y": 0.0,
+    "z": 90.0
+  },
+  "Error": ""
+}
+```
+
+- Error:
+
+```json
+  {
+  "Angles": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "Error": "Unable to Read Manipulator Angles"
+}
+
+```
+
+### Get Probe Shank Count
+
+| Event             | Input                     | Return                                                                    |
+|-------------------|---------------------------|---------------------------------------------------------------------------|
+| `get_shank_count` | Manipulator ID (`string`) | [`ShankCountResponse`][vbl_aquarium.models.ephys_link.ShankCountResponse] |
+
+__Examples:__
+
+Input:
+
+- `"1"`
+- `"A"`
+
+Response:
+
+- Normal:
+
+```json
+{
+  "ShankCount": 3,
+  "Error": ""
+}
+```
+
+- Error:
+
+```json
+{
+  "ShankCount": 1,
+  "Error": "Unable to Read Probe Shank Count"
+}
+```
+
+### Set Manipulator Position
+
+| Event          | Input                                                                     | Return                                                                    |
+|----------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| `set_position` | [`SetPositionRequest`][vbl_aquarium.models.ephys_link.SetPositionRequest] | [`PositionalResponse`][vbl_aquarium.models.ephys_link.PositionalResponse] |
+
+__Examples:__
+
+Input:
+
+```json
+{
+  "ManipulatorId": "1",
+  "Position": {
+    "x": 1.5,
+    "y": 2.0,
+    "z": 0.0,
+    "w": 0.84
+  },
+  "Speed": 0.05
+}
+```
+
+Response:
+
+- Normal:
+
+```json
+{
+  "Position": {
+    "x": 1.5,
+    "y": 2.0,
+    "z": 0.0,
+    "w": 0.84
+  },
+  "Error": ""
+}
+```
+
+- Manipulator is set to be inside the brain (position setting is disallowed):
+
+```json
+{
+  "Position": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0,
+    "w": 0.0
+  },
+  "Error": "Can not move manipulator while inside the brain. Set the depth (\"set_depth\") instead."
+}
+```
+
+- Manipulator did not make it to the final destination. This is not necessary unintentional. This response is produced
+  if a movement is stopped.
+
+```json
+{
+  "Position": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0,
+    "w": 0.0
+  },
+  "Error": "Manipulator 1 did not reach target position on axis x. Requests: 1.5, got: 0.82."
+}
+```
+
+### Set Manipulator Depth
+
+| Event       | Input                                                               | Return                                                                |
+|-------------|---------------------------------------------------------------------|-----------------------------------------------------------------------|
+| `set_depth` | [`SetDepthRequest`][vbl_aquarium.models.ephys_link.SetDepthRequest] | [`SetDepthResponse`][vbl_aquarium.models.ephys_link.SetDepthResponse] |
+
+__Examples:__
+
+Input:
+
+```json
+{
+  "ManipulatorId": "1",
+  "Depth": 1.7,
+  "Speed": 0.005
+}
+```
+
+Response:
+
+- Normal:
+
+```json
+{
+  "Depth": 1.7,
+  "Error": ""
+}
+```
+
+- Manipulator did not make it to the final destination. This is not necessary unintentional. This response is produced
+  if a drive is stopped.
+
+```json
+{
+  "Depth": 0,
+  "Error": "Manipulator 1 did not reach target depth. Requested: 1.7, got: 0.6."
 }
 ```
 
