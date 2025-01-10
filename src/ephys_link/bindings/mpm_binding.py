@@ -1,8 +1,5 @@
 """Bindings for New Scale Pathfinder MPM HTTP server platform.
 
-MPM works slightly differently than the other platforms since it operates in stereotactic coordinates.
-This means exceptions need to be made for its API.
-
 Usage: Instantiate MPMBindings to interact with the New Scale Pathfinder MPM HTTP server platform.
 """
 
@@ -65,6 +62,9 @@ class MPMBinding(BaseBinding):
         "AN",
     )
 
+    # Server cache lifetime (60 FPS).
+    CACHE_LIFETIME = 1 / 60
+
     # Movement polling preferences.
     UNCHANGED_COUNTER_LIMIT = 10
     POLL_INTERVAL = 0.1
@@ -81,6 +81,10 @@ class MPMBinding(BaseBinding):
         """
         self._url = f"http://localhost:{port}"
         self._movement_stopped = False
+
+        # Data cache.
+        self.cache = {}
+        self.cache_time = 0
 
     @staticmethod
     @override
@@ -279,14 +283,20 @@ class MPMBinding(BaseBinding):
     # Helper functions.
     async def _query_data(self) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         try:
-            # noinspection PyTypeChecker
-            return (await get_running_loop().run_in_executor(None, get, self._url)).json()  # pyright: ignore [reportAny]
+            # Update cache if it's expired.
+            if get_running_loop().time() - self.cache_time > self.CACHE_LIFETIME:
+                # noinspection PyTypeChecker
+                self.cache = (await get_running_loop().run_in_executor(None, get, self._url)).json()  # pyright: ignore [reportAny]
+                self.cache_time = get_running_loop().time()
         except ConnectionError as connectionError:
             error_message = f"Unable to connect to MPM HTTP server: {connectionError}"
             raise RuntimeError(error_message) from connectionError
         except JSONDecodeError as jsonDecodeError:
             error_message = f"Unable to decode JSON response from MPM HTTP server: {jsonDecodeError}"
             raise ValueError(error_message) from jsonDecodeError
+        else:
+            # Return cached data.
+            return self.cache
 
     async def _manipulator_data(self, manipulator_id: str) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         probe_data: list[dict[str, Any]] = (await self._query_data())["ProbeArray"]  # pyright: ignore [reportExplicitAny]
