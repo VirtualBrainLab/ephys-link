@@ -69,7 +69,6 @@ exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.sp
 exe-clean = "pyinstaller.exe ephys_link.spec -y --clean"
 check = "basedpyright"
 check-watched = "basedpyright --watch"
-fmt-docs = "mdformat --number --wrap 120 ."
 
 [tool.hatch.envs.docs]
 python = "3.13.1"
