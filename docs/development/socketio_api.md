@@ -336,6 +336,80 @@ Response:
 }
 ```
 
+### Set Manipulator to be Inside the Brain
+
+| Event              | Input                                                                           | Return                                                                        |
+|--------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| `set_inside_brain` | [`SetInsideBrainRequest`][vbl_aquarium.models.ephys_link.SetInsideBrainRequest] | [`BooleanStateResponse`][vbl_aquarium.models.ephys_link.BooleanStateResponse] |
+
+__Examples:__
+
+Input:
+
+```json
+{
+  "ManipulatorId": "1",
+  "Inside": true
+}
+```
+
+Response:
+
+- Normal:
+
+```json
+{
+  "State": true,
+  "Error": ""
+}
+```
+
+- Error
+
+```json
+{
+  "State": false,
+  "Error": "Unable to complete operation."
+}
+```
+
+### Stop a Manipulator's movement
+
+| Event  | Input                     | Return                   |
+|--------|---------------------------|--------------------------|
+| `stop` | Manipulator ID (`string`) | Error Message (`string`) |
+
+__Examples:__
+
+Input:
+
+- "1"
+- "A"
+
+Response:
+
+- Normal: `""`
+- Error: `"Unable to stop manipulator."`
+
+### Stop All Manipulators
+
+| Event      | Input | Return                   |
+|------------|-------|--------------------------|
+| `stop_all` | None  | Error Message (`string`) |
+
+__Examples:__
+
+Input: None
+
+Response:
+
+- Normal: `""`
+- Error: `"Unable to stop manipulator."`
+
+### Unknown Event (Error)
+
+Response: `{"error", "Unknown event."}`
+
 ## Notes
 
 - In the examples, the error response messages are generic examples. The actual error strings you see will be driven by
