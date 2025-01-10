@@ -309,7 +309,7 @@ class PlatformHandler:
         else:
             return ""
 
-    def emergency_stop(self) -> None:
-        """Stops all manipulators synchronously."""
+    async def emergency_stop(self) -> None:
+        """Stops all manipulators with a message."""
         self._console.critical_print("Emergency Stopping All Manipulators...")
-        _ = self.stop_all()
+        _ = await self.stop_all()
