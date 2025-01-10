@@ -288,15 +288,16 @@ class MPMBinding(BaseBinding):
                 # noinspection PyTypeChecker
                 self.cache = (await get_running_loop().run_in_executor(None, get, self._url)).json()  # pyright: ignore [reportAny]
                 self.cache_time = get_running_loop().time()
-
-            # Return cached data.
-            return self.cache
         except ConnectionError as connectionError:
             error_message = f"Unable to connect to MPM HTTP server: {connectionError}"
             raise RuntimeError(error_message) from connectionError
         except JSONDecodeError as jsonDecodeError:
             error_message = f"Unable to decode JSON response from MPM HTTP server: {jsonDecodeError}"
             raise ValueError(error_message) from jsonDecodeError
+        else:
+            # Return cached data.
+            return self.cache
+            
 
     async def _manipulator_data(self, manipulator_id: str) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         probe_data: list[dict[str, Any]] = (await self._query_data())["ProbeArray"]  # pyright: ignore [reportExplicitAny]
