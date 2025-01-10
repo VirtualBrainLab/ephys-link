@@ -1,13 +1,14 @@
 # Socket.IO API
 
-This section documents the Socket.IO API. The document is intended for developers building client applications that
-communicate with the server. If you are looking for information on how to set up and run the server, see the
+This section documents the Socket.IO API. The document is intended for developers building client applications
+communicating with the server. If you are looking for information on how to set up and run the server, see the
 [installation guide](../home/installation.md)!
 
 ## Data Types
 
-All messages on Socket.IO are passed as strings. Complex data structures are JSON encoded, converted to strings, then
-sent. These structures have their JSON schema's documented
+All messages on Socket.IO are passed as strings. Complex data structures are JSON encoded, converted to strings, and
+then
+sent. These structures have their JSON schemas documented
 on [VBL Aquarium](https://github.com/VirtualBrainLab/vbl-aquarium/tree/main/models/schemas/ephys_link).
 
 This documentation will reference the Pydantic versions of these models as they are extensively documented. For most
@@ -18,7 +19,7 @@ object to a string that can be sent over Socket.IO.
 ## Events
 
 Client applications should send messages to these events to interact with the server. The server will respond using
-Socket.IO acknowledgements.
+Socket.IO acknowledgments.
 
 ### Get Ephys Link Version
 
@@ -282,7 +283,8 @@ Response:
 }
 ```
 
-- Manipulator did not make it to the final destination. This is not necessary unintentional. This response is produced
+- The manipulator did not make it to the final destination. This is not necessarily unintentional. This response is
+  produced
   if a movement is stopped.
 
 ```json
@@ -326,7 +328,8 @@ Response:
 }
 ```
 
-- Manipulator did not make it to the final destination. This is not necessary unintentional. This response is produced
+- The manipulator did not make it to the final destination. This is not necessarily unintentional. This response is
+  produced
   if a drive is stopped.
 
 ```json
