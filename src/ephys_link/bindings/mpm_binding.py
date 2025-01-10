@@ -297,7 +297,6 @@ class MPMBinding(BaseBinding):
         else:
             # Return cached data.
             return self.cache
-            
 
     async def _manipulator_data(self, manipulator_id: str) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         probe_data: list[dict[str, Any]] = (await self._query_data())["ProbeArray"]  # pyright: ignore [reportExplicitAny]
