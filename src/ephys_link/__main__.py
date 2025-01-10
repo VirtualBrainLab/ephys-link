@@ -10,6 +10,8 @@ Usage:
 
 from sys import argv
 
+from keyboard import on_press_key
+
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.back_end.server import Server
 from ephys_link.front_end.cli import CLI
@@ -38,6 +40,7 @@ def main() -> None:
     platform_handler = PlatformHandler(options, console)
 
     # 5. Instantiate the Emergency Stop service.
+    _ = on_press_key("esc", platform_handler.emergency_stop)
 
     # 6. Start the server.
     Server(options, platform_handler, console).launch()

@@ -83,7 +83,7 @@ class MPMBinding(BaseBinding):
         self._movement_stopped = False
 
         # Data cache.
-        self.cache = {}
+        self.cache: dict[str, Any] = {}  # pyright: ignore [reportExplicitAny]
         self.cache_time = 0
 
     @staticmethod
@@ -286,7 +286,7 @@ class MPMBinding(BaseBinding):
             # Update cache if it's expired.
             if get_running_loop().time() - self.cache_time > self.CACHE_LIFETIME:
                 # noinspection PyTypeChecker
-                self.cache = (await get_running_loop().run_in_executor(None, get, self._url)).json()  # pyright: ignore [reportAny]
+                self.cache = (await get_running_loop().run_in_executor(None, get, self._url)).json()
                 self.cache_time = get_running_loop().time()
         except ConnectionError as connectionError:
             error_message = f"Unable to connect to MPM HTTP server: {connectionError}"
