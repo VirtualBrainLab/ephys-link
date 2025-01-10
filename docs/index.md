@@ -32,7 +32,7 @@ to communicate with manipulators used in electrophysiology experiments.
 
     Learn how to use Ephys Link to control your manipulators.
 
-    [:octicons-arrow-right-24: Usage](usage/index.md)
+    [:octicons-arrow-right-24: Usage](usage/starting_ephys_link.md)
 
 -   __:fontawesome-regular-square-plus: Add a Manipulator Platform__
 
