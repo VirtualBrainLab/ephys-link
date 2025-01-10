@@ -5,8 +5,8 @@ Ephys Link is a server that runs in the background.
 !!! info
 
     Most people should use Ephys Link through Pinpoint. See documentation
-    on [connecting from Pinpoint](connecting_to_pinpoint.md) and using Ephys Link
-    for [experiment automation](experiment_automation.md).
+    on [connecting from Pinpoint](using_ephys_link.md#connecting-to-pinpoint) and using Ephys Link
+    for [experiment automation](using_ephys_link.md#experiment-automation).
 
 If you are building a client application that will talk to Ephys Link, see
 the [Socket.IO API reference](../development/socketio_api.md).

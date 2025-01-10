@@ -308,3 +308,8 @@ class PlatformHandler:
             return self._console.pretty_exception(e)
         else:
             return ""
+
+    async def emergency_stop(self) -> None:
+        """Stops all manipulators with a message."""
+        self._console.critical_print("Emergency Stopping All Manipulators...")
+        _ = await self.stop_all()

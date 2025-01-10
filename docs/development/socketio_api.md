@@ -1,14 +1,13 @@
 # Socket.IO API
 
-This section documents the Socket.IO API. The document is intended for developers building client applications
-communicating with the server. If you are looking for information on how to set up and run the server, see the
-[installation guide](../home/installation.md)!
+This section documents the [Socket.IO](https://socket.io/) API. The document is intended for developers building client
+applications communicating with the server. If you are looking for information on how to set up and run the server, see
+the [installation guide](../home/installation.md)!
 
 ## Data Types
 
 All messages on Socket.IO are passed as strings. Complex data structures are JSON encoded, converted to strings, and
-then
-sent. These structures have their JSON schemas documented
+then sent. These structures have their JSON schemas documented
 on [VBL Aquarium](https://github.com/VirtualBrainLab/vbl-aquarium/tree/main/models/schemas/ephys_link).
 
 This documentation will reference the Pydantic versions of these models as they are extensively documented. For most
@@ -19,7 +18,7 @@ object to a string that can be sent over Socket.IO.
 ## Events
 
 Client applications should send messages to these events to interact with the server. The server will respond using
-Socket.IO acknowledgments.
+[Socket.IO acknowledgments](https://socket.io/docs/v4/#acknowledgements).
 
 ### Get Ephys Link Version
 

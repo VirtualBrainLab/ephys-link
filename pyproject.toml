@@ -31,6 +31,7 @@ classifiers = [
 dependencies = [
     "aiohttp==3.11.11",
     "colorama==0.4.6",
+    "keyboard==0.13.5",
     "packaging==24.2",
     "platformdirs==4.3.6",
     "pyserial==3.5",
@@ -61,7 +62,7 @@ exclude = ["/.github", "/.idea"]
 python = "3.13.1"
 dependencies = [
     "pyinstaller==6.11.1",
-    "basedpyright==1.23.1"
+    "basedpyright==1.23.1",
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
