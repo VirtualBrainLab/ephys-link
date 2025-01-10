@@ -15,12 +15,12 @@
 ## Pinpoint (Recommended Method)
 
 Pinpoint comes bundled with the correct version of Ephys Link. If you are using Pinpoint on the same computer your
-manipulators are connected to, you can launch the server from within Pinpoint. See documentation
+manipulators are connected to, you can launch the server from within Pinpoint. See the documentation
 on [connecting from Pinpoint](../usage/connecting_to_pinpoint.md).
 
 ## Install as a Standalone Executable
 
-Download the latest executable from the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
+Download the latest standalone executable or zip from the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
 
 Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
 

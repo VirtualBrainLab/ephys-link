@@ -21,7 +21,7 @@ to communicate with manipulators used in electrophysiology experiments.
 
     ---
 
-    Install Ephys Link and get started in seconds
+    Install Ephys Link and get started in seconds.
 
 
     [:octicons-arrow-right-24: Install](home/installation.md)
@@ -30,7 +30,7 @@ to communicate with manipulators used in electrophysiology experiments.
 
     ---
 
-    Learn how to use Ephys Link to control your manipulators
+    Learn how to use Ephys Link to control your manipulators.
 
     [:octicons-arrow-right-24: Usage](usage/index.md)
 
@@ -38,15 +38,15 @@ to communicate with manipulators used in electrophysiology experiments.
 
     ---
 
-    Add a new manipulator platform to Ephys Link to enable control
+    Add a new manipulator platform to Ephys Link to enable control.
 
     [:octicons-arrow-right-24: Develop](development/adding_a_manipulator.md)
 
 -   __:fontawesome-solid-book-open: Learn About Pinpoint__
 
     ---
-    
-    Pinpoint is an experiment planning and automation tool that uses Ephys Link
+
+    Pinpoint is an experiment planning and automation tool that uses Ephys Link.
 
     [:octicons-arrow-right-24: Learn More](https://virtualbrainlab.org/pinpoint/installation_and_use.html)
 </div>

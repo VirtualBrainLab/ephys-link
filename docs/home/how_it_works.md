@@ -5,7 +5,7 @@ software's architecture and how it interacts with other systems.
 
 ## Why Ephys Link?
 
-There exists many manipulator platforms in neuroscience research, each with their own API and software. This diversity
+There exist many manipulator platforms in neuroscience research, each with its unique API and software. This diversity
 makes it difficult for tool developers to support multiple platforms. Ephys Link aims to solve this problem by providing
 a unified API for interacting with manipulators. This allows developers to write code that works with any manipulator
 supported by Ephys Link.
@@ -31,10 +31,10 @@ flowchart LR
     n6 ---|" Send Response "| n2
 ```
 
-This diagram shows the high-level architecture of Ephys Link. Ephys Link acts as an intermediary between client
+This diagram shows the high-level architecture of Ephys Link. Ephys Link acts as an intermediary between a client
 applications and manipulators.
 
-Within Ephys Link, there is a server component that handled external communication and there are the bindings for each
+Within Ephys Link, there is a server component that handles external communication and there are the bindings for each
 proprietary manipulator platform API. The server passes requests from client applications to the appropriate manipulator
 bindings which convert the requests to the appropriate manipulator API calls.
 
@@ -54,7 +54,7 @@ sequenceDiagram
     S ->> B: set_position(x, y, z)
     B ->> M: move(a, b, c, d)
     loop Update Position
-        C -->> S: Get current position
+        C -->> S: Get the current position
         S -->> B: get_position()
         B -->> M: position()
         M -->> B: Now at (a, b, c, d)
