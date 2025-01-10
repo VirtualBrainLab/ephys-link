@@ -63,11 +63,6 @@ python = "3.13.1"
 dependencies = [
     "pyinstaller==6.11.1",
     "basedpyright==1.23.1",
-    "mdformat==0.7.21",
-    "mdformat-gfm==0.4.1",
-    "mdformat-frontmatter==2.0.8",
-    "mdformat-footnote==0.1.1",
-    "mdformat-gfm-alerts==1.0.1"
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
