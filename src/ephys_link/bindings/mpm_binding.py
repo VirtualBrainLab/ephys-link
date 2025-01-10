@@ -61,7 +61,7 @@ class MPMBinding(BaseBinding):
         "AM",
         "AN",
     )
-    
+
     # Server cache lifetime (60 FPS).
     CACHE_LIFETIME = 1 / 60
 
@@ -81,7 +81,7 @@ class MPMBinding(BaseBinding):
         """
         self._url = f"http://localhost:{port}"
         self._movement_stopped = False
-        
+
         # Data cache.
         self.cache = {}
         self.cache_time = 0
@@ -288,7 +288,7 @@ class MPMBinding(BaseBinding):
                 # noinspection PyTypeChecker
                 self.cache = (await get_running_loop().run_in_executor(None, get, self._url)).json()  # pyright: ignore [reportAny]
                 self.cache_time = get_running_loop().time()
-            
+
             # Return cached data.
             return self.cache
         except ConnectionError as connectionError:
