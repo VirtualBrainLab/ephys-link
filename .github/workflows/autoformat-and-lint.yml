@@ -22,6 +22,12 @@ jobs:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.WORKFLOW_COMMIT }}
 
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+         
       - name: 📦 Install Hatch
         uses: pypa/hatch@install
 
@@ -37,6 +43,6 @@ jobs:
 
       - name: 🧶 Lint
         run: hatch fmt --check
-      
+
       - name: 🔍 Type Check
         run: hatch run check
