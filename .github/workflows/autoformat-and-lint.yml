@@ -38,5 +38,5 @@ jobs:
       - name: 🧶 Lint
         run: hatch fmt --check
       
-#      - name: 🔍 Type Check
-#        run: hatch -e types run check
+      - name: 🔍 Type Check
+        run: hatch run check
