@@ -40,7 +40,7 @@ def main() -> None:
     # 4. Instantiate the Platform Handler with the appropriate platform bindings.
     platform_handler = PlatformHandler(options, console)
 
-    # 5. Instantiate the Emergency Stop service.
+    # 5. Add hotkeys for emergency stop.
     _ = add_hotkey("ctrl+alt+shift+q", lambda: run(platform_handler.emergency_stop()))
 
     # 6. Start the server.

@@ -102,8 +102,7 @@ nav:
           - home/citing.md
   - Usage:
       - usage/starting_ephys_link.md
-      - usage/connecting_to_pinpoint.md
-      - usage/experiment_automation.md
+      - usage/using_ephys_link.md
   - Development:
       - development/index.md
       - development/socketio_api.md

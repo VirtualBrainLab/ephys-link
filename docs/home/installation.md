@@ -7,10 +7,7 @@
    cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
    the controller unit must be connected via USB and be powered by a 6V power
    supply.
-3. To use the emergency stop feature, ensure an Arduino with
-   the [StopSignal](https://github.com/VirtualBrainLab/StopSignal) sketch is
-   connected to the computer. Follow the instructions on that repo for how to
-   set up the Arduino.
+3. To use the emergency stop feature, ensure a keyboard is attached.
 
 ## Pinpoint (Recommended Method)
 
