@@ -1,0 +1,7 @@
+name: Release Project Version
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
