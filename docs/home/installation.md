@@ -13,7 +13,7 @@
 
 Pinpoint comes bundled with the correct version of Ephys Link. If you are using Pinpoint on the same computer your
 manipulators are connected to, you can launch the server from within Pinpoint. See the documentation
-on [connecting from Pinpoint](../usage/connecting_to_pinpoint.md).
+on [connecting from Pinpoint](../usage/using_ephys_link.md#connecting-to-pinpoint).
 
 ## Install as a Standalone Executable
 
