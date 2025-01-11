@@ -1,7 +1,95 @@
-name: Release Project Version
+name: Release Version
 
 on:
-  pull_request:
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
+
+jobs:
+
+  # Build Python Package.
+  build-package:
+    name: Build Package
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: 📦 Install Hatch
+        uses: pypa/hatch@install
+      
+      - name: 🔨 Build Package
+        run: hatch build
+
+      - name: ⬆️ Upload Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  # Publishing to PyPI
+  publish-to-test-pypi:
+    name: Publish to Test PyPI
+    
+    needs: build-package
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: testpypi
+      url: https://testpypi.org/p/ephys-link
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: ⬇️ Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-to-pypi:
+    name: Publish to PyPI
+    
+    needs: publish-to-test-pypi
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ephys-link
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: ⬇️ Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        
+  # Build Windows executable.
+  build-executable:
+    name: Build Executable
+    
+    runs-on: windows-latest
+    
+    
