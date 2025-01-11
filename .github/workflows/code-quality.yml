@@ -1,15 +1,14 @@
-name: Auto Format and Lint
+name: Code Quality
 
 on:
   pull_request:
   push:
     branches:
       - main
-  merge_group:
 
 jobs:
-  autoformat-and-lint:
-    name: Auto Format and Lint
+  code-quality
+    name: Code Quality
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
@@ -34,15 +33,22 @@ jobs:
       - name: 📝 Format Code
         run: hatch fmt -f
 
-      - name: ✅ Commit code format changes
+      - name: ✅ Commit Code Format Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Auto format code"
+          commit_message: "Format code"
           skip_fetch: true
           skip_checkout: true
 
       - name: 🧶 Lint
         run: hatch fmt --check
+
+      - name: ✅ Commit Code Linting Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Lint code"
+          skip_fetch: true
+          skip_checkout: true
 
       - name: 🔍 Type Check
         run: hatch run check
