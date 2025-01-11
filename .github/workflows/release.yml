@@ -81,4 +81,4 @@ jobs:
           artifacts: "dist/EphysLink-${{ github.ref_name }}.zip,dist/EphysLink-${{ github.ref_name }}.exe"
           artifactErrorsFailBuild: true
           generateReleaseNotes: true
-          prerelease: ${{ contains(github.ref_name, "a") || contains(github.ref_name, "b") || contains(github.ref_name, "c") || contains(github.ref_name, "d") }}
+          prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'c') || contains(github.ref_name, 'd') }}
