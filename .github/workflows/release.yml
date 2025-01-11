@@ -60,20 +60,25 @@ jobs:
 
       - name: 📦 Install Hatch
         uses: pypa/hatch@install
+      
+      - name: 📥 Cache Build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: build-${{ runner.os }}
 
       - name: 🔨 Build Executable
         run: hatch run exe
 
       - name: 🤐 Zip Build Folder
-        # FIXME: Need correct CLI with correct folder name.
-        run: Compress-Archive -Path dist/ephys-link-${{ github.ref_name }} -Destination dist/ephys-link-${{ github.ref_name }}.zip
+        run: Compress-Archive -Path dist/EphysLink-${{ github.ref_name }} -DestinationPath dist/EphysLink-${{ github.ref_name }}.zip
 
       - name: 📦 Make Release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.ref_name }}
           # FIXME: Use correct name.
-          artifacts: "dist/ephys-link-${{ github.ref_name }}.zip,dist/ephys-link-${{ github.ref_name }}.exe"
+          artifacts: "dist/EphysLink-${{ github.ref_name }}.zip,dist/EphysLink-${{ github.ref_name }}.exe"
           artifactErrorsFailBuild: true
           generateReleaseNotes: true
           prerelease: ${{ contains(github.ref_name, "a") || contains(github.ref_name, "b") || contains(github.ref_name, "c") || contains(github.ref_name, "d") }}
