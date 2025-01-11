@@ -7,8 +7,8 @@ on:
   workflow_call:
 
 jobs:
-  build:
-    name: Build
+  build-docs:
+    name: Build Documentation
     
     runs-on: ubuntu-latest
     
