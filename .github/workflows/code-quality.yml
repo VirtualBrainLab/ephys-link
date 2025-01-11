@@ -7,12 +7,40 @@ on:
       - main
 
 jobs:
-  code-quality:
-    name: Code Quality
+  static-analysis:
+    name: Static Analysis
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.WORKFLOW_COMMIT }}
+
+      - name: 📦 Install Hatch
+        uses: pypa/hatch@install
+
+      - name: 📝 Format Code
+        run: hatch fmt
+
+      - name: ✅ Commit Code Format Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Hatch static analysis"
+          skip_fetch: true
+          skip_checkout: true
+
+      - name: 🔍 Type Check
+        run: hatch run check
+  
+  type-check:
+    name: Type Check
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
 
     steps:
       - name: 🛎 Checkout
@@ -26,29 +54,9 @@ jobs:
         with:
           python-version: "3.13"
           cache: "pip"
-         
+
       - name: 📦 Install Hatch
         uses: pypa/hatch@install
-
-      - name: 📝 Format Code
-        run: hatch fmt -f
-
-      - name: ✅ Commit Code Format Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Format code"
-          skip_fetch: true
-          skip_checkout: true
-
-      - name: 🧶 Lint
-        run: hatch fmt --check
-
-      - name: ✅ Commit Code Linting Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Lint code"
-          skip_fetch: true
-          skip_checkout: true
 
       - name: 🔍 Type Check
         run: hatch run check
