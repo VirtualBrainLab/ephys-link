@@ -83,13 +83,43 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-      - name: Publish distribution 📦 to PyPI
+      - name: 📦 Publish Distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         
-  # Build Windows executable.
-  build-executable:
-    name: Build Executable
+  # Build Windows executable and make release.
+  build-and-release:
+    name: Build Executable and Release
     
     runs-on: windows-latest
     
-    
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: 📦 Install Hatch
+        uses: pypa/hatch@install
+      
+      - name: 🔨 Build Executable
+        run: hatch run exe
+      
+      - name: 🤐 Zip Folder Build
+        # FIXME: Need correct CLI with correct folder name.
+        run: Compress-Archive -Path dist/ephys-link-${{ github.ref_name }} -Destination dist/ephys-link-${{ github.ref_name }}.zip
+      
+      - name: 📦 Make Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          # FIXME: Use correct name.
+          artifacts: "dist/ephys-link-${{ github.ref_name }}.zip,dist/ephys-link-${{ github.ref_name }}.exe"
+          artifactErrorsFailBuild: true
+          generateReleaseNotes: true
+          prerelease: ${{ contains(github.ref_name, "a") || contains(github.ref_name, "b") || contains(github.ref_name, "c") || contains(github.ref_name, "d") }}
