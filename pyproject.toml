@@ -56,7 +56,7 @@ el = "ephys_link.__main__:main"
 path = "src/ephys_link/__about__.py"
 
 [tool.hatch.build.targets.sdist]
-exclude = ["/.github", "/.idea"]
+exclude = ["/.github", "/.idea", "/docs"]
 
 [tool.hatch.envs.default]
 python = "3.13.1"

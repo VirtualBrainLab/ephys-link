@@ -1,8 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from ephys_link.__about__ import __version__ as version
-
 from argparse import ArgumentParser
+
+from PyInstaller.utils.hooks import collect_submodules
+
+from ephys_link.__about__ import __version__ as version
 
 parser = ArgumentParser()
 parser.add_argument("-d", "--dir", action="store_true", help="Outputs a directory")
@@ -10,13 +12,16 @@ options = parser.parse_args()
 
 FILE_NAME = f"EphysLink-v{version}"
 
+# Collect binding modules.
+bindings = [binding for binding in collect_submodules("ephys_link.bindings") if binding != "ephys_link.bindings"]
+
 # noinspection PyUnresolvedReferences
 a = Analysis(
     ['src\\ephys_link\\__main__.py'],
     pathex=[],
     binaries=[('src\\ephys_link\\resources', 'ephys_link\\resources')],
     datas=[],
-    hiddenimports=['engineio.async_drivers.aiohttp'],
+    hiddenimports=['engineio.async_drivers.aiohttp'] + bindings,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
