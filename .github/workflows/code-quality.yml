@@ -33,9 +33,6 @@ jobs:
           commit_message: "Hatch static analysis"
           skip_fetch: true
           skip_checkout: true
-
-      - name: 🔍 Type Check
-        run: hatch run check
   
   type-check:
     name: Type Check
