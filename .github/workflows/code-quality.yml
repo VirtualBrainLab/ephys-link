@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  code-quality
+  code-quality:
     name: Code Quality
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
