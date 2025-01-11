@@ -6,13 +6,19 @@ on:
       - "v*"
 
 jobs:
-
-  # Build Python Package.
-  build-package:
-    name: Build Package
+  # Publish Python package to PyPI.
+  publish-to-pypi:
+    name: Publish to PyPI
 
     runs-on: ubuntu-latest
 
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ephys-link
+    
+    permissions:
+      id-token: write
+    
     steps:
       - name: 🛎 Checkout
         uses: actions/checkout@v4
@@ -27,65 +33,13 @@ jobs:
 
       - name: 📦 Install Hatch
         uses: pypa/hatch@install
-      
+
       - name: 🔨 Build Package
         run: hatch build
 
-      - name: ⬆️ Upload Artifacts
-        uses: actions/upload-pages-artifact@v3
-        with:
-          name: python-package-distributions
-          path: dist/
-
-  # Publishing to PyPI
-  publish-to-test-pypi:
-    name: Publish to Test PyPI
-    
-    needs: build-package
-
-    runs-on: ubuntu-latest
-
-    environment:
-      name: testpypi
-      url: https://testpypi.org/p/ephys-link
-
-    permissions:
-      id-token: write
-
-    steps:
-      - name: ⬇️ Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
-      - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-
-  publish-to-pypi:
-    name: Publish to PyPI
-    
-    needs: publish-to-test-pypi
-
-    runs-on: ubuntu-latest
-
-    environment:
-      name: pypi
-      url: https://pypi.org/p/ephys-link
-
-    permissions:
-      id-token: write
-
-    steps:
-      - name: ⬇️ Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
       - name: 📦 Publish Distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        
+  
   # Build Windows executable and make release.
   build-and-release:
     name: Build Executable and Release
@@ -106,14 +60,14 @@ jobs:
 
       - name: 📦 Install Hatch
         uses: pypa/hatch@install
-      
+
       - name: 🔨 Build Executable
         run: hatch run exe
-      
-      - name: 🤐 Zip Folder Build
+
+      - name: 🤐 Zip Build Folder
         # FIXME: Need correct CLI with correct folder name.
         run: Compress-Archive -Path dist/ephys-link-${{ github.ref_name }} -Destination dist/ephys-link-${{ github.ref_name }}.zip
-      
+
       - name: 📦 Make Release
         uses: ncipollo/release-action@v1
         with:
