@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 
 site_name: Ephys Link
-site_url: https://virtualbrainlab.github.io/ephys-link
+site_url: https://ephys-link.virtualbrainlab.org
 repo_url: https://github.com/VirtualBrainLab/ephys-link
-repo_name: virtualbrainlab/ephys-link
+repo_name: VirtualBrainLab/ephys-link
 copyright: Copyright &copy; 2024 Virtual Brain Lab
 extra:
   social:
@@ -88,7 +88,7 @@ plugins:
             show_symbol_type_toc: true
           import:
             - https://docs.python.org/3/objects.inv
-            - https://virtualbrainlab.github.io/vbl-aquarium/objects.inv
+            - https://aquarium.virtualbrainlab.org/objects.inv
 nav:
   - Home:
       - About: index.md
