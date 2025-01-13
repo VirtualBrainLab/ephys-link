@@ -33,8 +33,8 @@ the [Pinpoint documentation](https://virtualbrainlab.org/pinpoint/tutorials/tuto
 
 # Documentation and More Information
 
-Complete documentation including API usage and development installation can be
-found on the [Virtual Brain Lab Documentation page][docs] for Ephys Link.
+Complete documentation including how to add manipulators and API usage can be
+found on [Ephys Link's Documentation Website][docs].
 
 # Citing
 
