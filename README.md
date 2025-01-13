@@ -48,4 +48,4 @@ through the issues tab.
 
 [Pinpoint]: https://github.com/VirtualBrainLab/Pinpoint
 
-[docs]: https://virtualbrainlab.github.io/ephys-link/
+[docs]: https://ephys-link.virtualbrainlab.org
