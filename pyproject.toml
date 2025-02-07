@@ -59,6 +59,7 @@ path = "src/ephys_link/__about__.py"
 exclude = ["/.github", "/.idea", "/docs"]
 
 [tool.hatch.envs.default]
+installer = "uv"
 python = "3.13.1"
 dependencies = [
     "pyinstaller==6.11.1",
@@ -71,6 +72,7 @@ check = "basedpyright"
 check-watched = "basedpyright --watch"
 
 [tool.hatch.envs.docs]
+installer = "uv"
 python = "3.13.1"
 skip-install = true
 dependencies = [
