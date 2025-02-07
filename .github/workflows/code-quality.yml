@@ -46,11 +46,16 @@ jobs:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.WORKFLOW_COMMIT }}
 
+      - name: 🔭 Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/pyproject.toml"
+         
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          cache: "pip"
 
       - name: 📦 Install Hatch
         uses: pypa/hatch@install

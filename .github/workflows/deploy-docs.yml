@@ -1,6 +1,8 @@
 name: Deploy Documentation
 
 on:
+  pull_request:
+    branches: [ "main" ]
   push:
     branches: [ "main" ]
   workflow_dispatch:
@@ -16,20 +18,53 @@ concurrency:
 
 jobs:
 
-  build:
-    name: Build
-    uses: ./.github/workflows/build-docs.yml
+  build-docs:
+    name: Build Documentation
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 🔭 Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/pyproject.toml"
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: 📦 Install Hatch
+        uses: pypa/hatch@install
+
+      - name: 🔨 Build Documentation
+        run: hatch -e docs run build
+
+      # Upload artifact on main.
+      - name: ⬆️ Upload Artifacts
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "site"
 
   deploy:
     name: Deploy Documentation
-
-    needs: build
+    
+    runs-on: ubuntu-latest
+    
+    if: github.ref == 'refs/heads/main'
 
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
-    runs-on: ubuntu-latest
+      
+    needs: build-docs
 
     steps:
 
