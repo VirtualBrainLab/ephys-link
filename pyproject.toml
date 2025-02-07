@@ -60,7 +60,7 @@ exclude = ["/.github", "/.idea", "/docs"]
 
 [tool.hatch.envs.default]
 installer = "uv"
-python = "3.13.1"
+python = "3.13.2"
 dependencies = [
     "pyinstaller==6.11.1",
     "basedpyright==1.23.1",
@@ -73,7 +73,7 @@ check-watched = "basedpyright --watch"
 
 [tool.hatch.envs.docs]
 installer = "uv"
-python = "3.13.1"
+python = "3.13.2"
 skip-install = true
 dependencies = [
     "mkdocs-material==9.5.49",
