@@ -13,14 +13,16 @@ This section describes:
 ## Installing for Development
 
 1. Clone the repository.
-2. Install [Hatch](https://hatch.pypa.io/latest/install/)
-3. In a terminal, navigate to the repository's root directory and run
+2. Install [UV](https://docs.astral.sh/uv/#installation)
+3. Install [Hatch](https://hatch.pypa.io/latest/install/)
+4. In a terminal, navigate to the repository's root directory and run
 
    ```bash
    hatch shell
    ```
 
-This will create a virtual environment, install Python 13 (if not found), and install the package in editable mode.
+This will create a virtual environment, install the latest Python for this project (if not found), and install the
+package in editable mode.
 
 If you encounter any dependency issues (particularly with `aiohttp`), try installing the latest Microsoft Visual C++
 (MSVC v143+ x86/64) and the Windows SDK (10/11)
