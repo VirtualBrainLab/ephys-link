@@ -100,7 +100,7 @@ class Ump4Binding(BaseBinding):
             raise RuntimeError(error_message)
 
         # Handle empty end position.
-        if movement.last_pos is None or len(movement.last_pos) == 0:  # pyright: ignore [reportUnknownMemberType]
+        if movement.last_pos is None or len(movement.last_pos) == 0:  # pyright: ignore [reportUnknownMemberType, reportUnknownArgumentType]
             error_message = f"Manipulator {manipulator_id} did not reach target position"
             raise RuntimeError(error_message)
 
