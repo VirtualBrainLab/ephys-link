@@ -23,6 +23,8 @@ Then see the [usage documentation](../usage/starting_ephys_link.md) for how to r
 
 ## Install as a Python package
 
+Ephys Link uses the latest stable version of Python. It requires a minimum of Python 3.10.
+
 ```bash
 pip install ephys-link
 ```
