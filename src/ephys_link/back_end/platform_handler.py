@@ -80,7 +80,7 @@ class PlatformHandler:
                     return MPMBinding(options.mpm_port)
                 
                 if binding_cli_name == "parallax":
-                    return ParallaxBinding(options.parallax_port)
+                    return ParallaxBinding()
 
                 # Otherwise just return the binding.
                 return binding_type()
