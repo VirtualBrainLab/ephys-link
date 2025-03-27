@@ -125,7 +125,7 @@ class ParallaxBinding(BaseBinding):
         while (
             not self._movement_stopped
             and not self._is_vector_close(current_position, position)
-            and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT_DEPTH
+            and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
             await sleep(self.POLL_INTERVAL)
@@ -171,7 +171,7 @@ class ParallaxBinding(BaseBinding):
         while (
                 not self._movement_stopped
                 and not abs(current_depth - depth) <= self.get_movement_tolerance()
-                and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
+                and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT_DEPTH
         ):
             # Wait for a short time before checking again.
             await sleep(self.POLL_INTERVAL)
@@ -215,7 +215,7 @@ class ParallaxBinding(BaseBinding):
             x=platform_space.x,
             y=platform_space.z,
             z=platform_space.y,
-            w=platform_space.w,
+            w=self.get_dimensions().w-platform_space.w,
         )
 
     @override
@@ -230,7 +230,7 @@ class ParallaxBinding(BaseBinding):
             x=unified_space.x,
             y=unified_space.z,
             z=unified_space.y,
-            w=unified_space.w,
+            w=self.get_dimensions().w-unified_space.w,
         )
 
     # Helper functions.
