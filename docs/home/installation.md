@@ -3,8 +3,8 @@
 ## Prerequisites
 
 1. An **x86 Windows PC is required** to run the server.
-2. For Sensapex devices, the controller unit must be connected via an ethernet
-   cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
+2. For Sensapex devices, the controller unit must be powered and connected via an Ethernet
+   cable to the computer running Ephys Link. A USB-to-Ethernet adapter is acceptable. For New Scale manipulators,
    the controller unit must be connected via USB and be powered by a 6V power
    supply.
 3. To use the emergency stop feature, ensure a keyboard is attached.
