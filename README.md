@@ -19,17 +19,17 @@ to communicate with manipulators used in electrophysiology experiments.
 
 # Installation
 
-## Launch from Pinpoint (Recommended)
+## Pinpoint (recommended)
 
 Pinpoint comes bundled with the correct version of Ephys Link. If you are using Pinpoint on the same computer your
-manipulators are connected to, you can launch the server from within Pinpoint. Follow the instructions in
-the [Pinpoint documentation](https://virtualbrainlab.org/pinpoint/tutorials/tutorial_ephys_link.html#configure-and-launch-ephys-link).
+manipulators are connected to, you can launch the server from within Pinpoint. See the documentation
+on [connecting from Pinpoint](../usage/using_ephys_link.md#connecting-to-pinpoint).
 
-## Install as Standalone Executable
+## Install as a Standalone Executable
 
-1. Download the latest standalone executable or zip from
-   the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
-2. Double-click the executable file to start.
+Download the latest standalone executable or zip from the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
+
+Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
 
 # Documentation and More Information
 

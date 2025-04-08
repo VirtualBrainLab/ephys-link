@@ -9,7 +9,7 @@
    supply.
 3. To use the emergency stop feature, ensure a keyboard is attached.
 
-## Pinpoint (Recommended Method)
+## Pinpoint (recommended)
 
 Pinpoint comes bundled with the correct version of Ephys Link. If you are using Pinpoint on the same computer your
 manipulators are connected to, you can launch the server from within Pinpoint. See the documentation
@@ -21,18 +21,15 @@ Download the latest standalone executable or zip from the [releases page](https:
 
 Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
 
-## Install as a Python package
+## Install as a Python package (not reccomended)
 
-Ephys Link uses the latest stable version of Python. It requires a minimum of Python 3.10.
+Ephys Link is a Python package released on PyPI and can be included in projects as such.
+
+**This is not the reccomended method of using Ephys Link.** This is only for advanced
+use cases where Ephys Link is used as a library in another project. Ephys Link will exclusively support the latest version of Python its dependences support.
 
 ```bash
 pip install ephys-link
-```
-
-or with [pipx](https://pipx.pypa.io/stable/) (recommended)
-
-```bash
-pipx install ephys-link
 ```
 
 Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
