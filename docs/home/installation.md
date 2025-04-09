@@ -26,7 +26,7 @@ Then see the [usage documentation](../usage/starting_ephys_link.md) for how to r
 Ephys Link is a Python package released on PyPI and can be included in projects as such.
 
 **This is not the recommended method of using Ephys Link.** This is only for advanced
-use cases where Ephys Link is used as a library in another project. Ephys Link will exclusively support the latest version of Python its dependences support.
+use cases where Ephys Link is used as a library in another project. Ephys Link will exclusively support the latest version of Python its dependencies support.
 
 ```bash
 pip install ephys-link
