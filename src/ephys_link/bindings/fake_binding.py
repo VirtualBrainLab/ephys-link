@@ -59,7 +59,7 @@ class FakeBinding(BaseBinding):
 
     @staticmethod
     @override
-    def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance() -> float:
         return 0.001
 
     @override

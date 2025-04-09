@@ -101,7 +101,7 @@ class BaseBinding(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance() -> float:
         """Get the tolerance for how close the final position must be to the target position in a movement (mm).
 
         Returns:
