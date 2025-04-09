@@ -27,7 +27,8 @@ on [connecting from Pinpoint](../usage/using_ephys_link.md#connecting-to-pinpoin
 
 ## Install as a Standalone Executable
 
-Download the latest standalone executable or zip from the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
+Download the latest standalone executable or zip from
+the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
 
 Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
 
