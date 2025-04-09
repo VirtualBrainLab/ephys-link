@@ -6,7 +6,10 @@ read [how the system works first](../home/how_it_works.md) before proceeding.
 
 ## Set Up for Development
 
-1. Fork the [Ephys Link repository](https://github.com/VirtualBrainLab/ephys-link).
+1. Fork the [Ephys Link repository](https://github.com/VirtualBrainLab/ephys-link). If you're new to contributing, we
+   recommend
+   reading [this guide](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project)
+   by GitHub.
 2. Follow the instructions for [installing Ephys Link for development](index.md#installing-for-development) to get all
    the necessary dependencies and tools set up. In this case, you'll want to clone your fork.
 3. (Optional) Familiarize yourself with the [repo's organization](code_organization.md).
