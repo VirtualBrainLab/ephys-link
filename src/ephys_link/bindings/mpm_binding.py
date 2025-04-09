@@ -62,8 +62,8 @@ class MPMBinding(BaseBinding):
         "AN",
     )
 
-    # Server cache lifetime (30 FPS).
-    CACHE_LIFETIME = 1 / 30
+    # Server data update rate (30 FPS).
+    SERVER_DATA_UPDATE_RATE = 1 / 30
 
     # Movement polling preferences.
     UNCHANGED_COUNTER_LIMIT = 10
@@ -113,7 +113,7 @@ class MPMBinding(BaseBinding):
         stage_z: float = manipulator_data["Stage_Z"]
 
         # Wait for the stage to stabilize.
-        await sleep(self.CACHE_LIFETIME)
+        await sleep(self.SERVER_DATA_UPDATE_RATE)
 
         return Vector4(
             x=manipulator_data["Stage_X"],
@@ -181,7 +181,7 @@ class MPMBinding(BaseBinding):
             and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
-            await sleep(self.CACHE_LIFETIME)
+            await sleep(self.SERVER_DATA_UPDATE_RATE)
 
             # Update current position.
             current_position = await self.get_position(manipulator_id)
@@ -226,7 +226,7 @@ class MPMBinding(BaseBinding):
             and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
-            await sleep(self.CACHE_LIFETIME)
+            await sleep(self.SERVER_DATA_UPDATE_RATE)
 
             # Get the current depth.
             current_depth = (await self.get_position(manipulator_id)).w
@@ -290,7 +290,7 @@ class MPMBinding(BaseBinding):
     async def _query_data(self) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         try:
             # Update cache if it's expired.
-            if get_running_loop().time() - self.cache_time > self.CACHE_LIFETIME:
+            if get_running_loop().time() - self.cache_time > self.SERVER_DATA_UPDATE_RATE:
                 # noinspection PyTypeChecker
                 self.cache = (await get_running_loop().run_in_executor(None, get, self._url)).json()
                 self.cache_time = get_running_loop().time()
