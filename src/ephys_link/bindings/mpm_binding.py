@@ -127,7 +127,7 @@ class MPMBinding(BaseBinding):
         manipulator_data: dict[str, float] = await self._manipulator_data(manipulator_id)
 
         # Apply PosteriorAngle to Polar to get the correct angle.
-        adjusted_polar: int = manipulator_data["Polar"] - (await self._query_data())["PosteriorAngle"]
+        adjusted_polar: int = manipulator_data["Polar"] - (await self._query_data())["PosteriorAngle"]  # pyright: ignore [reportAny]
 
         return Vector3(
             x=adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
@@ -299,7 +299,7 @@ class MPMBinding(BaseBinding):
             return self.cache
 
     async def _manipulator_data(self, manipulator_id: str) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
-        probe_data: list[dict[str, Any]] = (await self._query_data())["ProbeArray"]  # pyright: ignore [reportExplicitAny]
+        probe_data: list[dict[str, Any]] = (await self._query_data())["ProbeArray"]  # pyright: ignore [reportExplicitAny, reportAny]
         for probe in probe_data:
             if probe["Id"] == manipulator_id:
                 return probe
