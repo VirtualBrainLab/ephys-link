@@ -7,7 +7,7 @@ name = "ephys-link"
 dynamic = ["version"]
 description = "A Python Socket.IO server that allows any Socket.IO-compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
-requires-python = "3.13"
+requires-python = ">=3.13"
 license = "GPL-3.0-only"
 keywords = ["socket-io", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "neurotech", "virtualbrainlab", "new-scale"]
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
