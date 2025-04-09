@@ -19,7 +19,7 @@ to communicate with manipulators used in electrophysiology experiments.
 
 # Installation
 
-## Pinpoint (recommended)
+## Pinpoint (Recommended)
 
 Pinpoint comes bundled with the correct version of Ephys Link. If you are using Pinpoint on the same computer your
 manipulators are connected to, you can launch the server from within Pinpoint. See the documentation
