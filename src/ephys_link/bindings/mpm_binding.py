@@ -113,7 +113,8 @@ class MPMBinding(BaseBinding):
         manipulator_data: dict[str, float] = await self._manipulator_data(manipulator_id)
         stage_z: float = manipulator_data["Stage_Z"]
 
-        await sleep(self.POLL_INTERVAL)  # Wait for the stage to stabilize.
+        # Wait for the stage to stabilize.
+        await sleep(self.POLL_INTERVAL)
 
         return Vector4(
             x=manipulator_data["Stage_X"],
@@ -139,6 +140,7 @@ class MPMBinding(BaseBinding):
     async def get_shank_count(self, manipulator_id: str) -> int:
         return int((await self._manipulator_data(manipulator_id))["ShankCount"])  # pyright: ignore [reportAny]
 
+    @staticmethod
     @override
     def get_movement_tolerance(self) -> float:
         return 0.01
@@ -219,7 +221,11 @@ class MPMBinding(BaseBinding):
         )
 
         # Wait for the manipulator to reach the target depth or be stopped or get stuck.
-        while not self._movement_stopped and not abs(current_depth - depth) <= self.get_movement_tolerance():
+        while (
+            not self._movement_stopped
+            and not abs(current_depth - depth) <= self.get_movement_tolerance()
+            and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
+        ):
             # Wait for a short time before checking again.
             await sleep(self.POLL_INTERVAL)
 
@@ -281,6 +287,7 @@ class MPMBinding(BaseBinding):
         )
 
     # Helper functions.
+    
     async def _query_data(self) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         try:
             # Update cache if it's expired.

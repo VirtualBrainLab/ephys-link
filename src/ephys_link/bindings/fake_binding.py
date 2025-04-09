@@ -57,6 +57,7 @@ class FakeBinding(BaseBinding):
     async def get_shank_count(self, manipulator_id: str) -> int:
         return 1
 
+    @staticmethod
     @override
     def get_movement_tolerance(self) -> float:
         return 0.001

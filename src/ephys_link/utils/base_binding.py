@@ -99,6 +99,7 @@ class BaseBinding(ABC):
             Number of shanks on the manipulator.
         """
 
+    @staticmethod
     @abstractmethod
     def get_movement_tolerance(self) -> float:
         """Get the tolerance for how close the final position must be to the target position in a movement (mm).
