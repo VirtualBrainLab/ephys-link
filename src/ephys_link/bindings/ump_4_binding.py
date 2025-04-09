@@ -77,8 +77,9 @@ class Ump4Binding(BaseBinding):
         error_message = "UMP-4 does not support getting shank count"
         raise AttributeError(error_message)
 
+    @staticmethod
     @override
-    def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance() -> float:
         return 0.001
 
     @override
