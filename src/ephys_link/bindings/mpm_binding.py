@@ -62,12 +62,11 @@ class MPMBinding(BaseBinding):
         "AN",
     )
 
-    # Server cache lifetime (60 FPS).
-    CACHE_LIFETIME = 1 / 60
+    # Server cache lifetime (30 FPS).
+    CACHE_LIFETIME = 1 / 30
 
     # Movement polling preferences.
     UNCHANGED_COUNTER_LIMIT = 10
-    POLL_INTERVAL = 0.1
 
     # Speed preferences (mm/s to use coarse mode).
     COARSE_SPEED_THRESHOLD = 0.1
@@ -114,7 +113,7 @@ class MPMBinding(BaseBinding):
         stage_z: float = manipulator_data["Stage_Z"]
 
         # Wait for the stage to stabilize.
-        await sleep(self.POLL_INTERVAL)
+        await sleep(self.CACHE_LIFETIME)
 
         return Vector4(
             x=manipulator_data["Stage_X"],
@@ -182,7 +181,7 @@ class MPMBinding(BaseBinding):
             and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
+            await sleep(self.CACHE_LIFETIME)
 
             # Update current position.
             current_position = await self.get_position(manipulator_id)
@@ -227,7 +226,7 @@ class MPMBinding(BaseBinding):
             and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
+            await sleep(self.CACHE_LIFETIME)
 
             # Get the current depth.
             current_depth = (await self.get_position(manipulator_id)).w
