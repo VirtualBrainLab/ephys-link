@@ -287,7 +287,7 @@ class MPMBinding(BaseBinding):
         )
 
     # Helper functions.
-    
+
     async def _query_data(self) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         try:
             # Update cache if it's expired.
