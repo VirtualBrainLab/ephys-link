@@ -6,8 +6,9 @@
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv38" />
       <excludeFolder url="file://$MODULE_DIR$/venv12" />
+      <excludeFolder url="file://$MODULE_DIR$/venv/ephys-link" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.13 virtualenv at V:\School_GitHub\VBL\ephys-link\venv\ephys-link" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Hatch (ephys-link) [Python 3.13.3]" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
