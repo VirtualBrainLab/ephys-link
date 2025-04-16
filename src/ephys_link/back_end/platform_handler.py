@@ -73,6 +73,13 @@ class PlatformHandler:
         for binding_type in get_bindings():
             binding_cli_name = binding_type.get_cli_name()
 
+            # Notify deprecation of "ump-4" and "ump-3" CLI options
+            if binding_cli_name in ("ump-4", "ump-3"):
+                self._console.info_print(
+                    "DEPRECATION",
+                    f"CLI option '{binding_cli_name}' is deprecated and will be removed in v3.0.0. Use 'ump' instead.",
+                )
+
             if binding_cli_name == options.type:
                 # Pass in HTTP port for Pathfinder MPM.
                 if binding_cli_name == "pathfinder-mpm":
