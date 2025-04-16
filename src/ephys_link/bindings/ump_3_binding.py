@@ -9,12 +9,12 @@ from typing import NoReturn, final, override
 from numpy import concatenate
 from vbl_aquarium.models.unity import Vector4
 
-from ephys_link.bindings.ump_4_binding import Ump4Binding
+from ephys_link.bindings.ump_binding import UmpBinding
 from ephys_link.utils.converters import list_to_vector4, scalar_mm_to_um, um_to_mm, vector4_to_array, vector_mm_to_um
 
 
 @final
-class Ump3Binding(Ump4Binding):
+class Ump3Binding(UmpBinding):
     """Bindings for uMp-3 platform.
 
     Most functionality is identical to uMp-4 so we inherit from it.

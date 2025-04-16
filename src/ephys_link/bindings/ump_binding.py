@@ -1,6 +1,6 @@
-"""Bindings for Sensapex uMp-4 platform.
+"""Bindings for Sensapex uMp platform.
 
-Usage: Instantiate Ump4Bindings to interact with the Sensapex uMp-4 platform.
+Usage: Instantiate UmpBindings to interact with Sensapex uMp-4 and uMp-3 manipulators.
 """
 
 from asyncio import get_running_loop
@@ -20,25 +20,37 @@ from ephys_link.utils.converters import (
 )
 
 
-class Ump4Binding(BaseBinding):
-    """Bindings for uMp-4 platform"""
+class UmpBinding(BaseBinding):
+    """Bindings for uMp platform"""
 
     def __init__(self) -> None:
-        """Initialize uMp-4 bindings."""
+        """Initialize uMp bindings."""
 
         # Establish connection to Sensapex API (exit if connection fails).
         UMP.set_library_path(RESOURCES_DIRECTORY)
         self._ump: UMP = UMP.get_ump()  # pyright: ignore [reportUnknownMemberType]
+        
+        # Exit if no manipulators are connected.
+        device_ids = self._ump.list_devices()
+        if len(device_ids) == 0:
+            raise RuntimeError("No manipulators connected.")
+        
+        # Currently only supports using uMp-4 XOR uMp-3. Exit if both are connected.
+        
+        # Use the first device as the reference for the number of axes.
+        self.num_axes = self._get_device(device_ids[0]).n_axes()
+        if any(self._get_device(device_id).n_axes() != self.num_axes for device_id in device_ids):
+            raise RuntimeError("uMp-4 and uMp-3 cannot be used at the same time.")
 
     @staticmethod
     @override
     def get_display_name() -> str:
-        return "Sensapex uMp-4"
+        return "Sensapex uMp"
 
     @staticmethod
     @override
     def get_cli_name() -> str:
-        return "ump-4"
+        return "ump"
 
     @override
     async def get_manipulators(self) -> list[str]:
@@ -46,7 +58,7 @@ class Ump4Binding(BaseBinding):
 
     @override
     async def get_axes_count(self) -> int:
-        return 4
+        return self.num_axes
 
     @override
     def get_dimensions(self) -> Vector4:
