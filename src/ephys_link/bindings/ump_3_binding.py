@@ -3,12 +3,14 @@
 Usage: Instantiate Ump3Bindings to interact with the Sensapex uMp-3 platform.
 """
 
+from asyncio import get_running_loop
 from typing import NoReturn, final, override
 
+from numpy import concatenate
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.bindings.ump_4_binding import Ump4Binding
-from ephys_link.utils.converters import list_to_vector4, um_to_mm
+from ephys_link.utils.converters import list_to_vector4, scalar_mm_to_um, um_to_mm, vector4_to_array, vector_mm_to_um
 
 
 @final
@@ -60,6 +62,34 @@ class Ump3Binding(Ump4Binding):
         """
         error_message = "UMP-3 does not support getting shank count"
         raise AttributeError(error_message)
+
+    @override
+    async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:
+        # Convert position to micrometers.
+        target_position_um = vector_mm_to_um(position)
+
+        # Request movement (only pass in first 3 elements of target).
+        movement = self._get_device(
+            manipulator_id
+        ).goto_pos(  # pyright: ignore [reportUnknownMemberType]
+            vector4_to_array(target_position_um)[:3], scalar_mm_to_um(speed)
+        )
+
+        # Wait for movement to finish.
+        _ = await get_running_loop().run_in_executor(None, movement.finished_event.wait, None)
+
+        # Handle interrupted movement.
+        if movement.interrupted:
+            error_message = f"Manipulator {manipulator_id} interrupted: {movement.interrupt_reason}"  # pyright: ignore [reportUnknownMemberType]
+            raise RuntimeError(error_message)
+
+        # Handle empty end position.
+        if movement.last_pos is None or len(movement.last_pos) == 0:  # pyright: ignore [reportUnknownMemberType, reportUnknownArgumentType]
+            error_message = f"Manipulator {manipulator_id} did not reach target position"
+            raise RuntimeError(error_message)
+
+        # Return the final position (copy x to depth).
+        return um_to_mm(list_to_vector4(list(concatenate([movement.last_pos, [movement.last_pos[0]]]))))  # pyright: ignore [reportArgumentType, reportUnknownMemberType]
 
     @override
     async def set_depth(self, manipulator_id: str, depth: float, speed: float) -> float:
