@@ -4,7 +4,7 @@ Usage: Instantiate Ump4Bindings to interact with the Sensapex uMp-4 platform.
 """
 
 from asyncio import get_running_loop
-from typing import NoReturn, final, override
+from typing import NoReturn, override
 
 from sensapex import UMP, SensapexDevice  # pyright: ignore [reportMissingTypeStubs]
 from vbl_aquarium.models.unity import Vector4
@@ -20,16 +20,15 @@ from ephys_link.utils.converters import (
 )
 
 
-@final
 class Ump4Binding(BaseBinding):
-    """Bindings for UMP-4 platform"""
+    """Bindings for uMp-4 platform"""
 
     def __init__(self) -> None:
-        """Initialize UMP-4 bindings."""
+        """Initialize uMp-4 bindings."""
 
         # Establish connection to Sensapex API (exit if connection fails).
         UMP.set_library_path(RESOURCES_DIRECTORY)
-        self._ump = UMP.get_ump()  # pyright: ignore [reportUnknownMemberType]
+        self._ump: UMP = UMP.get_ump()  # pyright: ignore [reportUnknownMemberType]
 
     @staticmethod
     @override
@@ -149,7 +148,7 @@ class Ump4Binding(BaseBinding):
         return Vector4(
             x=unified_space.z,
             y=unified_space.x,
-            z=self.get_dimensions().z - unified_space.y,
+            z=self.get_dimensions().y - unified_space.y,
             w=unified_space.w,
         )
 
