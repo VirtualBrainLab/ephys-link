@@ -33,7 +33,7 @@ class UmpBinding(BaseBinding):
         # Establish connection to Sensapex API (exit if connection fails).
         UMP.set_library_path(RESOURCES_DIRECTORY)
         self._ump: UMP = UMP.get_ump()  # pyright: ignore [reportUnknownMemberType]
-        
+
         # Compute axis count, assumed as the first device. 0 if no devices are connected.
         device_ids = list(map(str, self._ump.list_devices()))
         self.axis_count = 0 if len(device_ids) == 0 else self._get_device(device_ids[0]).n_axes()
@@ -51,12 +51,12 @@ class UmpBinding(BaseBinding):
     @override
     async def get_manipulators(self) -> list[str]:
         device_ids = list(map(str, self._ump.list_devices()))
-        
+
         # Currently only supports using uMp-4 XOR uMp-3. Throw error if both are connected.
         if any(self._get_device(device_id).n_axes() != self.axis_count for device_id in device_ids):  # pyright: ignore [reportUnknownArgumentType, reportUnknownMemberType]
             msg = "uMp-4 and uMp-3 cannot be used at the same time."
             raise RuntimeError(msg)
-        
+
         return device_ids
 
     @override
