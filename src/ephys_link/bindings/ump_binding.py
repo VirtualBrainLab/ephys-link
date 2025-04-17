@@ -36,7 +36,7 @@ class UmpBinding(BaseBinding):
 
         # Compute axis count, assumed as the first device. 0 if no devices are connected.
         device_ids = list(map(str, self._ump.list_devices()))
-        self.axis_count = 0 if len(device_ids) == 0 else self._get_device(device_ids[0]).n_axes()
+        self.axis_count: int = 0 if len(device_ids) == 0 else self._get_device(device_ids[0]).n_axes()
 
     @staticmethod
     @override
@@ -53,7 +53,7 @@ class UmpBinding(BaseBinding):
         device_ids = list(map(str, self._ump.list_devices()))
 
         # Currently only supports using uMp-4 XOR uMp-3. Throw error if both are connected.
-        if any(self._get_device(device_id).n_axes() != self.axis_count for device_id in device_ids):  # pyright: ignore [reportUnknownArgumentType, reportUnknownMemberType]
+        if any(self._get_device(device_id).n_axes() != self.axis_count for device_id in device_ids):  # pyright: ignore [reportUnknownArgumentType]
             msg = "uMp-4 and uMp-3 cannot be used at the same time."
             raise RuntimeError(msg)
 
