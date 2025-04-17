@@ -47,28 +47,28 @@ class UmpBinding(BaseBinding):
     @override
     async def get_manipulators(self) -> list[str]:
         device_ids = list(map(str, self._ump.list_devices()))
-        
+
         # Shortcut for empty device list.
         if len(device_ids) == 0:
             return []
-        
-        first_device_axis_count = self._get_device(device_ids[0]).n_axes() 
+
+        first_device_axis_count = self._get_device(device_ids[0]).n_axes()
 
         # Currently only supports using uMp-4 XOR uMp-3. Throw error if both are connected.
         if any(self._get_device(device_id).n_axes() != first_device_axis_count for device_id in device_ids):  # pyright: ignore [reportUnknownArgumentType, reportUnknownMemberType]
             msg = "uMp-4 and uMp-3 cannot be used at the same time."
             raise RuntimeError(msg)
-        
+
         return device_ids
 
     @override
     async def get_axes_count(self) -> int:
         device_ids = await self.get_manipulators()
-        
+
         # If no manipulators are connected, return 0.
         if len(device_ids) == 0:
             return 0
-        
+
         # If multiple manipulators are connected, return the number of axes of the first one.
         return self._get_device(device_ids[0]).n_axes()
 
