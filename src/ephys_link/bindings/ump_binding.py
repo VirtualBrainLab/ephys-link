@@ -33,6 +33,10 @@ class UmpBinding(BaseBinding):
         # Establish connection to Sensapex API (exit if connection fails).
         UMP.set_library_path(RESOURCES_DIRECTORY)
         self._ump: UMP = UMP.get_ump()  # pyright: ignore [reportUnknownMemberType]
+        
+        # Compute axis count, assumed as the first device. 0 if no devices are connected.
+        device_ids = list(map(str, self._ump.list_devices()))
+        self.axis_count = 0 if len(device_ids) == 0 else self._get_device(device_ids[0]).n_axes()
 
     @staticmethod
     @override
@@ -48,14 +52,8 @@ class UmpBinding(BaseBinding):
     async def get_manipulators(self) -> list[str]:
         device_ids = list(map(str, self._ump.list_devices()))
         
-        # Shortcut for empty device list.
-        if len(device_ids) == 0:
-            return []
-        
-        first_device_axis_count = self._get_device(device_ids[0]).n_axes() 
-
         # Currently only supports using uMp-4 XOR uMp-3. Throw error if both are connected.
-        if any(self._get_device(device_id).n_axes() != first_device_axis_count for device_id in device_ids):  # pyright: ignore [reportUnknownArgumentType, reportUnknownMemberType]
+        if any(self._get_device(device_id).n_axes() != self.axis_count for device_id in device_ids):  # pyright: ignore [reportUnknownArgumentType, reportUnknownMemberType]
             msg = "uMp-4 and uMp-3 cannot be used at the same time."
             raise RuntimeError(msg)
         
@@ -63,14 +61,7 @@ class UmpBinding(BaseBinding):
 
     @override
     async def get_axes_count(self) -> int:
-        device_ids = await self.get_manipulators()
-        
-        # If no manipulators are connected, return 0.
-        if len(device_ids) == 0:
-            return 0
-        
-        # If multiple manipulators are connected, return the number of axes of the first one.
-        return self._get_device(device_ids[0]).n_axes()
+        return self.axis_count
 
     @override
     def get_dimensions(self) -> Vector4:
@@ -241,4 +232,4 @@ class UmpBinding(BaseBinding):
         Returns:
             True if the device is uMp-3, False otherwise.
         """
-        return self.get_axes_count() == self.UMP_3_NUM_AXES
+        return self.axis_count == self.UMP_3_NUM_AXES
