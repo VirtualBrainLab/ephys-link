@@ -70,10 +70,22 @@ class PlatformHandler:
         Returns:
             Bindings for the specified platform type.
         """
+
+        # What the user supplied.
+        selected_type = options.type
+
         for binding_type in get_bindings():
             binding_cli_name = binding_type.get_cli_name()
 
-            if binding_cli_name == options.type:
+            # Notify deprecation of "ump-4" and "ump-3" CLI options and fix.
+            if selected_type in ("ump-4", "ump-3"):
+                self._console.error_print(
+                    "DEPRECATION",
+                    f"CLI option '{selected_type}' is deprecated and will be removed in v3.0.0. Use 'ump' instead.",
+                )
+                selected_type = "ump"
+
+            if binding_cli_name == selected_type:
                 # Pass in HTTP port for Pathfinder MPM.
                 if binding_cli_name == "pathfinder-mpm":
                     return MPMBinding(options.mpm_port)
