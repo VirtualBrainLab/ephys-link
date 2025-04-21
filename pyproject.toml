@@ -26,15 +26,15 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
 dependencies = [
-    "aiohttp==3.11.16",
+    "aiohttp==3.11.18",
     "colorama==0.4.6",
     "keyboard==0.13.5",
-    "packaging==24.2",
+    "packaging==25.0",
     "platformdirs==4.3.7",
     "pyserial==3.5",
     "python-socketio[asyncio_client]==5.13.0",
     "requests==2.32.3",
-    "sensapex==1.400.3",
+    "sensapex==1.400.4",
     "rich==14.0.0",
     "vbl-aquarium==1.0.0"
 ]
