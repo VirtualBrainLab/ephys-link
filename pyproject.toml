@@ -59,8 +59,12 @@ exclude = ["/.github", "/.idea", "/docs"]
 installer = "uv"
 python = "3.13"
 dependencies = [
-    "pyinstaller==6.12.0",
-    "basedpyright==1.28.5",
+    "pyinstaller==6.13.0",
+    "basedpyright==1.29.1",
+    "pytest==8.3.5",
+    "pytest-mock==3.14.0",
+    "pytest-asyncio==0.26.0",
+    
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
@@ -88,5 +92,8 @@ exclude = ["typings"]
 unsafe-fixes = true
 
 [tool.basedpyright]
-include = ["src/ephys_link"]
-strict = ["src/ephys_link"]
+include = ["src/ephys_link", "tests"]
+strict = ["src/ephys_link", "tests"]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
