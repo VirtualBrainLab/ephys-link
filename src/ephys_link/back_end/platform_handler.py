@@ -13,7 +13,6 @@ from uuid import uuid4
 from vbl_aquarium.models.ephys_link import (
     AngularResponse,
     BooleanStateResponse,
-    EphysLinkOptions,
     GetManipulatorsResponse,
     PlatformInfo,
     PositionalResponse,
@@ -25,78 +24,33 @@ from vbl_aquarium.models.ephys_link import (
 )
 from vbl_aquarium.models.unity import Vector4
 
-from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.console import Console
 from ephys_link.utils.converters import vector4_to_array
-from ephys_link.utils.startup import get_bindings
 
 
 @final
 class PlatformHandler:
     """Handler for platform commands."""
 
-    def __init__(self, options: EphysLinkOptions, console: Console) -> None:
+    def __init__(self, binding: BaseBinding, console: Console) -> None:
         """Initialize platform handler.
 
         Args:
-            options: CLI options.
+            binding: Binding instance for the platform.
             console: Console instance.
         """
-        # Store the CLI options.
-        self._options = options
-
         # Store the console.
         self._console = console
 
         # Define bindings based on platform type.
-        self._bindings = self._get_binding_instance(options)
+        self._bindings = binding
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
 
         # Generate a Pinpoint ID for proxy usage.
         self._pinpoint_id = str(uuid4())[:8]
-
-    def _get_binding_instance(self, options: EphysLinkOptions) -> BaseBinding:
-        """Match the platform type to the appropriate bindings.
-
-        Args:
-            options: CLI options.
-
-        Raises:
-            ValueError: If the platform type is not recognized.
-
-        Returns:
-            Bindings for the specified platform type.
-        """
-
-        # What the user supplied.
-        selected_type = options.type
-
-        for binding_type in get_bindings():
-            binding_cli_name = binding_type.get_cli_name()
-
-            # Notify deprecation of "ump-4" and "ump-3" CLI options and fix.
-            if selected_type in ("ump-4", "ump-3"):
-                self._console.error_print(
-                    "DEPRECATION",
-                    f"CLI option '{selected_type}' is deprecated and will be removed in v3.0.0. Use 'ump' instead.",
-                )
-                selected_type = "ump"
-
-            if binding_cli_name == selected_type:
-                # Pass in HTTP port for Pathfinder MPM.
-                if binding_cli_name == "pathfinder-mpm":
-                    return MPMBinding(options.mpm_port)
-
-                # Otherwise just return the binding.
-                return binding_type()
-
-        # Raise an error if the platform type is not recognized.
-        error_message = f'Platform type "{options.type}" not recognized.'
-        self._console.critical_print(error_message)
-        raise ValueError(error_message)
 
     # Platform metadata.
 

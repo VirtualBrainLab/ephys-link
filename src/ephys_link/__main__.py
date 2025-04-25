@@ -18,7 +18,7 @@ from ephys_link.back_end.server import Server
 from ephys_link.front_end.cli import CLI
 from ephys_link.front_end.gui import GUI
 from ephys_link.utils.console import Console
-from ephys_link.utils.startup import check_for_updates, preamble, get_binding
+from ephys_link.utils.startup import check_for_updates, get_binding_instance, preamble
 
 
 def main() -> None:
@@ -36,12 +36,12 @@ def main() -> None:
     # 3. Check for updates if not disabled.
     if not options.ignore_updates:
         check_for_updates(console)
-    
+
     # 4. Instantiate the requested platform binding.
-    binding = get_binding(options, console)
+    binding = get_binding_instance(options, console)
 
     # 5. Instantiate the Platform Handler with the appropriate platform bindings.
-    platform_handler = PlatformHandler(options, console)
+    platform_handler = PlatformHandler(binding, console)
 
     # 6. Add hotkeys for emergency stop.
     _ = add_hotkey("ctrl+alt+shift+q", lambda: run(platform_handler.emergency_stop()))

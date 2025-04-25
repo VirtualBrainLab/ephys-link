@@ -9,6 +9,7 @@ from requests import ConnectionError, ConnectTimeout, get
 from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
 from ephys_link.__about__ import __version__
+from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.console import Console
 from ephys_link.utils.constants import ASCII, BINDINGS_DIRECTORY
@@ -42,17 +43,6 @@ def check_for_updates(console: Console) -> None:
             "UPDATE", "Unable to check for updates. Ignore updates or use the the -i flag to disable checks.\n"
         )
 
-def get_binding(options: EphysLinkOptions, console: Console) -> BaseBinding:
-    """Get an instance of the requested binding class.
-    
-    Args:
-        options: Ephys Link options.
-        console: Console instance for printing messages.
-    
-    Returns:
-        
-    """
-
 def get_bindings() -> list[type[BaseBinding]]:
     """Get all binding classes from the bindings directory.
 
@@ -65,6 +55,46 @@ def get_bindings() -> list[type[BaseBinding]]:
         for _, binding_type in getmembers(import_module(f"ephys_link.bindings.{module.name}"), isclass)
         if issubclass(binding_type, BaseBinding) and binding_type != BaseBinding
     ]
+
+def get_binding_instance(options: EphysLinkOptions, console: Console) -> BaseBinding:
+    """Get an instance of the requested binding class.
+
+    Args:
+        options: Ephys Link options.
+        console: Console instance for printing messages.
+
+    Raises:
+        ValueError: If the platform type is not recognized.
+
+    Returns:
+        Instance of a platform binding class.
+    """
+    selected_type = options.type
+
+    for binding_type in get_bindings():
+        binding_cli_name = binding_type.get_cli_name()
+
+        # Notify deprecation of "ump-4" and "ump-3" CLI options and fix.
+        if selected_type in ("ump-4", "ump-3"):
+            console.error_print(
+                "DEPRECATION",
+                f"CLI option '{selected_type}' is deprecated and will be removed in v3.0.0. Use 'ump' instead.",
+            )
+            selected_type = "ump"
+
+        if binding_cli_name == selected_type:
+            # Pass in HTTP port for Pathfinder MPM.
+            if binding_cli_name == "pathfinder-mpm":
+                return MPMBinding(options.mpm_port)
+
+            # Otherwise just return the binding.
+            return binding_type()
+
+    # Raise an error if the platform type is not recognized.
+    error_message = f'Platform type "{options.type}" not recognized.'
+    console.critical_print(error_message)
+    raise ValueError(error_message)
+
 
 
 def get_binding_display_to_cli_name() -> dict[str, str]:
