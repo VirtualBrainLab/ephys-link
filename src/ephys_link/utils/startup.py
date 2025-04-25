@@ -6,6 +6,7 @@ from pkgutil import iter_modules
 
 from packaging.version import parse
 from requests import ConnectionError, ConnectTimeout, get
+from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
 from ephys_link.__about__ import __version__
 from ephys_link.utils.base_binding import BaseBinding
@@ -41,6 +42,16 @@ def check_for_updates(console: Console) -> None:
             "UPDATE", "Unable to check for updates. Ignore updates or use the the -i flag to disable checks.\n"
         )
 
+def get_binding(options: EphysLinkOptions, console: Console) -> BaseBinding:
+    """Get an instance of the requested binding class.
+    
+    Args:
+        options: Ephys Link options.
+        console: Console instance for printing messages.
+    
+    Returns:
+        
+    """
 
 def get_bindings() -> list[type[BaseBinding]]:
     """Get all binding classes from the bindings directory.

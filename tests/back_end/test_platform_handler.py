@@ -8,19 +8,8 @@ from ephys_link.back_end.platform_handler import PlatformHandler
 
 
 class TestPlatformHandler:
-    def __init__(self, mocker: MockerFixture) -> None:
-        # Setup mock and dummy values for PlatformHandler.
-        self.binding = mocker.MagicMock()
-        self.options = EphysLinkOptions(
-            type="mock_type",
-        )
-        
-        # Patch init method of the binding class.
-        _ = mocker.patch(
-            "ephys_link.back_end.platform_handler.PlatformHandler._get_binding_instance", return_value=self.binding
-        )
-        
-        
+    """Tests for the PlatformHandler class."""
+    
     @pytest.fixture
     def mock_platform_handler(self, mock_console: MagicMock, mocker: MockerFixture) -> PlatformHandler:
         """Fixture for the PlatformHandler class.
@@ -32,6 +21,13 @@ class TestPlatformHandler:
         Returns:
             Mocked PlatformHandler class.
         """
+        # Create dummy options.
+        dummy_options = EphysLinkOptions(
+            type="dummy"
+        )
+        
+        # Patch get_bindings to return a dummy binding.
+        
         # Create PlatformHandler instance.
         return PlatformHandler(self.options, mock_console)
 
