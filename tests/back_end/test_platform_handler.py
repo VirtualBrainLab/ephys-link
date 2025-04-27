@@ -5,7 +5,6 @@ from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.bindings.fake_binding import FakeBinding
-from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.console import Console
 
 
@@ -26,11 +25,16 @@ class TestPlatformHandler:
         patched_get_display_name = mocker.patch.object(
             FakeBinding, "get_display_name", return_value=dummy_name, autospec=True
         )
+
+        # Create PlatformHandler instance.
         platform_handler = PlatformHandler(FakeBinding(), mock_console)
+
+        # Act.
+        result = platform_handler.get_display_name()
 
         # Assert.
         patched_get_display_name.assert_called()
-        assert platform_handler.get_display_name() == dummy_name
+        assert result == dummy_name
 
     @pytest.mark.asyncio
     async def test_get_platform_info(self, mock_console: Console, mocker: MockerFixture) -> None:
@@ -47,37 +51,56 @@ class TestPlatformHandler:
         dummy_dimensions = Vector4(x=1.0, y=2.0, z=3.0, w=4.0)
 
         # Mock binding.
-        mock_binding = mocker.create_autospec(BaseBinding, instance=True)
-        mock_binding.get_display_name.return_value = dummy_name  # pyright: ignore[reportAny]
-        mock_binding.get_cli_name.return_value = dummy_cli_name  # pyright: ignore[reportAny]
-        mock_binding.get_axes_count.return_value = dummy_axes_count  # pyright: ignore[reportAny]
-        mock_binding.get_dimensions.return_value = dummy_dimensions  # pyright: ignore[reportAny]
+        patched_get_display_name = mocker.patch.object(
+            FakeBinding, "get_display_name", return_value=dummy_name, autospec=True
+        )
+        patched_get_cli_name = mocker.patch.object(
+            FakeBinding, "get_cli_name", return_value=dummy_cli_name, autospec=True
+        )
+        patched_get_axes_count = mocker.patch.object(
+            FakeBinding, "get_axes_count", return_value=dummy_axes_count, autospec=True
+        )
+        patched_get_dimensions = mocker.patch.object(
+            FakeBinding, "get_dimensions", return_value=dummy_dimensions, autospec=True
+        )
 
         # Create PlatformHandler instance.
-        platform_handler = PlatformHandler(mock_binding, mock_console)
+        platform_handler = PlatformHandler(FakeBinding(), mock_console)
 
-        # Test.
-        assert await platform_handler.get_platform_info() == PlatformInfo(
+        # Act.
+        result = await platform_handler.get_platform_info()
+
+        # Assert.
+        patched_get_display_name.assert_called()
+        patched_get_cli_name.assert_called()
+        patched_get_axes_count.assert_called()
+        patched_get_dimensions.assert_called()
+        assert result == PlatformInfo(
             name=dummy_name, cli_name=dummy_cli_name, axes_count=dummy_axes_count, dimensions=dummy_dimensions
         )
 
     @pytest.mark.asyncio
-    async def test_get_manipulators_typical(self, mock_console: Console, mocker: MockerFixture) -> None:
+    @pytest.mark.parametrize("test_manipulators", [[], ["1", "2"]])
+    async def test_get_manipulators_typical(
+        self, test_manipulators: list[str], mock_console: Console, mocker: MockerFixture
+    ) -> None:
         """Platform should return available binding manipulators.
 
         Args:
             mock_console: Mocked Console instance.
             mocker: Binding mocker.
         """
-        # Define dummy manipulators.
-        dummy_manipulators = ["1", "2"]
-
         # Mock binding.
-        mock_binding = mocker.create_autospec(BaseBinding, instance=True)
-        mock_binding.get_manipulators.return_value = dummy_manipulators  # pyright: ignore[reportAny]
+        patched_get_manipulators = mocker.patch.object(
+            FakeBinding, "get_manipulators", return_value=test_manipulators, autospec=True
+        )
 
         # Create PlatformHandler instance.
-        platform_handler = PlatformHandler(mock_binding, mock_console)
+        platform_handler = PlatformHandler(FakeBinding(), mock_console)
 
-        # Test.
-        assert await platform_handler.get_manipulators() == GetManipulatorsResponse(manipulators=dummy_manipulators)
+        # Act.
+        result = await platform_handler.get_manipulators()
+
+        # Assert.
+        patched_get_manipulators.assert_called()
+        assert result == GetManipulatorsResponse(manipulators=test_manipulators)
