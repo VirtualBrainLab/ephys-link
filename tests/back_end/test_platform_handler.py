@@ -11,11 +11,10 @@ from ephys_link.utils.console import Console
 class TestPlatformHandler:
     """Tests for the PlatformHandler class."""
 
-    def test_get_display_name(self, mock_console: Console, mocker: MockerFixture) -> None:
+    def test_get_display_name(self, mocker: MockerFixture) -> None:
         """Platform should return binding display name.
 
         Args:
-            mock_console: Mocked Console instance.
             mocker: Binding mocker.
         """
         # Define dummy data.
@@ -27,7 +26,7 @@ class TestPlatformHandler:
         )
 
         # Create PlatformHandler instance.
-        platform_handler = PlatformHandler(FakeBinding(), mock_console)
+        platform_handler = PlatformHandler(FakeBinding(), Console())
 
         # Act.
         result = platform_handler.get_display_name()
@@ -37,11 +36,10 @@ class TestPlatformHandler:
         assert result == dummy_name
 
     @pytest.mark.asyncio
-    async def test_get_platform_info(self, mock_console: Console, mocker: MockerFixture) -> None:
+    async def test_get_platform_info(self, mocker: MockerFixture) -> None:
         """Platform should return binding platform info.
 
         Args:
-            mock_console: Mocked Console instance.
             mocker: Binding mocker.
         """
         # Define dummy binding data.
@@ -65,7 +63,7 @@ class TestPlatformHandler:
         )
 
         # Create PlatformHandler instance.
-        platform_handler = PlatformHandler(FakeBinding(), mock_console)
+        platform_handler = PlatformHandler(FakeBinding(), Console())
 
         # Act.
         result = await platform_handler.get_platform_info()
@@ -81,13 +79,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("test_manipulators", [[], ["1", "2"]])
-    async def test_get_manipulators_typical(
-        self, test_manipulators: list[str], mock_console: Console, mocker: MockerFixture
-    ) -> None:
+    async def test_get_manipulators_typical(self, test_manipulators: list[str], mocker: MockerFixture) -> None:
         """Platform should return available binding manipulators.
 
         Args:
-            mock_console: Mocked Console instance.
+            test_manipulators: Test values for manipulators.
             mocker: Binding mocker.
         """
         # Mock binding.
@@ -96,7 +92,7 @@ class TestPlatformHandler:
         )
 
         # Create PlatformHandler instance.
-        platform_handler = PlatformHandler(FakeBinding(), mock_console)
+        platform_handler = PlatformHandler(FakeBinding(), Console())
 
         # Act.
         result = await platform_handler.get_manipulators()
@@ -104,3 +100,27 @@ class TestPlatformHandler:
         # Assert.
         patched_get_manipulators.assert_called()
         assert result == GetManipulatorsResponse(manipulators=test_manipulators)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("test_exception", [RuntimeError("Test runtime error"), ValueError("Test value error")])
+    async def test_get_manipulators_exception(self, test_exception: Exception, mocker: MockerFixture) -> None:
+        """Platform should have error in response if binding raises exception.
+
+        Args:
+            test_exception: Test exception to raise.
+            mocker: Binding mocker.
+        """
+        # Mock binding.
+        patched_get_manipulators = mocker.patch.object(
+            FakeBinding, "get_manipulators", side_effect=test_exception, autospec=True
+        )
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(FakeBinding(), Console())
+
+        # Act.
+        result = await platform_handler.get_manipulators()
+
+        # Assert.
+        patched_get_manipulators.assert_called()
+        assert result == GetManipulatorsResponse(error=Console().pretty_exception(test_exception))

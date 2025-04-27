@@ -15,7 +15,7 @@ from rich.traceback import install
 
 @final
 class Console:
-    def __init__(self, *, enable_debug: bool) -> None:
+    def __init__(self, *, enable_debug: bool = False) -> None:
         """Initialize console properties.
 
         Args:
