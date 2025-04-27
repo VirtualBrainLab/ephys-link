@@ -43,6 +43,7 @@ def check_for_updates(console: Console) -> None:
             "UPDATE", "Unable to check for updates. Ignore updates or use the the -i flag to disable checks.\n"
         )
 
+
 def get_bindings() -> list[type[BaseBinding]]:
     """Get all binding classes from the bindings directory.
 
@@ -55,6 +56,7 @@ def get_bindings() -> list[type[BaseBinding]]:
         for _, binding_type in getmembers(import_module(f"ephys_link.bindings.{module.name}"), isclass)
         if issubclass(binding_type, BaseBinding) and binding_type != BaseBinding
     ]
+
 
 def get_binding_instance(options: EphysLinkOptions, console: Console) -> BaseBinding:
     """Get an instance of the requested binding class.
@@ -94,7 +96,6 @@ def get_binding_instance(options: EphysLinkOptions, console: Console) -> BaseBin
     error_message = f'Platform type "{options.type}" not recognized.'
     console.critical_print(error_message)
     raise ValueError(error_message)
-
 
 
 def get_binding_display_to_cli_name() -> dict[str, str]:
