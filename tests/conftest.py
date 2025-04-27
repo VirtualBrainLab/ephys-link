@@ -1,19 +1,16 @@
-from unittest.mock import MagicMock
-
 import pytest
-from pytest_mock import MockerFixture
 
+from ephys_link.bindings.fake_binding import FakeBinding
 from ephys_link.utils.console import Console
 
 
 @pytest.fixture
-def mock_console(mocker: MockerFixture) -> MagicMock:
-    """Fixture for Console class.
+def test_console() -> Console:
+    """Console instance for testing."""
+    return Console()
 
-    Args:
-        mocker: Mock fixture for the Console class.
 
-    Returns:
-        Mocked Console class.
-    """
-    return mocker.Mock(spec=Console)
+@pytest.fixture
+def test_fake_binding() -> FakeBinding:
+    """FakeBinding instance for testing."""
+    return FakeBinding()
