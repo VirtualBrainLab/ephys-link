@@ -4,6 +4,7 @@ from vbl_aquarium.models.ephys_link import GetManipulatorsResponse, PlatformInfo
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
+from ephys_link.bindings.fake_binding import FakeBinding
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.console import Console
 
@@ -18,17 +19,17 @@ class TestPlatformHandler:
             mock_console: Mocked Console instance.
             mocker: Binding mocker.
         """
-        # Define dummy name.
+        # Define dummy data.
         dummy_name = "Dummy Binding"
 
         # Mock binding.
-        mock_binding = mocker.create_autospec(BaseBinding, instance=True)
-        mock_binding.get_display_name.return_value = dummy_name  # pyright: ignore[reportAny]
+        patched_get_display_name = mocker.patch.object(
+            FakeBinding, "get_display_name", return_value=dummy_name, autospec=True
+        )
+        platform_handler = PlatformHandler(FakeBinding(), mock_console)
 
-        # Create PlatformHandler instance.
-        platform_handler = PlatformHandler(mock_binding, mock_console)
-
-        # Test.
+        # Assert.
+        patched_get_display_name.assert_called()
         assert platform_handler.get_display_name() == dummy_name
 
     @pytest.mark.asyncio
