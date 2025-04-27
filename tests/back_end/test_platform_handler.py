@@ -1,6 +1,6 @@
 import pytest
 from pytest_mock import MockerFixture
-from vbl_aquarium.models.ephys_link import PlatformInfo
+from vbl_aquarium.models.ephys_link import GetManipulatorsResponse, PlatformInfo
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
@@ -59,3 +59,24 @@ class TestPlatformHandler:
         assert await platform_handler.get_platform_info() == PlatformInfo(
             name=dummy_name, cli_name=dummy_cli_name, axes_count=dummy_axes_count, dimensions=dummy_dimensions
         )
+
+    @pytest.mark.asyncio
+    async def test_get_manipulators_typical(self, mock_console: Console, mocker: MockerFixture) -> None:
+        """Platform should return available binding manipulators.
+
+        Args:
+            mock_console: Mocked Console instance.
+            mocker: Binding mocker.
+        """
+        # Define dummy manipulators.
+        dummy_manipulators = ["1", "2"]
+
+        # Mock binding.
+        mock_binding = mocker.create_autospec(BaseBinding, instance=True)
+        mock_binding.get_manipulators.return_value = dummy_manipulators  # pyright: ignore[reportAny]
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(mock_binding, mock_console)
+
+        # Test.
+        assert await platform_handler.get_manipulators() == GetManipulatorsResponse(manipulators=dummy_manipulators)
