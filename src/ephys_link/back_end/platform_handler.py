@@ -106,7 +106,7 @@ class PlatformHandler:
             )
         except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Position", e)
-            return PositionalResponse(error=str(e))
+            return PositionalResponse(error=self._console.pretty_exception(e))
         else:
             return PositionalResponse(position=unified_position)
 
