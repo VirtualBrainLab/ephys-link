@@ -129,6 +129,7 @@ class TestPlatformHandler:
         patched_get_manipulators = mocker.patch.object(
             test_fake_binding, "get_manipulators", side_effect=test_exception, autospec=True
         )
+        spied_exception_error_print = mocker.spy(test_console, "exception_error_print")
 
         # Create PlatformHandler instance.
         platform_handler = PlatformHandler(test_fake_binding, test_console)
@@ -138,4 +139,5 @@ class TestPlatformHandler:
 
         # Assert.
         patched_get_manipulators.assert_called()
+        spied_exception_error_print.assert_called_with("Get Manipulators", test_exception)
         assert result == GetManipulatorsResponse(error=test_console.pretty_exception(test_exception))
