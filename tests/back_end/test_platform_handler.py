@@ -1,7 +1,13 @@
 import pytest
 from pytest_mock import MockerFixture
-from vbl_aquarium.models.ephys_link import GetManipulatorsResponse, PlatformInfo, PositionalResponse
-from vbl_aquarium.models.unity import Vector4
+from vbl_aquarium.models.ephys_link import (
+    AngularResponse,
+    GetManipulatorsResponse,
+    PlatformInfo,
+    PositionalResponse,
+    ShankCountResponse,
+)
+from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.bindings.fake_binding import FakeBinding
@@ -149,12 +155,12 @@ class TestPlatformHandler:
     async def test_get_position_typical(
         self, test_fake_binding: FakeBinding, test_console: Console, test_position: Vector4, mocker: MockerFixture
     ) -> None:
-        """Platform should return a unified space position
+        """Platform should return a unified space position.
 
         Args:
             test_fake_binding: FakeBinding instance.
             test_console: Console instance.
-            test_position: Test values for manipulators.
+            test_position: Test positions from binding.
             mocker: Binding mocker.
         """
         # Mock binding.
@@ -201,3 +207,119 @@ class TestPlatformHandler:
         patched_get_manipulators.assert_called()
         spied_exception_error_print.assert_called_with("Get Position", test_exception)
         assert result == PositionalResponse(error=test_console.pretty_exception(test_exception))
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("test_angles", [Vector3(x=0.0, y=0.0, z=0.0), Vector3(x=1.0, y=2.0, z=3.0)])
+    async def test_get_angles_typical(
+        self, test_fake_binding: FakeBinding, test_console: Console, test_angles: Vector3, mocker: MockerFixture
+    ) -> None:
+        """Platform should return manipulator angles.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            test_angles: Test angles from binding.
+            mocker: Binding mocker.
+        """
+        # Mock binding.
+        patched_get_position = mocker.patch.object(
+            test_fake_binding, "get_angles", return_value=test_angles, autospec=True
+        )
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.get_angles("1")
+
+        # Assert.
+        patched_get_position.assert_called_with("1")
+        assert result == AngularResponse(angles=test_angles)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("test_exception", [RuntimeError("Test runtime error"), ValueError("Test value error")])
+    async def test_get_angles_exception(
+        self, test_fake_binding: FakeBinding, test_console: Console, test_exception: Exception, mocker: MockerFixture
+    ) -> None:
+        """Platform should have error in response if binding raises exception.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            test_exception: Test exception to raise.
+            mocker: Binding mocker.
+        """
+        # Mock binding.
+        patched_get_manipulators = mocker.patch.object(
+            test_fake_binding, "get_angles", side_effect=test_exception, autospec=True
+        )
+        spied_exception_error_print = mocker.spy(test_console, "exception_error_print")
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.get_angles("1")
+
+        # Assert.
+        patched_get_manipulators.assert_called()
+        spied_exception_error_print.assert_called_with("Get Angles", test_exception)
+        assert result == AngularResponse(error=test_console.pretty_exception(test_exception))
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("test_shank_count", [1, 4])
+    async def test_get_shank_count_typical(
+        self, test_fake_binding: FakeBinding, test_console: Console, test_shank_count: int, mocker: MockerFixture
+    ) -> None:
+        """Platform should return manipulator angles.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            test_shank_count: Test shank count from binding.
+            mocker: Binding mocker.
+        """
+        # Mock binding.
+        patched_get_position = mocker.patch.object(
+            test_fake_binding, "get_shank_count", return_value=test_shank_count, autospec=True
+        )
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.get_shank_count("1")
+
+        # Assert.
+        patched_get_position.assert_called_with("1")
+        assert result == ShankCountResponse(shank_count=test_shank_count)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("test_exception", [RuntimeError("Test runtime error"), ValueError("Test value error")])
+    async def test_get_shank_count_exception(
+        self, test_fake_binding: FakeBinding, test_console: Console, test_exception: Exception, mocker: MockerFixture
+    ) -> None:
+        """Platform should have error in response if binding raises exception.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            test_exception: Test exception to raise.
+            mocker: Binding mocker.
+        """
+        # Mock binding.
+        patched_get_manipulators = mocker.patch.object(
+            test_fake_binding, "get_shank_count", side_effect=test_exception, autospec=True
+        )
+        spied_exception_error_print = mocker.spy(test_console, "exception_error_print")
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.get_shank_count("1")
+
+        # Assert.
+        patched_get_manipulators.assert_called()
+        spied_exception_error_print.assert_called_with("Get Shank Count", test_exception)
+        assert result == ShankCountResponse(error=test_console.pretty_exception(test_exception))
