@@ -10,6 +10,7 @@ from vbl_aquarium.models.ephys_link import (
     SetPositionRequest,
     ShankCountResponse,
 )
+from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.bindings.fake_binding import FakeBinding
@@ -342,3 +343,29 @@ class TestPlatformHandler:
         # Assert.
         spied_error_print.assert_called_with("Set Position", NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR)
         assert result == PositionalResponse(error=NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR)
+
+    @pytest.mark.asyncio
+    async def test_set_position_beyond_tolerance(
+        self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
+    ) -> None:
+        """Platform should return error if final position is not close enough to target position.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            mocker: PlatformHandler patcher.
+        """
+        # Mock binding.
+        patched_set_position = mocker.patch.object(
+            test_fake_binding,
+            "set_position",
+            return_value=test_fake_binding.unified_space_to_platform_space(DUMMY_VECTOR4 + Vector4(x=1, y=0, z=0, w=0)),
+            autospec=True,
+        )
+        patched_get_axes_count = mocker.patch.object(test_fake_binding, "get_axes_count", return_value=DUMMY_INT, autospec=True)
+        patched_get_binding_tolerance = mocker.patch.object(
+            test_fake_binding, "get_movement_tolerance", return_value=0, autospec=True
+        )
+
+        # Create PlatformHandler instance.
+        PlatformHandler(test_fake_binding, test_console)
