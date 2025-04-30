@@ -26,6 +26,7 @@ from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.console import Console
+from ephys_link.utils.constants import NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR
 from ephys_link.utils.converters import vector4_to_array
 
 
@@ -156,9 +157,8 @@ class PlatformHandler:
         try:
             # Disallow setting manipulator position while inside the brain.
             if request.manipulator_id in self._inside_brain:
-                error_message = 'Can not move manipulator while inside the brain. Set the depth ("set_depth") instead.'
-                self._console.error_print("Set Position", error_message)
-                return PositionalResponse(error=error_message)
+                self._console.error_print("Set Position", NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR)
+                return PositionalResponse(error=NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR)
 
             # Move to the new position.
             final_platform_position = await self._bindings.set_position(
