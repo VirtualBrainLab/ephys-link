@@ -24,9 +24,9 @@ from vbl_aquarium.models.ephys_link import (
 )
 from vbl_aquarium.models.unity import Vector4
 
+from ephys_link.front_end.console import Console
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.console import Console
-from ephys_link.utils.constants import NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR
+from ephys_link.utils.constants import NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR, did_not_reach_target_position_error
 from ephys_link.utils.converters import vector4_to_array
 
 
@@ -176,11 +176,7 @@ class PlatformHandler:
 
                 # Check if the axis is within the movement tolerance.
                 if abs(axis) > self._bindings.get_movement_tolerance():
-                    error_message = (
-                        f"Manipulator {request.manipulator_id} did not reach target"
-                        f" position on axis {list(Vector4.model_fields.keys())[index]}."
-                        f" Requested: {request.position}, got: {final_unified_position}."
-                    )
+                    error_message = did_not_reach_target_position_error(request, index, final_unified_position)
                     self._console.error_print("Set Position", error_message)
                     return PositionalResponse(error=error_message)
         except Exception as e:  # noqa: BLE001

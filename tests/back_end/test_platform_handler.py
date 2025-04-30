@@ -14,8 +14,8 @@ from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.bindings.fake_binding import FakeBinding
-from ephys_link.utils.console import Console
-from ephys_link.utils.constants import NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR
+from ephys_link.front_end.console import Console
+from ephys_link.utils.constants import NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR, did_not_reach_target_position_error
 from tests.conftest import (
     DUMMY_EXCEPTION,
     DUMMY_INT,
@@ -100,34 +100,6 @@ class TestPlatformHandler:
         )
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("test_manipulators", [[], DUMMY_STRING_LIST])
-    async def test_get_manipulators_typical(
-        self, test_fake_binding: FakeBinding, test_console: Console, test_manipulators: list[str], mocker: MockerFixture
-    ) -> None:
-        """Platform should return available binding manipulators.
-
-        Args:
-            test_fake_binding: FakeBinding instance.
-            test_console: Console instance.
-            test_manipulators: Test values for manipulators.
-            mocker: Binding mocker.
-        """
-        # Mock binding.
-        patched_get_manipulators = mocker.patch.object(
-            test_fake_binding, "get_manipulators", return_value=test_manipulators, autospec=True
-        )
-
-        # Create PlatformHandler instance.
-        platform_handler = PlatformHandler(test_fake_binding, test_console)
-
-        # Act.
-        result = await platform_handler.get_manipulators()
-
-        # Assert.
-        patched_get_manipulators.assert_called()
-        assert result == GetManipulatorsResponse(manipulators=test_manipulators)
-
-    @pytest.mark.asyncio
     async def test_get_manipulators_exception(
         self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
     ) -> None:
@@ -156,30 +128,32 @@ class TestPlatformHandler:
         assert result == GetManipulatorsResponse(error=test_console.pretty_exception(DUMMY_EXCEPTION))
 
     @pytest.mark.asyncio
-    async def test_get_position_typical(
-        self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
+    @pytest.mark.parametrize("test_manipulators", [[], DUMMY_STRING_LIST])
+    async def test_get_manipulators_typical(
+        self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture, test_manipulators: list[str]
     ) -> None:
-        """Platform should return a unified space position.
+        """Platform should return available binding manipulators.
 
         Args:
             test_fake_binding: FakeBinding instance.
             test_console: Console instance.
             mocker: Binding mocker.
+            test_manipulators: Test values for manipulators.
         """
         # Mock binding.
-        patched_get_position = mocker.patch.object(
-            test_fake_binding, "get_position", return_value=DUMMY_VECTOR4, autospec=True
+        patched_get_manipulators = mocker.patch.object(
+            test_fake_binding, "get_manipulators", return_value=test_manipulators, autospec=True
         )
 
         # Create PlatformHandler instance.
         platform_handler = PlatformHandler(test_fake_binding, test_console)
 
         # Act.
-        result = await platform_handler.get_position("1")
+        result = await platform_handler.get_manipulators()
 
         # Assert.
-        patched_get_position.assert_called_with("1")
-        assert result == PositionalResponse(position=test_fake_binding.platform_space_to_unified_space(DUMMY_VECTOR4))
+        patched_get_manipulators.assert_called()
+        assert result == GetManipulatorsResponse(manipulators=test_manipulators)
 
     @pytest.mark.asyncio
     async def test_get_position_exception(
@@ -210,10 +184,10 @@ class TestPlatformHandler:
         assert result == PositionalResponse(error=test_console.pretty_exception(DUMMY_EXCEPTION))
 
     @pytest.mark.asyncio
-    async def test_get_angles_typical(
+    async def test_get_position_typical(
         self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
     ) -> None:
-        """Platform should return manipulator angles.
+        """Platform should return a unified space position.
 
         Args:
             test_fake_binding: FakeBinding instance.
@@ -222,18 +196,18 @@ class TestPlatformHandler:
         """
         # Mock binding.
         patched_get_position = mocker.patch.object(
-            test_fake_binding, "get_angles", return_value=DUMMY_VECTOR3, autospec=True
+            test_fake_binding, "get_position", return_value=DUMMY_VECTOR4, autospec=True
         )
 
         # Create PlatformHandler instance.
         platform_handler = PlatformHandler(test_fake_binding, test_console)
 
         # Act.
-        result = await platform_handler.get_angles("1")
+        result = await platform_handler.get_position("1")
 
         # Assert.
         patched_get_position.assert_called_with("1")
-        assert result == AngularResponse(angles=DUMMY_VECTOR3)
+        assert result == PositionalResponse(position=test_fake_binding.platform_space_to_unified_space(DUMMY_VECTOR4))
 
     @pytest.mark.asyncio
     async def test_get_angles_exception(
@@ -264,7 +238,7 @@ class TestPlatformHandler:
         assert result == AngularResponse(error=test_console.pretty_exception(DUMMY_EXCEPTION))
 
     @pytest.mark.asyncio
-    async def test_get_shank_count_typical(
+    async def test_get_angles_typical(
         self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return manipulator angles.
@@ -276,18 +250,18 @@ class TestPlatformHandler:
         """
         # Mock binding.
         patched_get_position = mocker.patch.object(
-            test_fake_binding, "get_shank_count", return_value=DUMMY_INT, autospec=True
+            test_fake_binding, "get_angles", return_value=DUMMY_VECTOR3, autospec=True
         )
 
         # Create PlatformHandler instance.
         platform_handler = PlatformHandler(test_fake_binding, test_console)
 
         # Act.
-        result = await platform_handler.get_shank_count("1")
+        result = await platform_handler.get_angles("1")
 
         # Assert.
         patched_get_position.assert_called_with("1")
-        assert result == ShankCountResponse(shank_count=DUMMY_INT)
+        assert result == AngularResponse(angles=DUMMY_VECTOR3)
 
     @pytest.mark.asyncio
     async def test_get_shank_count_exception(
@@ -318,6 +292,32 @@ class TestPlatformHandler:
         assert result == ShankCountResponse(error=test_console.pretty_exception(DUMMY_EXCEPTION))
 
     @pytest.mark.asyncio
+    async def test_get_shank_count_typical(
+        self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
+    ) -> None:
+        """Platform should return manipulator angles.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            mocker: Binding mocker.
+        """
+        # Mock binding.
+        patched_get_position = mocker.patch.object(
+            test_fake_binding, "get_shank_count", return_value=DUMMY_INT, autospec=True
+        )
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.get_shank_count("1")
+
+        # Assert.
+        patched_get_position.assert_called_with("1")
+        assert result == ShankCountResponse(shank_count=DUMMY_INT)
+
+    @pytest.mark.asyncio
     async def test_set_position_inside_brain(
         self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
     ) -> None:
@@ -345,8 +345,15 @@ class TestPlatformHandler:
         assert result == PositionalResponse(error=NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR)
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize("test_axes_count", [3, 4])
+    @pytest.mark.parametrize("test_final_position_offset_index", range(4))
     async def test_set_position_beyond_tolerance(
-        self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
+        self,
+        test_fake_binding: FakeBinding,
+        test_console: Console,
+        mocker: MockerFixture,
+        test_axes_count: int,
+        test_final_position_offset_index: int,
     ) -> None:
         """Platform should return error if final position is not close enough to target position.
 
@@ -354,18 +361,52 @@ class TestPlatformHandler:
             test_fake_binding: FakeBinding instance.
             test_console: Console instance.
             mocker: PlatformHandler patcher.
+            test_axes_count: Test number of axes.
+            test_final_position_offset_index: Test offset from final position.
         """
+        # Data for test.
+        dummy_offsets = [
+            Vector4(x=1, y=0, z=0, w=0),
+            Vector4(x=0, y=1, z=0, w=0),
+            Vector4(x=0, y=0, z=1, w=0),
+            Vector4(x=0, y=0, z=0, w=1),
+        ]
+        dummy_final_position = DUMMY_VECTOR4 + dummy_offsets[test_final_position_offset_index]
+        dummy_request = SetPositionRequest(manipulator_id="1", position=DUMMY_VECTOR4, speed=1.0)
+        error_message = did_not_reach_target_position_error(
+            dummy_request, test_final_position_offset_index, dummy_final_position
+        )
+
         # Mock binding.
         patched_set_position = mocker.patch.object(
             test_fake_binding,
             "set_position",
-            return_value=test_fake_binding.unified_space_to_platform_space(DUMMY_VECTOR4 + Vector4(x=1, y=0, z=0, w=0)),
+            return_value=test_fake_binding.unified_space_to_platform_space(dummy_final_position),
             autospec=True,
         )
-        patched_get_axes_count = mocker.patch.object(test_fake_binding, "get_axes_count", return_value=DUMMY_INT, autospec=True)
+        patched_get_axes_count = mocker.patch.object(
+            test_fake_binding, "get_axes_count", return_value=test_axes_count, autospec=True
+        )
         patched_get_binding_tolerance = mocker.patch.object(
             test_fake_binding, "get_movement_tolerance", return_value=0, autospec=True
         )
+        spied_error_print = mocker.spy(test_console, "error_print")
 
         # Create PlatformHandler instance.
-        PlatformHandler(test_fake_binding, test_console)
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.set_position(dummy_request)
+
+        # Assert.
+        patched_set_position.assert_called_with(
+            manipulator_id="1", position=test_fake_binding.unified_space_to_platform_space(DUMMY_VECTOR4), speed=1.0
+        )
+        patched_get_axes_count.assert_called()
+        patched_get_binding_tolerance.assert_called()
+        if test_axes_count == 3 and test_final_position_offset_index == 3:
+            spied_error_print.assert_not_called()
+            assert result == PositionalResponse(position=dummy_final_position)
+        else:
+            spied_error_print.assert_called_with("Set Position", error_message)
+            assert result == PositionalResponse(error=error_message)

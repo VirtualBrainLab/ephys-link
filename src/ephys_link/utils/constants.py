@@ -2,6 +2,9 @@
 
 from os.path import abspath, dirname, join
 
+from vbl_aquarium.models.ephys_link import SetPositionRequest
+from vbl_aquarium.models.unity import Vector4
+
 # Ephys Link ASCII.
 ASCII = r"""
  ______       _                 _      _       _
@@ -27,3 +30,15 @@ PORT = 3000
 NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR = (
     'Can not move manipulator while inside the brain. Set the depth ("set_depth") instead.'
 )
+
+
+def did_not_reach_target_position_error(request: SetPositionRequest, axis_index: int, final_position: Vector4) -> str:
+    """Generate an error message for when the manipulator did not reach the target position.
+    Args:
+        request: The SetPositionRequest object containing the requested position.
+        axis_index: The index of the axis that did not reach the target position.
+        final_position: The final position of the manipulator.
+    Returns:
+        str: The error message.
+    """
+    return f"Manipulator {request.manipulator_id} did not reach target position on axis {list(Vector4.model_fields.keys())[axis_index]}. Requested: {request.position}, got: {final_position}"

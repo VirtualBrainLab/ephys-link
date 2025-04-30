@@ -2,7 +2,7 @@ import pytest
 from vbl_aquarium.models.unity import Vector3, Vector4
 
 from ephys_link.bindings.fake_binding import FakeBinding
-from ephys_link.utils.console import Console
+from ephys_link.front_end.console import Console
 
 # Dummy values for testing.
 DUMMY_STRING = "Dummy String"
