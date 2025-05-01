@@ -27,3 +27,24 @@ package in editable mode.
 If you encounter any dependency issues (particularly with `aiohttp`), try installing the latest Microsoft Visual C++
 (MSVC v143+ x86/64) and the Windows SDK (10/11)
 via [Visual Studio Build Tools Installer](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+
+## Contributing Code
+
+We recommend first time contributors to
+read [this guide](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) by
+GitHub to understand how to contribute changes.
+
+## Deploying New Releases
+
+!!! note
+
+    Only VBL members can make official releases.
+
+There is a [GitHub action](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/release.yml) configured to
+build and publish Ephys Link as a standalone EXE and as a PyPI package. The trigger is to make and push a new tag.
+
+```bash
+git switch main
+git tag v2.0.0
+git push origin --tags
+```

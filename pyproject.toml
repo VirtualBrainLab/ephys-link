@@ -7,16 +7,13 @@ name = "ephys-link"
 dynamic = ["version"]
 description = "A Python Socket.IO server that allows any Socket.IO-compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
-requires-python = ">=3.10, <3.14"
+requires-python = ">=3.13"
 license = "GPL-3.0-only"
 keywords = ["socket-io", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "neurotech", "virtualbrainlab", "new-scale"]
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 classifiers = [
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
@@ -29,16 +26,16 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
 dependencies = [
-    "aiohttp==3.11.12",
+    "aiohttp==3.11.18",
     "colorama==0.4.6",
     "keyboard==0.13.5",
-    "packaging==24.2",
-    "platformdirs==4.3.6",
+    "packaging==25.0",
+    "platformdirs==4.3.7",
     "pyserial==3.5",
-    "python-socketio[asyncio_client]==5.12.1",
+    "python-socketio[asyncio_client]==5.13.0",
     "requests==2.32.3",
-    "sensapex==1.400.3",
-    "rich==13.9.4",
+    "sensapex==1.400.4",
+    "rich==14.0.0",
     "vbl-aquarium==1.0.0"
 ]
 
@@ -62,8 +59,8 @@ exclude = ["/.github", "/.idea", "/docs"]
 installer = "uv"
 python = "3.13"
 dependencies = [
-    "pyinstaller==6.11.1",
-    "basedpyright==1.23.1",
+    "pyinstaller==6.12.0",
+    "basedpyright==1.28.5",
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
@@ -76,11 +73,11 @@ installer = "uv"
 python = "3.13"
 skip-install = true
 dependencies = [
-    "mkdocs-material==9.6.5",
-    "mkdocstrings-python==1.16.1",
+    "mkdocs-material==9.6.11",
+    "mkdocstrings-python==1.16.10",
     "mkdocs-gen-files==0.5.0",
-    "mkdocs-literate-nav==0.6.1",
-    "mkdocs-section-index==0.3.9"
+    "mkdocs-literate-nav==0.6.2",
+    "mkdocs-section-index==0.3.10"
 ]
 [tool.hatch.envs.docs.scripts]
 serve = "mkdocs serve"

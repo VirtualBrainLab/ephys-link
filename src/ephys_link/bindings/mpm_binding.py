@@ -62,12 +62,11 @@ class MPMBinding(BaseBinding):
         "AN",
     )
 
-    # Server cache lifetime (60 FPS).
-    CACHE_LIFETIME = 1 / 60
+    # Server data update rate (30 FPS).
+    SERVER_DATA_UPDATE_RATE = 1 / 30
 
     # Movement polling preferences.
     UNCHANGED_COUNTER_LIMIT = 10
-    POLL_INTERVAL = 0.1
 
     # Speed preferences (mm/s to use coarse mode).
     COARSE_SPEED_THRESHOLD = 0.1
@@ -113,7 +112,8 @@ class MPMBinding(BaseBinding):
         manipulator_data: dict[str, float] = await self._manipulator_data(manipulator_id)
         stage_z: float = manipulator_data["Stage_Z"]
 
-        await sleep(self.POLL_INTERVAL)  # Wait for the stage to stabilize.
+        # Wait for the stage to stabilize.
+        await sleep(self.SERVER_DATA_UPDATE_RATE)
 
         return Vector4(
             x=manipulator_data["Stage_X"],
@@ -127,7 +127,7 @@ class MPMBinding(BaseBinding):
         manipulator_data: dict[str, float] = await self._manipulator_data(manipulator_id)
 
         # Apply PosteriorAngle to Polar to get the correct angle.
-        adjusted_polar: int = manipulator_data["Polar"] - (await self._query_data())["PosteriorAngle"]
+        adjusted_polar: int = manipulator_data["Polar"] - (await self._query_data())["PosteriorAngle"]  # pyright: ignore [reportAny]
 
         return Vector3(
             x=adjusted_polar if adjusted_polar > 0 else 360 + adjusted_polar,
@@ -139,8 +139,9 @@ class MPMBinding(BaseBinding):
     async def get_shank_count(self, manipulator_id: str) -> int:
         return int((await self._manipulator_data(manipulator_id))["ShankCount"])  # pyright: ignore [reportAny]
 
+    @staticmethod
     @override
-    def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance() -> float:
         return 0.01
 
     @override
@@ -180,7 +181,7 @@ class MPMBinding(BaseBinding):
             and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
+            await sleep(self.SERVER_DATA_UPDATE_RATE)
 
             # Update current position.
             current_position = await self.get_position(manipulator_id)
@@ -219,9 +220,13 @@ class MPMBinding(BaseBinding):
         )
 
         # Wait for the manipulator to reach the target depth or be stopped or get stuck.
-        while not self._movement_stopped and not abs(current_depth - depth) <= self.get_movement_tolerance():
+        while (
+            not self._movement_stopped
+            and not abs(current_depth - depth) <= self.get_movement_tolerance()
+            and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
+        ):
             # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
+            await sleep(self.SERVER_DATA_UPDATE_RATE)
 
             # Get the current depth.
             current_depth = (await self.get_position(manipulator_id)).w
@@ -281,10 +286,11 @@ class MPMBinding(BaseBinding):
         )
 
     # Helper functions.
+
     async def _query_data(self) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         try:
             # Update cache if it's expired.
-            if get_running_loop().time() - self.cache_time > self.CACHE_LIFETIME:
+            if get_running_loop().time() - self.cache_time > self.SERVER_DATA_UPDATE_RATE:
                 # noinspection PyTypeChecker
                 self.cache = (await get_running_loop().run_in_executor(None, get, self._url)).json()
                 self.cache_time = get_running_loop().time()
@@ -299,7 +305,7 @@ class MPMBinding(BaseBinding):
             return self.cache
 
     async def _manipulator_data(self, manipulator_id: str) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
-        probe_data: list[dict[str, Any]] = (await self._query_data())["ProbeArray"]  # pyright: ignore [reportExplicitAny]
+        probe_data: list[dict[str, Any]] = (await self._query_data())["ProbeArray"]  # pyright: ignore [reportExplicitAny, reportAny]
         for probe in probe_data:
             if probe["Id"] == manipulator_id:
                 return probe

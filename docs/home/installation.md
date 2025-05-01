@@ -3,13 +3,13 @@
 ## Prerequisites
 
 1. An **x86 Windows PC is required** to run the server.
-2. For Sensapex devices, the controller unit must be connected via an ethernet
-   cable and powered. A USB-to-ethernet adapter is acceptable. For New Scale manipulators,
+2. For Sensapex devices, the controller unit must be powered and connected via an Ethernet
+   cable to the computer running Ephys Link. A USB-to-Ethernet adapter is acceptable. For New Scale manipulators,
    the controller unit must be connected via USB and be powered by a 6V power
    supply.
 3. To use the emergency stop feature, ensure a keyboard is attached.
 
-## Pinpoint (Recommended Method)
+## Pinpoint (Recommended)
 
 Pinpoint comes bundled with the correct version of Ephys Link. If you are using Pinpoint on the same computer your
 manipulators are connected to, you can launch the server from within Pinpoint. See the documentation
@@ -17,22 +17,21 @@ on [connecting from Pinpoint](../usage/using_ephys_link.md#connecting-to-pinpoin
 
 ## Install as a Standalone Executable
 
-Download the latest standalone executable or zip from the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
+Download the latest standalone executable or zip from
+the [releases page](https://github.com/VirtualBrainLab/ephys-link/releases/latest).
 
 Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
 
-## Install as a Python package
+## Install as a Python Package (Not Recommended)
 
-Ephys Link uses the latest stable version of Python. It requires a minimum of Python 3.10.
+Ephys Link is a Python package released on PyPI and can be included in projects as such.
+
+**This is not the recommended method of using Ephys Link.** This is only for advanced
+use cases where Ephys Link is used as a library in another project. Ephys Link will exclusively support the latest
+version of Python its dependencies support.
 
 ```bash
 pip install ephys-link
-```
-
-or with [pipx](https://pipx.pypa.io/stable/) (recommended)
-
-```bash
-pipx install ephys-link
 ```
 
 Then see the [usage documentation](../usage/starting_ephys_link.md) for how to run the server.
