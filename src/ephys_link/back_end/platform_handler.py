@@ -22,11 +22,14 @@ from vbl_aquarium.models.ephys_link import (
     SetPositionRequest,
     ShankCountResponse,
 )
-from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.front_end.console import Console
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.constants import NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR, did_not_reach_target_position_error
+from ephys_link.utils.constants import (
+    NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR,
+    did_not_reach_target_depth_error,
+    did_not_reach_target_position_error,
+)
 from ephys_link.utils.converters import vector4_to_array
 
 
@@ -196,26 +199,22 @@ class PlatformHandler:
         """
         try:
             # Move to the new depth.
-            final_platform_depth = await self._bindings.set_depth(
+            final_depth = await self._bindings.set_depth(
                 manipulator_id=request.manipulator_id,
-                depth=self._bindings.unified_space_to_platform_space(Vector4(w=request.depth)).w,
+                depth=request.depth,
                 speed=request.speed,
             )
-            final_unified_depth = self._bindings.platform_space_to_unified_space(Vector4(w=final_platform_depth)).w
 
             # Return error if movement did not reach target within tolerance.
-            if abs(final_unified_depth - request.depth) > self._bindings.get_movement_tolerance():
-                error_message = (
-                    f"Manipulator {request.manipulator_id} did not reach target depth."
-                    f" Requested: {request.depth}, got: {final_unified_depth}."
-                )
+            if abs(final_depth - request.depth) > self._bindings.get_movement_tolerance():
+                error_message = did_not_reach_target_depth_error(request, final_depth)
                 self._console.error_print("Set Depth", error_message)
                 return SetDepthResponse(error=error_message)
         except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Set Depth", e)
             return SetDepthResponse(error=self._console.pretty_exception(e))
         else:
-            return SetDepthResponse(depth=final_unified_depth)
+            return SetDepthResponse(depth=final_depth)
 
     async def set_inside_brain(self, request: SetInsideBrainRequest) -> BooleanStateResponse:
         """Mark a manipulator as inside the brain or not.
@@ -228,16 +227,11 @@ class PlatformHandler:
         Returns:
             Inside brain state of the manipulator and an error message if any.
         """
-        try:
-            if request.inside:
-                self._inside_brain.add(request.manipulator_id)
-            else:
-                self._inside_brain.discard(request.manipulator_id)
-        except Exception as e:  # noqa: BLE001
-            self._console.exception_error_print("Set Inside Brain", e)
-            return BooleanStateResponse(error=self._console.pretty_exception(e))
+        if request.inside:
+            self._inside_brain.add(request.manipulator_id)
         else:
-            return BooleanStateResponse(state=request.inside)
+            self._inside_brain.discard(request.manipulator_id)
+        return BooleanStateResponse(state=request.inside)
 
     async def stop(self, manipulator_id: str) -> str:
         """Stop a manipulator.

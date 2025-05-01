@@ -2,7 +2,7 @@
 
 from os.path import abspath, dirname, join
 
-from vbl_aquarium.models.ephys_link import SetPositionRequest
+from vbl_aquarium.models.ephys_link import SetDepthRequest, SetPositionRequest
 from vbl_aquarium.models.unity import Vector4
 
 # Ephys Link ASCII.
@@ -32,13 +32,26 @@ NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR = (
 )
 
 
-def did_not_reach_target_position_error(request: SetPositionRequest, axis_index: int, final_position: Vector4) -> str:
+def did_not_reach_target_position_error(
+    request: SetPositionRequest, axis_index: int, final_unified_position: Vector4
+) -> str:
     """Generate an error message for when the manipulator did not reach the target position.
     Args:
-        request: The SetPositionRequest object containing the requested position.
+        request: The object containing the requested position.
         axis_index: The index of the axis that did not reach the target position.
-        final_position: The final position of the manipulator.
+        final_unified_position: The final position of the manipulator.
     Returns:
         str: The error message.
     """
-    return f"Manipulator {request.manipulator_id} did not reach target position on axis {list(Vector4.model_fields.keys())[axis_index]}. Requested: {request.position}, got: {final_position}"
+    return f"Manipulator {request.manipulator_id} did not reach target position on axis {list(Vector4.model_fields.keys())[axis_index]}. Requested: {request.position}, got: {final_unified_position}"
+
+
+def did_not_reach_target_depth_error(request: SetDepthRequest, final_unified_depth: float) -> str:
+    """Generate an error message for when the manipulator did not reach the target position.
+    Args:
+        request: The object containing the requested depth.
+        final_unified_depth: The final depth of the manipulator.
+    Returns:
+        str: The error message.
+    """
+    return f"Manipulator {request.manipulator_id} did not reach target depth. Requested: {request.depth}, got: {final_unified_depth}"
