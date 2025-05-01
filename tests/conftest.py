@@ -15,12 +15,12 @@ DUMMY_EXCEPTION = RuntimeError("Test runtime error")
 
 
 @pytest.fixture
-def test_console() -> Console:
+def console() -> Console:
     """Console instance for testing."""
     return Console()
 
 
 @pytest.fixture
-def test_fake_binding() -> FakeBinding:
+def fake_binding() -> FakeBinding:
     """FakeBinding instance for testing."""
     return FakeBinding()
