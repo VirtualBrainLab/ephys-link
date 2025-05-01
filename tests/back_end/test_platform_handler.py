@@ -20,6 +20,7 @@ from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.bindings.fake_binding import FakeBinding
 from ephys_link.front_end.console import Console
 from ephys_link.utils.constants import (
+    EMERGENCY_STOP_MESSAGE,
     NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR,
     did_not_reach_target_depth_error,
     did_not_reach_target_position_error,
@@ -611,21 +612,29 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("test_state", [True, False])
+    @pytest.mark.parametrize("test_inside_brain", [set(), {"2"}])  # pyright: ignore[reportUnknownArgumentType]
     async def test_set_inside_brain(
         self,
         test_fake_binding: FakeBinding,
         test_console: Console,
+        mocker: MockerFixture,
         test_state: bool,  # noqa: FBT001
+        test_inside_brain: set[str],
     ) -> None:
-        """Platform should return error in response if binding raises exception.
+        """Platform should return inside brain state.
 
         Args:
             test_fake_binding: FakeBinding instance.
             test_console: Console instance.
+            mocker: PlatformHandler patcher.
             test_state: Test value for inside brain.
+            test_inside_brain: Test initial inside brain values.
         """
         # Create PlatformHandler instance.
         platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Patch inside brain.
+        _ = mocker.patch.object(platform_handler, "_inside_brain", new=test_inside_brain)
 
         # Act.
         result = await platform_handler.set_inside_brain(SetInsideBrainRequest(manipulator_id="1", inside=test_state))
@@ -633,6 +642,163 @@ class TestPlatformHandler:
         # Assert.
         assert result == BooleanStateResponse(state=test_state)
         if test_state:
-            assert platform_handler._inside_brain == {"1"}  # noqa: SLF001 # pyright: ignore[reportPrivateUsage]
+            test_inside_brain.add("1")
         else:
-            assert platform_handler._inside_brain == set()  # noqa: SLF001 # pyright: ignore[reportPrivateUsage]
+            test_inside_brain.discard("1")
+        assert platform_handler._inside_brain == test_inside_brain  # noqa: SLF001 # pyright: ignore[reportPrivateUsage]
+
+    @pytest.mark.asyncio
+    async def test_stop_exception(
+        self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
+    ) -> None:
+        """Platform should return error in response if binding raises exception.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            mocker: Binding mocker.
+        """
+        # Mock binding.
+        patched_stop = mocker.patch.object(test_fake_binding, "stop", side_effect=DUMMY_EXCEPTION, autospec=True)
+        spied_exception_error_print = mocker.spy(test_console, "exception_error_print")
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.stop("1")
+
+        # Assert.
+        patched_stop.assert_called()
+        spied_exception_error_print.assert_called_with("Stop", DUMMY_EXCEPTION)
+        assert result == test_console.pretty_exception(DUMMY_EXCEPTION)
+
+    @pytest.mark.asyncio
+    async def test_stop_typical(
+        self,
+        test_fake_binding: FakeBinding,
+        test_console: Console,
+        mocker: MockerFixture,
+    ) -> None:
+        """Platform should return empty string on stop.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            mocker: Binding patcher.
+        """
+        # Mock binding.
+        patched_stop = mocker.patch.object(
+            test_fake_binding,
+            "stop",
+            autospec=True,
+        )
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.stop("1")
+
+        # Assert.
+        patched_stop.assert_called_with("1")
+        assert result == ""
+
+    @pytest.mark.asyncio
+    async def test_stop_all_exception(
+        self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
+    ) -> None:
+        """Platform should return error in response if binding raises exception.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            mocker: Binding mocker.
+        """
+        # Mock binding.
+        patched_get_manipulators = mocker.patch.object(
+            test_fake_binding, "get_manipulators", return_value=["1"], autospec=True
+        )
+        patched_stop = mocker.patch.object(test_fake_binding, "stop", side_effect=DUMMY_EXCEPTION, autospec=True)
+        spied_exception_error_print = mocker.spy(test_console, "exception_error_print")
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.stop_all()
+
+        # Assert.
+        patched_get_manipulators.assert_called()
+        patched_stop.assert_called()
+        spied_exception_error_print.assert_called_with("Stop All", DUMMY_EXCEPTION)
+        assert result == test_console.pretty_exception(DUMMY_EXCEPTION)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("test_manipulators", [[], DUMMY_STRING_LIST])
+    async def test_stop_all_typical(
+        self,
+        test_fake_binding: FakeBinding,
+        test_console: Console,
+        mocker: MockerFixture,
+        test_manipulators: list[str],
+    ) -> None:
+        """Platform should return empty string on stop all.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            mocker: Binding patcher.
+            test_manipulators: Test values for manipulators.
+        """
+        # Mock binding.
+        patched_get_manipulators = mocker.patch.object(
+            test_fake_binding, "get_manipulators", return_value=test_manipulators, autospec=True
+        )
+        patched_stop = mocker.patch.object(
+            test_fake_binding,
+            "stop",
+            autospec=True,
+        )
+
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Act.
+        result = await platform_handler.stop_all()
+
+        # Assert.
+        patched_get_manipulators.assert_called()
+        for manipulator_id in test_manipulators:
+            patched_stop.assert_any_call(manipulator_id)
+        assert patched_stop.call_count == len(test_manipulators)
+        assert result == ""
+
+    @pytest.mark.asyncio
+    async def test_emergency_stop(
+        self, test_fake_binding: FakeBinding, test_console: Console, mocker: MockerFixture
+    ) -> None:
+        """Platform should call stop_all and print to critical console.
+
+        Args:
+            test_fake_binding: FakeBinding instance.
+            test_console: Console instance.
+            mocker: Binding patcher.
+        """
+        # Create PlatformHandler instance.
+        platform_handler = PlatformHandler(test_fake_binding, test_console)
+
+        # Mock binding.
+        patched_stop_all = mocker.patch.object(
+            platform_handler,
+            "stop_all",
+            autospec=True,
+        )
+        spied_critical_print = mocker.spy(test_console, "critical_print")
+
+        # Act.
+        await platform_handler.emergency_stop()
+
+        # Assert.
+        patched_stop_all.assert_called()
+        spied_critical_print.assert_called_with(EMERGENCY_STOP_MESSAGE)

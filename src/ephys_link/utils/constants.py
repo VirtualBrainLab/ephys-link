@@ -55,3 +55,6 @@ def did_not_reach_target_depth_error(request: SetDepthRequest, final_unified_dep
         str: The error message.
     """
     return f"Manipulator {request.manipulator_id} did not reach target depth. Requested: {request.depth}, got: {final_unified_depth}"
+
+
+EMERGENCY_STOP_MESSAGE = "Emergency Stopping All Manipulators..."

@@ -26,6 +26,7 @@ from vbl_aquarium.models.ephys_link import (
 from ephys_link.front_end.console import Console
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.constants import (
+    EMERGENCY_STOP_MESSAGE,
     NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR,
     did_not_reach_target_depth_error,
     did_not_reach_target_position_error,
@@ -260,12 +261,12 @@ class PlatformHandler:
             for manipulator_id in await self._bindings.get_manipulators():
                 await self._bindings.stop(manipulator_id)
         except Exception as e:  # noqa: BLE001
-            self._console.exception_error_print("Stop", e)
+            self._console.exception_error_print("Stop All", e)
             return self._console.pretty_exception(e)
         else:
             return ""
 
     async def emergency_stop(self) -> None:
         """Stops all manipulators with a message."""
-        self._console.critical_print("Emergency Stopping All Manipulators...")
+        self._console.critical_print(EMERGENCY_STOP_MESSAGE)
         _ = await self.stop_all()
