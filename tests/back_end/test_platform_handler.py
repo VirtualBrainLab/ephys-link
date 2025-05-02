@@ -15,8 +15,8 @@ from vbl_aquarium.models.ephys_link import (
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.bindings.fake_binding import FakeBinding
 from ephys_link.front_end.console import Console
+from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.constants import (
     EMERGENCY_STOP_MESSAGE,
     NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR,
@@ -38,16 +38,16 @@ class TestPlatformHandler:
     """Tests for the PlatformHandler class."""
 
     @pytest.fixture
-    def platform_handler(self, fake_binding: FakeBinding, console: Console) -> PlatformHandler:
+    def platform_handler(self, binding: BaseBinding, console: Console) -> PlatformHandler:
         """Fixture for creating a PlatformHandler instance."""
-        return PlatformHandler(fake_binding, console)
+        return PlatformHandler(binding, console)
 
     def test_get_display_name(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, mocker: MockerFixture
     ) -> None:
         """Platform should return binding display name."""
         # Mock binding.
-        patched_get_display_name = mocker.patch.object(fake_binding, "get_display_name", return_value=DUMMY_STRING)
+        patched_get_display_name = mocker.patch.object(binding, "get_display_name", return_value=DUMMY_STRING)
 
         # Act.
         result = platform_handler.get_display_name()
@@ -58,14 +58,14 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_get_platform_info(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, mocker: MockerFixture
     ) -> None:
         """Platform should return binding platform info."""
         # Mock binding.
-        patched_get_display_name = mocker.patch.object(fake_binding, "get_display_name", return_value=DUMMY_STRING)
-        patched_get_cli_name = mocker.patch.object(fake_binding, "get_cli_name", return_value=DUMMY_SMALL_STRING)
-        patched_get_axes_count = mocker.patch.object(fake_binding, "get_axes_count", return_value=DUMMY_INT)
-        patched_get_dimensions = mocker.patch.object(fake_binding, "get_dimensions", return_value=DUMMY_VECTOR4)
+        patched_get_display_name = mocker.patch.object(binding, "get_display_name", return_value=DUMMY_STRING)
+        patched_get_cli_name = mocker.patch.object(binding, "get_cli_name", return_value=DUMMY_SMALL_STRING)
+        patched_get_axes_count = mocker.patch.object(binding, "get_axes_count", return_value=DUMMY_INT)
+        patched_get_dimensions = mocker.patch.object(binding, "get_dimensions", return_value=DUMMY_VECTOR4)
 
         # Act.
         result = await platform_handler.get_platform_info()
@@ -84,11 +84,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_get_manipulators_exception(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return error in response if binding raises exception."""
         # Mock binding.
-        patched_get_manipulators = mocker.patch.object(fake_binding, "get_manipulators", side_effect=DUMMY_EXCEPTION)
+        patched_get_manipulators = mocker.patch.object(binding, "get_manipulators", side_effect=DUMMY_EXCEPTION)
         spied_exception_error_print = mocker.spy(console, "exception_error_print")
 
         # Act.
@@ -104,13 +104,13 @@ class TestPlatformHandler:
     async def test_get_manipulators_typical(
         self,
         platform_handler: PlatformHandler,
-        fake_binding: FakeBinding,
+        binding: BaseBinding,
         mocker: MockerFixture,
         manipulators: list[str],
     ) -> None:
         """Platform should return available binding manipulators."""
         # Mock binding.
-        patched_get_manipulators = mocker.patch.object(fake_binding, "get_manipulators", return_value=manipulators)
+        patched_get_manipulators = mocker.patch.object(binding, "get_manipulators", return_value=manipulators)
 
         # Act.
         result = await platform_handler.get_manipulators()
@@ -121,13 +121,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_get_position_exception(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return error in response if binding raises exception."""
         # Mock binding.
-        patched_get_position = mocker.patch.object(
-            fake_binding, "get_position", side_effect=DUMMY_EXCEPTION, autospec=True
-        )
+        patched_get_position = mocker.patch.object(binding, "get_position", side_effect=DUMMY_EXCEPTION)
         spied_exception_error_print = mocker.spy(console, "exception_error_print")
 
         # Act.
@@ -140,28 +138,26 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_get_position_typical(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, mocker: MockerFixture
     ) -> None:
         """Platform should return a unified space position."""
         # Mock binding.
-        patched_get_position = mocker.patch.object(
-            fake_binding, "get_position", return_value=DUMMY_VECTOR4, autospec=True
-        )
+        patched_get_position = mocker.patch.object(binding, "get_position", return_value=DUMMY_VECTOR4)
 
         # Act.
         result = await platform_handler.get_position("1")
 
         # Assert.
         patched_get_position.assert_called_once_with("1")
-        assert result == PositionalResponse(position=fake_binding.platform_space_to_unified_space(DUMMY_VECTOR4))
+        assert result == PositionalResponse(position=binding.platform_space_to_unified_space(DUMMY_VECTOR4))
 
     @pytest.mark.asyncio
     async def test_get_angles_exception(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return error in response if binding raises exception."""
         # Mock binding.
-        patched_get_angles = mocker.patch.object(fake_binding, "get_angles", side_effect=DUMMY_EXCEPTION)
+        patched_get_angles = mocker.patch.object(binding, "get_angles", side_effect=DUMMY_EXCEPTION)
         spied_exception_error_print = mocker.spy(console, "exception_error_print")
 
         # Act.
@@ -174,11 +170,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_get_angles_typical(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, mocker: MockerFixture
     ) -> None:
         """Platform should return manipulator angles."""
         # Mock binding.
-        patched_get_angles = mocker.patch.object(fake_binding, "get_angles", return_value=DUMMY_VECTOR3, autospec=True)
+        patched_get_angles = mocker.patch.object(binding, "get_angles", return_value=DUMMY_VECTOR3)
 
         # Act.
         result = await platform_handler.get_angles("1")
@@ -189,11 +185,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_get_shank_count_exception(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return error in response if binding raises exception."""
         # Mock binding.
-        patched_get_shank_count = mocker.patch.object(fake_binding, "get_shank_count", side_effect=DUMMY_EXCEPTION)
+        patched_get_shank_count = mocker.patch.object(binding, "get_shank_count", side_effect=DUMMY_EXCEPTION)
         spied_exception_error_print = mocker.spy(console, "exception_error_print")
 
         # Act.
@@ -206,13 +202,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_get_shank_count_typical(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, mocker: MockerFixture
     ) -> None:
         """Platform should return manipulator angles."""
         # Mock binding.
-        patched_get_shank_count = mocker.patch.object(
-            fake_binding, "get_shank_count", return_value=DUMMY_INT, autospec=True
-        )
+        patched_get_shank_count = mocker.patch.object(binding, "get_shank_count", return_value=DUMMY_INT)
 
         # Act.
         result = await platform_handler.get_shank_count("1")
@@ -223,13 +217,13 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_set_position_inside_brain(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should reject set position if manipulator is inside brain."""
         # Mock binding.
         _ = mocker.patch.object(platform_handler, "_inside_brain", new=["1"])
         spied_error_print = mocker.spy(console, "error_print")
-        spied_binding_set_position = mocker.spy(fake_binding, "set_position")
+        spied_binding_set_position = mocker.spy(binding, "set_position")
 
         # Act.
         result = await platform_handler.set_position(
@@ -247,7 +241,7 @@ class TestPlatformHandler:
     async def test_set_position_beyond_tolerance(
         self,
         platform_handler: PlatformHandler,
-        fake_binding: FakeBinding,
+        binding: BaseBinding,
         console: Console,
         mocker: MockerFixture,
         axes_count: int,
@@ -274,13 +268,12 @@ class TestPlatformHandler:
 
         # Mock binding.
         patched_set_position = mocker.patch.object(
-            fake_binding,
+            binding,
             "set_position",
-            return_value=fake_binding.unified_space_to_platform_space(dummy_final_position),
-            autospec=True,
+            return_value=binding.unified_space_to_platform_space(dummy_final_position),
         )
-        patched_get_axes_count = mocker.patch.object(fake_binding, "get_axes_count", return_value=axes_count)
-        patched_get_movement_tolerance = mocker.patch.object(fake_binding, "get_movement_tolerance", return_value=0)
+        patched_get_axes_count = mocker.patch.object(binding, "get_axes_count", return_value=axes_count)
+        patched_get_movement_tolerance = mocker.patch.object(binding, "get_movement_tolerance", return_value=0)
         spied_error_print = mocker.spy(console, "error_print")
 
         # Act.
@@ -288,7 +281,7 @@ class TestPlatformHandler:
 
         # Assert.
         patched_set_position.assert_called_once_with(
-            manipulator_id="1", position=fake_binding.unified_space_to_platform_space(DUMMY_VECTOR4), speed=1.0
+            manipulator_id="1", position=binding.unified_space_to_platform_space(DUMMY_VECTOR4), speed=1.0
         )
         patched_get_axes_count.assert_called()
         patched_get_movement_tolerance.assert_called()
@@ -301,11 +294,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_set_position_exception(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return error in response if binding raises exception."""
         # Mock binding.
-        patched_set_position = mocker.patch.object(fake_binding, "set_position", side_effect=DUMMY_EXCEPTION)
+        patched_set_position = mocker.patch.object(binding, "set_position", side_effect=DUMMY_EXCEPTION)
         spied_exception_error_print = mocker.spy(console, "exception_error_print")
 
         # Act.
@@ -323,7 +316,7 @@ class TestPlatformHandler:
     async def test_set_position_typical(
         self,
         platform_handler: PlatformHandler,
-        fake_binding: FakeBinding,
+        binding: BaseBinding,
         mocker: MockerFixture,
         axes_count: int,
     ) -> None:
@@ -337,20 +330,19 @@ class TestPlatformHandler:
 
         # Mock binding.
         patched_set_position = mocker.patch.object(
-            fake_binding,
+            binding,
             "set_position",
-            return_value=fake_binding.unified_space_to_platform_space(DUMMY_VECTOR4),
-            autospec=True,
+            return_value=binding.unified_space_to_platform_space(DUMMY_VECTOR4),
         )
-        patched_get_axes_count = mocker.patch.object(fake_binding, "get_axes_count", return_value=axes_count)
-        patched_get_movement_tolerance = mocker.patch.object(fake_binding, "get_movement_tolerance", return_value=0.001)
+        patched_get_axes_count = mocker.patch.object(binding, "get_axes_count", return_value=axes_count)
+        patched_get_movement_tolerance = mocker.patch.object(binding, "get_movement_tolerance", return_value=0.001)
 
         # Act.
         result = await platform_handler.set_position(dummy_request)
 
         # Assert.
         patched_set_position.assert_called_with(
-            manipulator_id="1", position=fake_binding.unified_space_to_platform_space(DUMMY_VECTOR4), speed=1.0
+            manipulator_id="1", position=binding.unified_space_to_platform_space(DUMMY_VECTOR4), speed=1.0
         )
         patched_get_axes_count.assert_called()
         patched_get_movement_tolerance.assert_called()
@@ -360,7 +352,7 @@ class TestPlatformHandler:
     async def test_set_depth_beyond_tolerance(
         self,
         platform_handler: PlatformHandler,
-        fake_binding: FakeBinding,
+        binding: BaseBinding,
         console: Console,
         mocker: MockerFixture,
     ) -> None:
@@ -372,12 +364,11 @@ class TestPlatformHandler:
 
         # Mock binding.
         patched_set_depth = mocker.patch.object(
-            fake_binding,
+            binding,
             "set_depth",
             return_value=dummy_final_depth,
-            autospec=True,
         )
-        patched_get_movement_tolerance = mocker.patch.object(fake_binding, "get_movement_tolerance", return_value=0)
+        patched_get_movement_tolerance = mocker.patch.object(binding, "get_movement_tolerance", return_value=0)
         spied_error_print = mocker.spy(console, "error_print")
 
         # Act.
@@ -391,11 +382,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_set_depth_exception(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return error in response if binding raises exception."""
         # Mock binding.
-        patched_set_depth = mocker.patch.object(fake_binding, "set_depth", side_effect=DUMMY_EXCEPTION)
+        patched_set_depth = mocker.patch.object(binding, "set_depth", side_effect=DUMMY_EXCEPTION)
         spied_exception_error_print = mocker.spy(console, "exception_error_print")
 
         # Act.
@@ -410,7 +401,7 @@ class TestPlatformHandler:
     async def test_set_depth_typical(
         self,
         platform_handler: PlatformHandler,
-        fake_binding: FakeBinding,
+        binding: BaseBinding,
         mocker: MockerFixture,
     ) -> None:
         """Platform should return manipulator's final depth."""
@@ -419,12 +410,11 @@ class TestPlatformHandler:
 
         # Mock binding.
         patched_set_depth = mocker.patch.object(
-            fake_binding,
+            binding,
             "set_depth",
             return_value=DUMMY_VECTOR4.w,
-            autospec=True,
         )
-        patched_get_movement_tolerance = mocker.patch.object(fake_binding, "get_movement_tolerance", return_value=0.001)
+        patched_get_movement_tolerance = mocker.patch.object(binding, "get_movement_tolerance", return_value=0.001)
 
         # Act.
         result = await platform_handler.set_depth(dummy_request)
@@ -466,11 +456,11 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_stop_exception(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return error in response if binding raises exception."""
         # Mock binding.
-        patched_stop = mocker.patch.object(fake_binding, "stop", side_effect=DUMMY_EXCEPTION)
+        patched_stop = mocker.patch.object(binding, "stop", side_effect=DUMMY_EXCEPTION)
         spied_exception_error_print = mocker.spy(console, "exception_error_print")
 
         # Act.
@@ -483,14 +473,13 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_stop_typical(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, mocker: MockerFixture
     ) -> None:
         """Platform should return empty string on stop."""
         # Mock binding.
         patched_stop = mocker.patch.object(
-            fake_binding,
+            binding,
             "stop",
-            autospec=True,
         )
 
         # Act.
@@ -502,12 +491,12 @@ class TestPlatformHandler:
 
     @pytest.mark.asyncio
     async def test_stop_all_exception(
-        self, platform_handler: PlatformHandler, fake_binding: FakeBinding, console: Console, mocker: MockerFixture
+        self, platform_handler: PlatformHandler, binding: BaseBinding, console: Console, mocker: MockerFixture
     ) -> None:
         """Platform should return error in response if binding raises exception."""
         # Mock binding.
-        patched_get_manipulators = mocker.patch.object(fake_binding, "get_manipulators", return_value=["1"])
-        patched_stop = mocker.patch.object(fake_binding, "stop", side_effect=DUMMY_EXCEPTION)
+        patched_get_manipulators = mocker.patch.object(binding, "get_manipulators", return_value=["1"])
+        patched_stop = mocker.patch.object(binding, "stop", side_effect=DUMMY_EXCEPTION)
         spied_exception_error_print = mocker.spy(console, "exception_error_print")
 
         # Act.
@@ -524,7 +513,7 @@ class TestPlatformHandler:
     async def test_stop_all_typical(
         self,
         platform_handler: PlatformHandler,
-        fake_binding: FakeBinding,
+        binding: BaseBinding,
         mocker: MockerFixture,
         manipulators: list[str],
     ) -> None:
@@ -534,13 +523,10 @@ class TestPlatformHandler:
             manipulators: Test values for manipulators.
         """
         # Mock binding.
-        patched_get_manipulators = mocker.patch.object(
-            fake_binding, "get_manipulators", return_value=manipulators, autospec=True
-        )
+        patched_get_manipulators = mocker.patch.object(binding, "get_manipulators", return_value=manipulators)
         patched_stop = mocker.patch.object(
-            fake_binding,
+            binding,
             "stop",
-            autospec=True,
         )
 
         # Act.

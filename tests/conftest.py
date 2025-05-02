@@ -1,8 +1,9 @@
 import pytest
+from pytest_mock import MockerFixture
 from vbl_aquarium.models.unity import Vector3, Vector4
 
-from ephys_link.bindings.fake_binding import FakeBinding
 from ephys_link.front_end.console import Console
+from ephys_link.utils.base_binding import BaseBinding
 
 # Dummy values for testing.
 DUMMY_STRING = "Dummy String"
@@ -21,6 +22,14 @@ def console() -> Console:
 
 
 @pytest.fixture
-def fake_binding() -> FakeBinding:
+def binding(mocker: MockerFixture) -> BaseBinding:
     """FakeBinding instance for testing."""
-    return FakeBinding()
+
+    def reflect_vector4(input_vector: Vector4) -> Vector4:
+        return input_vector
+
+    # Patch the BaseBinding class.
+    mocked_binding = mocker.Mock(spec=BaseBinding)
+    _ = mocker.patch.object(mocked_binding, "platform_space_to_unified_space", side_effect=reflect_vector4)
+    _ = mocker.patch.object(mocked_binding, "unified_space_to_platform_space", side_effect=reflect_vector4)
+    return mocked_binding
