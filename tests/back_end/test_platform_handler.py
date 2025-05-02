@@ -38,6 +38,39 @@ class TestPlatformHandler:
     """Tests for the PlatformHandler class."""
 
     @pytest.fixture
+    def console(self, mocker: MockerFixture) -> Console:
+        """Console instance for testing."""
+
+        def exception_to_string(exception: Exception) -> str:
+            return str(exception)
+
+        # Create mock.
+        mocked_console = mocker.Mock(spec=Console)
+
+        # Patch internally used functions.
+        _ = mocker.patch.object(mocked_console, "pretty_exception", side_effect=exception_to_string)
+
+        # Return mocked console.
+        return mocked_console
+
+    @pytest.fixture
+    def binding(self, mocker: MockerFixture) -> BaseBinding:
+        """FakeBinding instance for testing."""
+
+        def reflect_vector4(input_vector: Vector4) -> Vector4:
+            return input_vector
+
+        # Create mock.
+        mocked_binding = mocker.Mock(spec=BaseBinding)
+
+        # Patch internally used functions.
+        _ = mocker.patch.object(mocked_binding, "platform_space_to_unified_space", side_effect=reflect_vector4)
+        _ = mocker.patch.object(mocked_binding, "unified_space_to_platform_space", side_effect=reflect_vector4)
+
+        # Return mocked binding.
+        return mocked_binding
+
+    @pytest.fixture
     def platform_handler(self, binding: BaseBinding, console: Console) -> PlatformHandler:
         """Fixture for creating a PlatformHandler instance."""
         return PlatformHandler(binding, console)
@@ -546,7 +579,7 @@ class TestPlatformHandler:
         """Platform should call stop_all and print to critical console."""
         # Mock binding.
         patched_stop_all = mocker.patch.object(
-            PlatformHandler,
+            platform_handler,
             "stop_all",
         )
         spied_critical_print = mocker.spy(console, "critical_print")
