@@ -60,3 +60,4 @@ def did_not_reach_target_depth_error(request: SetDepthRequest, final_unified_dep
 EMERGENCY_STOP_MESSAGE = "Emergency Stopping All Manipulators..."
 
 SERVER_NOT_INITIALIZED_ERROR = "Server not initialized."
+PROXY_CLIENT_NOT_INITIALIZED_ERROR = "Proxy client not initialized."

@@ -33,7 +33,7 @@ from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 from ephys_link.__about__ import __version__
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.front_end.console import Console
-from ephys_link.utils.constants import PORT, SERVER_NOT_INITIALIZED_ERROR
+from ephys_link.utils.constants import PORT, PROXY_CLIENT_NOT_INITIALIZED_ERROR, SERVER_NOT_INITIALIZED_ERROR
 
 # Server message generic types.
 INPUT_TYPE = TypeVar("INPUT_TYPE", bound=VBLBaseModel)
@@ -100,9 +100,8 @@ class Server:
             async def connect_proxy() -> None:
                 # Exit if _sio is not a proxy client.
                 if not isinstance(self._sio, AsyncClient):
-                    error = "Proxy client not initialized."
-                    self._console.critical_print(error)
-                    raise TypeError(error)
+                    self._console.critical_print(PROXY_CLIENT_NOT_INITIALIZED_ERROR)
+                    raise TypeError(PROXY_CLIENT_NOT_INITIALIZED_ERROR)
 
                 # noinspection HttpUrlsUsage
                 await self._sio.connect(f"http://{self._options.proxy_address}:{PORT}")  # pyright: ignore [reportUnknownMemberType]

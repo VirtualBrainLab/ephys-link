@@ -8,7 +8,6 @@ Usage:
 """
 
 from typing import final
-from uuid import uuid4
 
 from vbl_aquarium.models.ephys_link import (
     AngularResponse,
@@ -53,9 +52,6 @@ class PlatformHandler:
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
-
-        # Generate a Pinpoint ID for proxy usage.
-        self._pinpoint_id = str(uuid4())[:8]
 
     # Platform metadata.
 
