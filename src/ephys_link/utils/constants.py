@@ -61,3 +61,24 @@ EMERGENCY_STOP_MESSAGE = "Emergency Stopping All Manipulators..."
 
 SERVER_NOT_INITIALIZED_ERROR = "Server not initialized."
 PROXY_CLIENT_NOT_INITIALIZED_ERROR = "Proxy client not initialized."
+
+
+def cannot_connect_as_client_is_already_connected_error(new_client_sid: str, current_client_sid: str) -> str:
+    """Generate an error message for when the client is already connected.
+    Args:
+        new_client_sid: The SID of the new client.
+        current_client_sid: The SID of the current client.
+    Returns:
+        str: The error message.
+    """
+    return f"Cannot connect {new_client_sid} as {current_client_sid} is already connected."
+
+
+def client_disconnected_without_being_connected_error(client_sid: str) -> str:
+    """Generate an error message for when the client is disconnected without being connected.
+    Args:
+        client_sid: The SID of the client.
+    Returns:
+        str: The error message.
+    """
+    return f"Client {client_sid} disconnected without being connected."

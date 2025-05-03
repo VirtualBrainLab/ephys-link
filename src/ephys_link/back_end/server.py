@@ -33,7 +33,13 @@ from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 from ephys_link.__about__ import __version__
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.front_end.console import Console
-from ephys_link.utils.constants import PORT, PROXY_CLIENT_NOT_INITIALIZED_ERROR, SERVER_NOT_INITIALIZED_ERROR
+from ephys_link.utils.constants import (
+    PORT,
+    PROXY_CLIENT_NOT_INITIALIZED_ERROR,
+    SERVER_NOT_INITIALIZED_ERROR,
+    cannot_connect_as_client_is_already_connected_error,
+    client_disconnected_without_being_connected_error,
+)
 
 # Server message generic types.
 INPUT_TYPE = TypeVar("INPUT_TYPE", bound=VBLBaseModel)
@@ -197,7 +203,7 @@ class Server:
             return True
 
         self._console.error_print(
-            "CONNECTION REFUSED", f"Cannot connect {sid} as {self._client_sid} is already connected."
+            "CONNECTION REFUSED", cannot_connect_as_client_is_already_connected_error(sid, self._client_sid)
         )
         return False
 
@@ -207,13 +213,14 @@ class Server:
         Args:
             sid: Socket session ID.
         """
-        self._console.info_print("DISCONNECTED", sid)
+        self._console.info_print("DISCONNECTION REQUEST", sid)
 
         # Reset client SID if it matches.
         if self._client_sid == sid:
             self._client_sid = ""
+            self._console.info_print("DISCONNECTED", sid)
         else:
-            self._console.error_print("DISCONNECTION", f"Client {sid} disconnected without being connected.")
+            self._console.error_print("DISCONNECTION", client_disconnected_without_being_connected_error(sid))
 
     async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:  # pyright: ignore [reportExplicitAny]
         """Handle events from the server.

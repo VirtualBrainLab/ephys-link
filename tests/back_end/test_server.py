@@ -10,7 +10,12 @@ import ephys_link.back_end.server
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.back_end.server import Server
 from ephys_link.front_end.console import Console
-from ephys_link.utils.constants import PROXY_CLIENT_NOT_INITIALIZED_ERROR, SERVER_NOT_INITIALIZED_ERROR
+from ephys_link.utils.constants import (
+    PROXY_CLIENT_NOT_INITIALIZED_ERROR,
+    SERVER_NOT_INITIALIZED_ERROR,
+    cannot_connect_as_client_is_already_connected_error,
+    client_disconnected_without_being_connected_error,
+)
 from tests.conftest import DUMMY_STRING, DUMMY_STRING_LIST
 
 
@@ -176,3 +181,71 @@ class TestServer:
         assert init_error.value.args[0] == PROXY_CLIENT_NOT_INITIALIZED_ERROR
         patched_connect.assert_not_awaited()  # pyright: ignore[reportUnusedCallResult]
         patched_wait.assert_not_awaited()  # pyright: ignore[reportUnusedCallResult]
+
+    @pytest.mark.asyncio
+    async def test_connect_success(self, server: Server, console: Console, mocker: MockerFixture) -> None:
+        """Server should allow connection if there is no existing connection."""
+        # Spy console.
+        spied_info_print = mocker.spy(console, "info_print")
+
+        # Act.
+        result = await server.connect(DUMMY_STRING, DUMMY_STRING)
+
+        # Assert.
+        spied_info_print.assert_any_call("CONNECTION REQUEST", DUMMY_STRING)
+        assert server._client_sid == DUMMY_STRING  # noqa: SLF001 # pyright: ignore[reportPrivateUsage]
+        spied_info_print.assert_any_call("CONNECTION GRANTED", DUMMY_STRING)
+        assert result
+
+    @pytest.mark.asyncio
+    async def test_connect_failure(self, server: Server, console: Console, mocker: MockerFixture) -> None:
+        """Server should not allow connection if there is an existing connection."""
+        # Spy console.
+        spied_info_print = mocker.spy(console, "info_print")
+        spied_error_print = mocker.spy(console, "error_print")
+
+        # Mock client sid.
+        _ = mocker.patch.object(server, "_client_sid", new=DUMMY_STRING)
+
+        # Act.
+        result = await server.connect(DUMMY_STRING, DUMMY_STRING)
+
+        # Assert.
+        spied_info_print.assert_any_call("CONNECTION REQUEST", DUMMY_STRING)
+        spied_error_print.assert_called_once_with(
+            "CONNECTION REFUSED", cannot_connect_as_client_is_already_connected_error(DUMMY_STRING, DUMMY_STRING)
+        )
+        assert not result
+
+    @pytest.mark.asyncio
+    async def test_disconnect_success(self, server: Server, console: Console, mocker: MockerFixture) -> None:
+        """Server should allow disconnection if the SID matches the existing connection."""
+        # Spy console.
+        spied_info_print = mocker.spy(console, "info_print")
+
+        # Mock client sid.
+        _ = mocker.patch.object(server, "_client_sid", new=DUMMY_STRING)
+
+        # Act.
+        await server.disconnect(DUMMY_STRING)
+
+        # Assert.
+        spied_info_print.assert_any_call("DISCONNECTION REQUEST", DUMMY_STRING)
+        assert server._client_sid == ""  # noqa: SLF001 # pyright: ignore[reportPrivateUsage]
+        spied_info_print.assert_any_call("DISCONNECTED", DUMMY_STRING)
+
+    @pytest.mark.asyncio
+    async def test_disconnect_failure(self, server: Server, console: Console, mocker: MockerFixture) -> None:
+        """Server should not allow disconnection if there is no existing connection."""
+        # Spy console.
+        spied_info_print = mocker.spy(console, "info_print")
+        spied_error_print = mocker.spy(console, "error_print")
+
+        # Act.
+        await server.disconnect(DUMMY_STRING)
+
+        # Assert.
+        spied_info_print.assert_any_call("DISCONNECTION REQUEST", DUMMY_STRING)
+        spied_error_print.assert_called_once_with(
+            "DISCONNECTION", client_disconnected_without_being_connected_error(DUMMY_STRING)
+        )
