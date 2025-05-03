@@ -1,11 +1,13 @@
 import pytest
 from pytest_mock import MockerFixture
+from socketio import AsyncServer  # pyright: ignore[reportMissingTypeStubs]
 from vbl_aquarium.models.ephys_link import EphysLinkOptions, GetManipulatorsResponse
 
 import ephys_link.back_end.server
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.back_end.server import Server
 from ephys_link.front_end.console import Console
+from ephys_link.utils.constants import SERVER_NOT_INITIALIZED_ERROR
 from tests.conftest import DUMMY_STRING, DUMMY_STRING_LIST
 
 
@@ -29,6 +31,21 @@ class TestServer:
     def proxy_client(self, platform_handler: PlatformHandler, console: Console) -> Server:
         """Fixture for server as proxy client."""
         return Server(EphysLinkOptions(use_proxy=True), platform_handler, console)
+
+    def test_failed_server_init(
+        self, platform_handler: PlatformHandler, console: Console, mocker: MockerFixture
+    ) -> None:
+        """Server should raise error if sio is not an AsyncServer."""
+        # Mock out the AsyncServer init.
+        patched_async_server = mocker.patch.object(AsyncServer, "__new__")
+
+        # Act
+        with pytest.raises(TypeError) as init_error:
+            _ = Server(EphysLinkOptions(use_proxy=False), platform_handler, console)
+
+        # Assert
+        patched_async_server.assert_called_once()
+        assert init_error.value.args[0] == SERVER_NOT_INITIALIZED_ERROR
 
     def test_launch_server(
         self, server: Server, platform_handler: PlatformHandler, console: Console, mocker: MockerFixture

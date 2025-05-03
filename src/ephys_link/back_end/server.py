@@ -33,7 +33,7 @@ from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 from ephys_link.__about__ import __version__
 from ephys_link.back_end.platform_handler import PlatformHandler
 from ephys_link.front_end.console import Console
-from ephys_link.utils.constants import PORT
+from ephys_link.utils.constants import PORT, SERVER_NOT_INITIALIZED_ERROR
 
 # Server message generic types.
 INPUT_TYPE = TypeVar("INPUT_TYPE", bound=VBLBaseModel)
@@ -61,9 +61,8 @@ class Server:
         if not self._options.use_proxy:
             # Exit if _sio is not a Server.
             if not isinstance(self._sio, AsyncServer):
-                error = "Server not initialized."
-                self._console.critical_print(error)
-                raise TypeError(error)
+                self._console.critical_print(SERVER_NOT_INITIALIZED_ERROR)
+                raise TypeError(SERVER_NOT_INITIALIZED_ERROR)
 
             self._app = Application()
             self._sio.attach(self._app)  # pyright: ignore [reportUnknownMemberType]
