@@ -13,13 +13,11 @@ from ephys_link.utils.converters import scalar_mm_to_um, vector4_to_array
 class ParallaxBinding(BaseBinding):
     """Bindings for Parallax platform."""
 
-    # Server cache lifetime (60 FPS).
-    CACHE_LIFETIME = 1 / 60
+    # Server data update rate (30 FPS).
+    SERVER_DATA_UPDATE_RATE = 1 / 30
 
     # Movement polling preferences.
     UNCHANGED_COUNTER_LIMIT = 10
-    UNCHANGED_COUNTER_LIMIT_DEPTH = 50
-    POLL_INTERVAL = 0.1
 
     # Speed preferences (mm/s to use coarse mode).
     COARSE_SPEED_THRESHOLD = 0.1
@@ -65,7 +63,8 @@ class ParallaxBinding(BaseBinding):
     async def get_position(self, manipulator_id: str) -> Vector4:
         manipulator_data: dict[str, Any] = await self._manipulator_data(manipulator_id)
         global_z = float(manipulator_data.get("global_Z", 0.0) or 0.0)
-        await sleep(self.POLL_INTERVAL)  # Wait for the stage to stabilize.
+
+        await sleep(self.SERVER_DATA_UPDATE_RATE)  # Wait for the stage to stabilize.
 
         global_x = float(manipulator_data.get("global_X", 0.0) or 0.0)
         global_y = float(manipulator_data.get("global_Y", 0.0) or 0.0)
@@ -87,8 +86,9 @@ class ParallaxBinding(BaseBinding):
         manipulator_data: dict[str, Any] = await self._manipulator_data(manipulator_id)
         return int(manipulator_data.get("shank_cnt", 1) or 1)
 
+    @staticmethod
     @override
-    def get_movement_tolerance(self) -> float:
+    def get_movement_tolerance() -> float:
         return 0.01
 
     @override
@@ -128,7 +128,7 @@ class ParallaxBinding(BaseBinding):
             and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
+            await sleep(self.SERVER_DATA_UPDATE_RATE)
 
             # Update current position.
             current_position = await self.get_position(manipulator_id)
@@ -171,10 +171,10 @@ class ParallaxBinding(BaseBinding):
         while (
                 not self._movement_stopped
                 and not abs(current_depth - depth) <= self.get_movement_tolerance()
-                and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT_DEPTH
+                and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
-            await sleep(self.POLL_INTERVAL)
+            await sleep(self.SERVER_DATA_UPDATE_RATE)
 
             # Get the current depth.
             current_depth = (await self.get_position(manipulator_id)).w
@@ -237,7 +237,7 @@ class ParallaxBinding(BaseBinding):
     async def _query_data(self) -> dict[str, Any]:  # pyright: ignore [reportExplicitAny]
         try:
             # Update cache if it's expired.
-            if get_running_loop().time() - self.cache_time > self.CACHE_LIFETIME:
+            if get_running_loop().time() - self.cache_time > self.SERVER_DATA_UPDATE_RATE:
                 # noinspection PyTypeChecker
                 self.cache = (await get_running_loop().run_in_executor(None, get, self._url)).json()
                 self.cache_time = get_running_loop().time()
