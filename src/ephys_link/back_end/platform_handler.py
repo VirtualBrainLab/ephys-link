@@ -26,6 +26,7 @@ from vbl_aquarium.models.ephys_link import (
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.bindings.mpm_binding import MPMBinding
+from ephys_link.bindings.parallax_binding import ParallaxBinding
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.console import Console
 from ephys_link.utils.converters import vector4_to_array
@@ -89,6 +90,9 @@ class PlatformHandler:
                 # Pass in HTTP port for Pathfinder MPM.
                 if binding_cli_name == "pathfinder-mpm":
                     return MPMBinding(options.mpm_port)
+                
+                if binding_cli_name == "parallax":
+                    return ParallaxBinding()
 
                 # Otherwise just return the binding.
                 return binding_type()
