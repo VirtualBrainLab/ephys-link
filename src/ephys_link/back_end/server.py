@@ -32,8 +32,16 @@ from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 
 from ephys_link.__about__ import __version__
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.utils.console import Console
-from ephys_link.utils.constants import PORT
+from ephys_link.front_end.console import Console
+from ephys_link.utils.constants import (
+    MALFORMED_REQUEST_ERROR,
+    PORT,
+    PROXY_CLIENT_NOT_INITIALIZED_ERROR,
+    SERVER_NOT_INITIALIZED_ERROR,
+    UNKNOWN_EVENT_ERROR,
+    cannot_connect_as_client_is_already_connected_error,
+    client_disconnected_without_being_connected_error,
+)
 
 # Server message generic types.
 INPUT_TYPE = TypeVar("INPUT_TYPE", bound=VBLBaseModel)
@@ -61,9 +69,8 @@ class Server:
         if not self._options.use_proxy:
             # Exit if _sio is not a Server.
             if not isinstance(self._sio, AsyncServer):
-                error = "Server not initialized."
-                self._console.critical_print(error)
-                raise TypeError(error)
+                self._console.critical_print(SERVER_NOT_INITIALIZED_ERROR)
+                raise TypeError(SERVER_NOT_INITIALIZED_ERROR)
 
             self._app = Application()
             self._sio.attach(self._app)  # pyright: ignore [reportUnknownMemberType]
@@ -101,9 +108,8 @@ class Server:
             async def connect_proxy() -> None:
                 # Exit if _sio is not a proxy client.
                 if not isinstance(self._sio, AsyncClient):
-                    error = "Proxy client not initialized."
-                    self._console.critical_print(error)
-                    raise TypeError(error)
+                    self._console.critical_print(PROXY_CLIENT_NOT_INITIALIZED_ERROR)
+                    raise TypeError(PROXY_CLIENT_NOT_INITIALIZED_ERROR)
 
                 # noinspection HttpUrlsUsage
                 await self._sio.connect(f"http://{self._options.proxy_address}:{PORT}")  # pyright: ignore [reportUnknownMemberType]
@@ -125,13 +131,13 @@ class Server:
             Response for a malformed request.
         """
         self._console.error_print("MALFORMED REQUEST", f"{request}: {data}")
-        return dumps({"error": "Malformed request."})
+        return dumps(MALFORMED_REQUEST_ERROR)
 
     async def _run_if_data_available(
         self,
         function: Callable[[str], Coroutine[Any, Any, VBLBaseModel]],  # pyright: ignore [reportExplicitAny]
         event: str,
-        data: tuple[tuple[Any], ...],  # pyright: ignore [reportExplicitAny]
+        data: Any,  # pyright: ignore [reportAny, reportExplicitAny]
     ) -> str:
         """Run a function if data is available.
 
@@ -143,17 +149,16 @@ class Server:
         Returns:
             Response data from function.
         """
-        request_data = data[1]
-        if request_data:
-            return str((await function(str(request_data))).to_json_string())
-        return self._malformed_request_response(event, request_data)
+        if data:
+            return str((await function(str(data))).to_json_string())  # pyright: ignore[reportAny]
+        return self._malformed_request_response(event, data)  # pyright: ignore[reportAny]
 
     async def _run_if_data_parses(
         self,
         function: Callable[[INPUT_TYPE], Coroutine[Any, Any, OUTPUT_TYPE]],  # pyright: ignore [reportExplicitAny]
         data_type: type[INPUT_TYPE],
         event: str,
-        data: tuple[tuple[Any], ...],  # pyright: ignore [reportExplicitAny]
+        data: Any,  # pyright: ignore [reportAny, reportExplicitAny]
     ) -> str:
         """Run a function if data parses.
 
@@ -166,18 +171,17 @@ class Server:
         Returns:
             Response data from function.
         """
-        request_data = data[1]
-        if request_data:
+        if data:
             try:
-                parsed_data = data_type(**loads(str(request_data)))
+                parsed_data = data_type(**loads(str(data)))  # pyright: ignore[reportAny]
             except JSONDecodeError:
-                return self._malformed_request_response(event, request_data)
+                return self._malformed_request_response(event, data)  # pyright: ignore[reportAny]
             except ValidationError as e:
                 self._console.exception_error_print(event, e)
-                return self._malformed_request_response(event, request_data)
+                return self._malformed_request_response(event, data)  # pyright: ignore[reportAny]
             else:
                 return str((await function(parsed_data)).to_json_string())
-        return self._malformed_request_response(event, request_data)
+        return self._malformed_request_response(event, data)  # pyright: ignore[reportAny]
 
     # Event Handlers.
 
@@ -199,7 +203,7 @@ class Server:
             return True
 
         self._console.error_print(
-            "CONNECTION REFUSED", f"Cannot connect {sid} as {self._client_sid} is already connected."
+            "CONNECTION REFUSED", cannot_connect_as_client_is_already_connected_error(sid, self._client_sid)
         )
         return False
 
@@ -209,22 +213,24 @@ class Server:
         Args:
             sid: Socket session ID.
         """
-        self._console.info_print("DISCONNECTED", sid)
+        self._console.info_print("DISCONNECTION REQUEST", sid)
 
         # Reset client SID if it matches.
         if self._client_sid == sid:
             self._client_sid = ""
+            self._console.info_print("DISCONNECTED", sid)
         else:
-            self._console.error_print("DISCONNECTION", f"Client {sid} disconnected without being connected.")
+            self._console.error_print("DISCONNECTION", client_disconnected_without_being_connected_error(sid))
 
-    async def platform_event_handler(self, event: str, *args: tuple[Any]) -> str:  # pyright: ignore [reportExplicitAny]
+    async def platform_event_handler(self, event: str, _: str, data: Any) -> str:  # pyright: ignore [reportAny, reportExplicitAny]
         """Handle events from the server.
 
         Matches incoming events based on the Socket.IO API.
 
         Args:
             event: Event name.
-            args: Event arguments.
+            _: Socket session ID (unused).
+            data: Event data.
 
         Returns:
             Response data.
@@ -247,28 +253,27 @@ class Server:
             case "get_manipulators":
                 return str((await self._platform_handler.get_manipulators()).to_json_string())
             case "get_position":
-                return await self._run_if_data_available(self._platform_handler.get_position, event, args)
+                return await self._run_if_data_available(self._platform_handler.get_position, event, data)
             case "get_angles":
-                return await self._run_if_data_available(self._platform_handler.get_angles, event, args)
+                return await self._run_if_data_available(self._platform_handler.get_angles, event, data)
             case "get_shank_count":
-                return await self._run_if_data_available(self._platform_handler.get_shank_count, event, args)
+                return await self._run_if_data_available(self._platform_handler.get_shank_count, event, data)
             case "set_position":
                 return await self._run_if_data_parses(
-                    self._platform_handler.set_position, SetPositionRequest, event, args
+                    self._platform_handler.set_position, SetPositionRequest, event, data
                 )
             case "set_depth":
-                return await self._run_if_data_parses(self._platform_handler.set_depth, SetDepthRequest, event, args)
+                return await self._run_if_data_parses(self._platform_handler.set_depth, SetDepthRequest, event, data)
             case "set_inside_brain":
                 return await self._run_if_data_parses(
-                    self._platform_handler.set_inside_brain, SetInsideBrainRequest, event, args
+                    self._platform_handler.set_inside_brain, SetInsideBrainRequest, event, data
                 )
             case "stop":
-                request_data = args[1]
-                if request_data:
-                    return await self._platform_handler.stop(str(request_data))
-                return self._malformed_request_response(event, request_data)
+                if data:
+                    return await self._platform_handler.stop(str(data))  # pyright: ignore[reportAny]
+                return self._malformed_request_response(event, data)  # pyright: ignore[reportAny]
             case "stop_all":
                 return await self._platform_handler.stop_all()
             case _:
                 self._console.error_print("EVENT", f"Unknown event: {event}.")
-                return dumps({"error": "Unknown event."})
+                return dumps(UNKNOWN_EVENT_ERROR)
