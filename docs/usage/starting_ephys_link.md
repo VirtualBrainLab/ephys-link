@@ -67,7 +67,7 @@ Ephys Link can be invoked from the command line with the same arguments as the s
 
 Ephys Link supports both uMp-3 and uMp-4 and will automatically detect which platform you are using. Currently, Ephys
 Link only supports connecting to rigs that use all uMp-3 or uMp-4 manipulators (not both simultaneously). This will be
-determined by the first manipulator Ephys Link connects with in a rig.
+determined by the first manipulator Ephys Link connects with in a rig. Ephys Link will close if it detects both types.
 
 ### New Scale
 
