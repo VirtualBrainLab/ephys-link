@@ -71,6 +71,8 @@ exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.sp
 exe-clean = "pyinstaller.exe ephys_link.spec -y --clean"
 check = "basedpyright"
 check-watched = "basedpyright --watch"
+tests = "pytest"
+cov = "pytest --cov=ephys_link --cov-report=html --cov-report=term-missing"
 
 [tool.hatch.envs.docs]
 installer = "uv"
