@@ -28,7 +28,7 @@ PORT = 3000
 # Error messages
 
 NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR = (
-    'Can not move manipulator while inside the brain. Set the depth ("set_depth") instead.'
+    'Cannot move manipulator while inside the brain. Set the depth ("set_depth") instead.'
 )
 
 
