@@ -1,6 +1,6 @@
 from asyncio import run
 
-from vbl_aquarium.models.ephys_link import EphysLinkOptions, SetDepthRequest
+from vbl_aquarium.models.ephys_link import SetDepthRequest
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
