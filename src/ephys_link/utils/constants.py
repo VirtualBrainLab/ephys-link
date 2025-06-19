@@ -82,3 +82,7 @@ def client_disconnected_without_being_connected_error(client_sid: str) -> str:
         str: The error message.
     """
     return f"Client {client_sid} disconnected without being connected."
+
+
+MALFORMED_REQUEST_ERROR = {"error": "Malformed request."}
+UNKNOWN_EVENT_ERROR = {"error": "Unknown event."}
