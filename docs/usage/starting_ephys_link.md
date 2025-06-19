@@ -60,3 +60,17 @@ More options can be viewed by running `EphysLink.exe -h`.
 
 Ephys Link can be invoked from the command line with the same arguments as the standalone executable using the
 `ephys-link` binary (or `el` for short).
+
+## Platform Notes
+
+### Sensapex
+
+Ephys Link supports both uMp-3 and uMp-4 and will automatically detect which platform you are using. Currently, Ephys
+Link only supports connecting to rigs that use all uMp-3 or uMp-4 manipulators (not both simultaneously). This will be
+determined by the first manipulator Ephys Link connects with in a rig. Ephys Link will close if it detects both types.
+
+### New Scale
+
+Pathfinder MPM is New Scale's control software and Ephys Link communicates with it instead of
+directly with manipulators. Ensure your New Scale manipulators are properly configured with Pathfinder MPM before
+starting Ephys Link.
