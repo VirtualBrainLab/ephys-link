@@ -7,8 +7,9 @@ from requests import ConnectionError, ConnectTimeout
 
 from ephys_link.__about__ import __version__
 from ephys_link.front_end.console import Console
+from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.constants import ASCII, UNABLE_TO_CHECK_FOR_UPDATES_ERROR
-from ephys_link.utils.startup import check_for_updates, preamble
+from ephys_link.utils.startup import check_for_updates, get_bindings, preamble
 
 
 class TestStartup:
@@ -83,3 +84,13 @@ class TestStartup:
 
         # Assert: error_print should be called with the correct message.
         spied_error_print.assert_called_with("UPDATE", UNABLE_TO_CHECK_FOR_UPDATES_ERROR)
+
+    def test_get_bindings_returns_valid_bindings(self):
+        """Test that get_bindings returns a list of valid binding classes."""
+        # Act.
+        bindings = get_bindings()
+
+        # Assert.
+        assert isinstance(bindings, list)
+        assert all(issubclass(b, BaseBinding) for b in bindings)
+        assert BaseBinding not in bindings
