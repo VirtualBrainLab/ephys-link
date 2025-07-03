@@ -15,6 +15,7 @@ from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.constants import (
     ASCII,
     BINDINGS_DIRECTORY,
+    UNABLE_TO_CHECK_FOR_UPDATES_ERROR,
     ump_4_3_deprecation_error,
     unrecognized_platform_type_error,
 )
@@ -44,9 +45,7 @@ def check_for_updates(console: Console) -> None:
             console.critical_print(f"Update available: {latest_version} (current: {__version__})")
             console.critical_print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
     except (ConnectionError, ConnectTimeout):
-        console.error_print(
-            "UPDATE", "Unable to check for updates. Ignore updates or use the the -i flag to disable checks.\n"
-        )
+        console.error_print("UPDATE", UNABLE_TO_CHECK_FOR_UPDATES_ERROR)
 
 
 def get_bindings() -> list[type[BaseBinding]]:
