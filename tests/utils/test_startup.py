@@ -9,12 +9,15 @@ from vbl_aquarium.models.ephys_link import EphysLinkOptions
 from ephys_link.__about__ import __version__
 from ephys_link.bindings.fake_binding import FakeBinding
 from ephys_link.bindings.mpm_binding import MPMBinding
-from ephys_link.bindings.ump_binding import UmpBinding
 from ephys_link.front_end.console import Console
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.constants import ASCII, UNABLE_TO_CHECK_FOR_UPDATES_ERROR, ump_4_3_deprecation_error, \
-    unrecognized_platform_type_error
-from ephys_link.utils.startup import check_for_updates, get_bindings, preamble, get_binding_instance
+from ephys_link.utils.constants import (
+    ASCII,
+    UNABLE_TO_CHECK_FOR_UPDATES_ERROR,
+    ump_4_3_deprecation_error,
+    unrecognized_platform_type_error,
+)
+from ephys_link.utils.startup import check_for_updates, get_binding_instance, get_bindings, preamble
 
 
 class TestStartup:
@@ -99,9 +102,11 @@ class TestStartup:
         assert isinstance(bindings, list)
         assert all(issubclass(b, BaseBinding) for b in bindings)
         assert BaseBinding not in bindings
-    
-    @pytest.mark.parametrize("cli_name,binding", [("fake", FakeBinding), ("pathfinder-mpm", MPMBinding)])
-    def test_get_binding_instance(self, cli_name:str, binding:BaseBinding, console: Console, mocker: MockerFixture):
+
+    @pytest.mark.parametrize(("cli_name", "binding"), [("fake", FakeBinding), ("pathfinder-mpm", MPMBinding)])
+    def test_get_binding_instance(
+        self, cli_name: str, binding: FakeBinding | MPMBinding, console: Console, mocker: MockerFixture
+    ):
         """Test that get_binding_instance returns an instance of the requested binding class."""
         # Arrange.
         spied_error_print = mocker.spy(console, "error_print")
@@ -111,20 +116,21 @@ class TestStartup:
         binding_instance = get_binding_instance(fake_options, console)
 
         # Assert.
-        assert isinstance(binding_instance, binding)
+        # noinspection PyTypeChecker
+        assert isinstance(binding_instance, binding)  # pyright: ignore [reportArgumentType]
         spied_error_print.assert_not_called()
-    
+
     @pytest.mark.parametrize("cli_name", ["ump-4", "ump-3"])
     def test_get_binding_instance_ump(self, cli_name: str, console: Console, mocker: MockerFixture):
         """Test that get_binding_instance returns an instance of the UmpBinding class and handles deprecation."""
         # Arrange.
         spied_error_print = mocker.spy(console, "error_print")
         fake_options = EphysLinkOptions(type=cli_name)
-        mock_ump = mocker.patch("ephys_link.bindings.ump_binding.UmpBinding", autospec=True)
+        _ = mocker.patch("ephys_link.bindings.ump_binding.UmpBinding", autospec=True)
 
         # Act.
-        with pytest.raises(ValueError) as e:
-            get_binding_instance(fake_options, console)
+        with pytest.raises(ValueError, match=unrecognized_platform_type_error("ump")) as e:
+            _ = get_binding_instance(fake_options, console)
 
         # Assert.
         spied_error_print.assert_called_once_with("DEPRECATION", ump_4_3_deprecation_error(cli_name))

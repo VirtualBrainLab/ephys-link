@@ -91,8 +91,10 @@ UNABLE_TO_CHECK_FOR_UPDATES_ERROR = (
     "Unable to check for updates. Ignore updates or use the the -i flag to disable checks.\n"
 )
 
-def ump_4_3_deprecation_error(cli_name: str): 
-    return f"CLI option '{cli_name}' is deprecated and will be removed in v3.0.0. Use 'ump' instead.",
+
+def ump_4_3_deprecation_error(cli_name: str):
+    return f"CLI option '{cli_name}' is deprecated and will be removed in v3.0.0. Use 'ump' instead."
+
 
 def unrecognized_platform_type_error(cli_name: str) -> str:
     """Generate an error message for when the platform type is not recognized.

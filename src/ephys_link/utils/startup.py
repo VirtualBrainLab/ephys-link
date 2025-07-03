@@ -12,8 +12,12 @@ from ephys_link.__about__ import __version__
 from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.front_end.console import Console
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.constants import ASCII, BINDINGS_DIRECTORY, ump_4_3_deprecation_error, \
-    unrecognized_platform_type_error
+from ephys_link.utils.constants import (
+    ASCII,
+    BINDINGS_DIRECTORY,
+    ump_4_3_deprecation_error,
+    unrecognized_platform_type_error,
+)
 
 
 def preamble() -> None:
