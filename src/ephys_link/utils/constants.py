@@ -86,3 +86,21 @@ def client_disconnected_without_being_connected_error(client_sid: str) -> str:
 
 MALFORMED_REQUEST_ERROR = {"error": "Malformed request."}
 UNKNOWN_EVENT_ERROR = {"error": "Unknown event."}
+
+UNABLE_TO_CHECK_FOR_UPDATES_ERROR = (
+    "Unable to check for updates. Ignore updates or use the -i flag to disable checks.\n"
+)
+
+
+def ump_4_3_deprecation_error(cli_name: str):
+    return f"CLI option '{cli_name}' is deprecated and will be removed in v3.0.0. Use 'ump' instead."
+
+
+def unrecognized_platform_type_error(cli_name: str) -> str:
+    """Generate an error message for when the platform type is not recognized.
+    Args:
+        cli_name: The platform type that is not recognized.
+    Returns:
+        str: The error message.
+    """
+    return f'Platform type "{cli_name}" not recognized.'
