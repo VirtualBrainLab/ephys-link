@@ -12,7 +12,8 @@ from ephys_link.__about__ import __version__
 from ephys_link.bindings.mpm_binding import MPMBinding
 from ephys_link.front_end.console import Console
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.constants import ASCII, BINDINGS_DIRECTORY
+from ephys_link.utils.constants import ASCII, BINDINGS_DIRECTORY, ump_4_3_deprecation_error, \
+    unrecognized_platform_type_error
 
 
 def preamble() -> None:
@@ -80,7 +81,7 @@ def get_binding_instance(options: EphysLinkOptions, console: Console) -> BaseBin
         if selected_type in ("ump-4", "ump-3"):
             console.error_print(
                 "DEPRECATION",
-                f"CLI option '{selected_type}' is deprecated and will be removed in v3.0.0. Use 'ump' instead.",
+                ump_4_3_deprecation_error(selected_type),
             )
             selected_type = "ump"
 
@@ -93,7 +94,7 @@ def get_binding_instance(options: EphysLinkOptions, console: Console) -> BaseBin
             return binding_type()
 
     # Raise an error if the platform type is not recognized.
-    error_message = f'Platform type "{options.type}" not recognized.'
+    error_message = unrecognized_platform_type_error(selected_type)
     console.critical_print(error_message)
     raise ValueError(error_message)
 
