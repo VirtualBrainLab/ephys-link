@@ -88,7 +88,7 @@ MALFORMED_REQUEST_ERROR = {"error": "Malformed request."}
 UNKNOWN_EVENT_ERROR = {"error": "Unknown event."}
 
 UNABLE_TO_CHECK_FOR_UPDATES_ERROR = (
-    "Unable to check for updates. Ignore updates or use the the -i flag to disable checks.\n"
+    "Unable to check for updates. Ignore updates or use the -i flag to disable checks.\n"
 )
 
 
