@@ -101,12 +101,3 @@ def get_binding_instance(options: EphysLinkOptions, console: Console) -> BaseBin
     error_message = unrecognized_platform_type_error(selected_type)
     console.critical_print(error_message)
     raise ValueError(error_message)
-
-
-def get_binding_display_to_cli_name() -> dict[str, str]:
-    """Get mapping of display to CLI option names of the available platform bindings.
-
-    Returns:
-        Dictionary of platform binding display name to CLI option name.
-    """
-    return {binding_type.get_display_name(): binding_type.get_cli_name() for binding_type in get_bindings()}

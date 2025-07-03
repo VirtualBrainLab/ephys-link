@@ -20,7 +20,7 @@ from platformdirs import user_config_dir
 from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
 from ephys_link.__about__ import __version__ as version
-from ephys_link.utils.startup import get_binding_display_to_cli_name
+from ephys_link.utils.startup import get_bindings
 
 # Define options path.
 OPTIONS_DIR = join(user_config_dir(), "VBL", "Ephys Link")
@@ -156,7 +156,7 @@ class GUI:
         platform_type_settings = ttk.LabelFrame(mainframe, text="Platform Type", padding=3)
         platform_type_settings.grid(column=0, row=1, sticky="news")
 
-        for index, (display_name, cli_name) in enumerate(get_binding_display_to_cli_name().items()):
+        for index, (display_name, cli_name) in enumerate(self._get_binding_display_to_cli_name().items()):
             ttk.Radiobutton(
                 platform_type_settings,
                 text=display_name,
@@ -202,3 +202,11 @@ class GUI:
         """
         self._submit = True
         self._root.destroy()
+
+    def _get_binding_display_to_cli_name(self) -> dict[str, str]:
+        """Get mapping of display to CLI option names of the available platform bindings.
+
+        Returns:
+            Dictionary of platform binding display name to CLI option name.
+        """
+        return {binding_type.get_display_name(): binding_type.get_cli_name() for binding_type in get_bindings()}
