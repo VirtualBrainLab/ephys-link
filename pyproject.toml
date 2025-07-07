@@ -59,12 +59,12 @@ exclude = ["/.github", "/.idea", "/docs"]
 installer = "uv"
 python = "3.13"
 dependencies = [
-    "pyinstaller==6.13.0",
-    "basedpyright==1.29.1",
-    "pytest==8.3.5",
-    "pytest-cov==6.1.1",
-    "pytest-mock==3.14.0",
-    "pytest-asyncio==0.26.0"
+    "pyinstaller==6.14.2",
+    "basedpyright==1.29.5",
+    "pytest==8.4.1",
+    "pytest-cov==6.2.1",
+    "pytest-mock==3.14.1",
+    "pytest-asyncio==1.0.0"
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
