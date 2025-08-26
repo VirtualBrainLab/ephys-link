@@ -33,7 +33,7 @@ dependencies = [
     "platformdirs==4.3.8",
     "pyserial==3.5",
     "python-socketio[asyncio_client]==5.13.0",
-    "requests==2.32.4",
+    "requests==2.32.5",
     "sensapex==1.400.4",
     "rich==14.1.0",
     "vbl-aquarium==1.0.0"

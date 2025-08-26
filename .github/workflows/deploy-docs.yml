@@ -49,7 +49,7 @@ jobs:
       # Upload artifact on main.
       - name: ⬆️ Upload Artifacts
         if: github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: "site"
 
