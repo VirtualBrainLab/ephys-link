@@ -10,7 +10,6 @@ from sensapex import UMP, SensapexDevice  # pyright: ignore [reportMissingTypeSt
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.constants import RESOURCES_DIRECTORY
 from ephys_link.utils.converters import (
     list_to_vector4,
     scalar_mm_to_um,
@@ -31,7 +30,6 @@ class UmpBinding(BaseBinding):
         """Initialize uMp bindings."""
 
         # Establish connection to Sensapex API (exit if connection fails).
-        UMP.set_library_path(RESOURCES_DIRECTORY)
         self._ump: UMP = UMP.get_ump()  # pyright: ignore [reportUnknownMemberType]
 
         # Compute axis count, assumed as the first device. 0 if no devices are connected.

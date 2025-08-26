@@ -19,7 +19,6 @@ ASCII = r"""
 
 # Absolute path to the resource folder.
 PACKAGE_DIRECTORY = dirname(dirname(abspath(__file__)))
-RESOURCES_DIRECTORY = join(PACKAGE_DIRECTORY, "resources")
 BINDINGS_DIRECTORY = join(PACKAGE_DIRECTORY, "bindings")
 
 # Ephys Link Port
