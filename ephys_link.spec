@@ -19,7 +19,7 @@ bindings = [binding for binding in collect_submodules("ephys_link.bindings") if 
 a = Analysis(
     ['src\\ephys_link\\__main__.py'],
     pathex=[],
-    binaries=[('src\\ephys_link\\resources', 'ephys_link\\resources')],
+    binaries=[],
     datas=[],
     hiddenimports=['engineio.async_drivers.aiohttp'] + bindings,
     hookspath=[],
