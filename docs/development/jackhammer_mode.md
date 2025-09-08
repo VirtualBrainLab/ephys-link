@@ -29,4 +29,4 @@ You can (optionally) test if everything is still working by [running Ephys Link]
 
 There's a test script in `scripts/jackhammer.py` that makes a call to Jackhammer mode.
 
-In short jackhammer mode enables open-loop control of the manipulators by letting you turn on and off the motors in a sequence. You can define a "first" and "second" stage to cycle between. When the "thrust length" argument is positive, the manipulator will move in the forward direction and when it is negative it will move backwards. Thrust length is not a real unit but is some percentage representing the amount of movement a step should take.
+In short, jackhammer mode enables open-loop control of the manipulators by letting you turn on and off the motors in a sequence. You can define a "first" and "second" stage to cycle between. When the "thrust length" argument is positive, the manipulator will move in the forward direction and when it is negative it will move backwards. Thrust length is not a real unit but is some percentage representing the amount of movement a step should take.
