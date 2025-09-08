@@ -30,7 +30,7 @@ dependencies = [
     "colorama==0.4.6",
     "keyboard==0.13.5",
     "packaging==25.0",
-    "platformdirs==4.3.8",
+    "platformdirs==4.4.0",
     "pyserial==3.5",
     "python-socketio[asyncio_client]==5.13.0",
     "requests==2.32.5",
