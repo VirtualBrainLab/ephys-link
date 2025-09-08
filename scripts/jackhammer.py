@@ -17,11 +17,13 @@ SECOND_STAGE_THRUST_LENGTH = -15  # +/- 0 - 100
 # Do not edit below this line.
 um = UMP.get_ump()
 
-um.call("um_take_jackhammer_step",
-        c_int(DEVICE_ID),
-        c_char(AXIS),
-        c_int(NUMBER_OF_CYCLES),
-        c_int(NUMBER_OF_STEP_IN_FIRST_STAGE),
-        c_int(FIRST_STAGE_THRUST_LENGTH),
-        c_int(NUMBER_OF_STEP_IN_SECOND_STAGE),
-        c_int(SECOND_STAGE_THRUST_LENGTH))
+um.call(
+    "um_take_jackhammer_step",
+    c_int(DEVICE_ID),
+    c_char(AXIS),
+    c_int(NUMBER_OF_CYCLES),
+    c_int(NUMBER_OF_STEP_IN_FIRST_STAGE),
+    c_int(FIRST_STAGE_THRUST_LENGTH),
+    c_int(NUMBER_OF_STEP_IN_SECOND_STAGE),
+    c_int(SECOND_STAGE_THRUST_LENGTH),
+)
