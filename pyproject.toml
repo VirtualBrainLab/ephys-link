@@ -59,12 +59,12 @@ exclude = ["/.github", "/.idea", "/docs"]
 installer = "uv"
 python = "3.13"
 dependencies = [
-    "pyinstaller==6.14.2",
-    "basedpyright==1.29.5",
-    "pytest==8.4.1",
-    "pytest-cov==6.2.1",
-    "pytest-mock==3.14.1",
-    "pytest-asyncio==1.0.0"
+    "pyinstaller==6.15.0",
+    "basedpyright==1.31.4",
+    "pytest==8.4.2",
+    "pytest-cov==6.3.0",
+    "pytest-mock==3.15.0",
+    "pytest-asyncio==1.1.0"
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
@@ -79,8 +79,8 @@ installer = "uv"
 python = "3.13"
 skip-install = true
 dependencies = [
-    "mkdocs-material==9.6.11",
-    "mkdocstrings-python==1.16.10",
+    "mkdocs-material==9.6.19",
+    "mkdocstrings-python==1.18.2",
     "mkdocs-gen-files==0.5.0",
     "mkdocs-literate-nav==0.6.2",
     "mkdocs-section-index==0.3.10"
