@@ -32,7 +32,7 @@ dependencies = [
     "packaging==25.0",
     "platformdirs==4.4.0",
     "pyserial==3.5",
-    "python-socketio[asyncio_client]==5.13.0",
+    "python-socketio[asyncio_client]==5.14.1",
     "requests==2.32.5",
     "sensapex==1.400.4",
     "rich==14.1.0",
