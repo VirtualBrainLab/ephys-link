@@ -95,7 +95,7 @@ def get_binding_instance(options: EphysLinkOptions, console: Console) -> BaseBin
                 case "pathfinder-mpm":
                     return MPMBinding(options.mpm_port)
                 case "parallax":
-                    return ParallaxBinding()
+                    return ParallaxBinding(options.parallax_port)
                 case _:
                     # Otherwise just return the binding.
                     return binding_type()
