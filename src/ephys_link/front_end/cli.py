@@ -76,7 +76,14 @@ class CLI:
             type=int,
             default=8080,
             dest="mpm_port",
-            help="Port New Scale Pathfinder MPM's server is on. Default: 8080.",
+            help="HTTP port New Scale Pathfinder MPM's server is on. Default: 8080.",
+        )
+        _ = self._parser.add_argument(
+            "--parallax-port",
+            type=int,
+            default=8081,
+            dest="parallax_port",
+            help="HTTP port Parallax's server is on. Default: 8081.",
         )
         _ = self._parser.add_argument(
             "-s",
