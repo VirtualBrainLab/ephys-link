@@ -7,14 +7,13 @@ name = "ephys-link"
 dynamic = ["version"]
 description = "A Python Socket.IO server that allows any Socket.IO-compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 license = "GPL-3.0-only"
 keywords = ["socket-io", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "neurotech", "virtualbrainlab", "new-scale"]
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 classifiers = [
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python :: 3",
@@ -57,14 +56,14 @@ exclude = ["/.github", "/.idea", "/docs"]
 
 [tool.hatch.envs.default]
 installer = "uv"
-python = "3.13"
+python = "3.14"
 dependencies = [
-    "pyinstaller==6.15.0",
-    "basedpyright==1.31.4",
+    "pyinstaller==6.16.0",
+    "basedpyright==1.32.1",
     "pytest==8.4.2",
-    "pytest-cov==6.3.0",
-    "pytest-mock==3.15.0",
-    "pytest-asyncio==1.1.0"
+    "pytest-cov==7.0.0",
+    "pytest-mock==3.15.1",
+    "pytest-asyncio==1.2.0"
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
@@ -76,7 +75,7 @@ cov = "pytest --cov=ephys_link --cov-report=html --cov-report=term-missing"
 
 [tool.hatch.envs.docs]
 installer = "uv"
-python = "3.13"
+python = "3.14"
 skip-install = true
 dependencies = [
     "mkdocs-material==9.6.19",
