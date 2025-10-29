@@ -10,6 +10,7 @@ from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
 from ephys_link.__about__ import __version__
 from ephys_link.bindings.mpm_binding import MPMBinding
+from ephys_link.bindings.parallax_binding import ParallaxBinding
 from ephys_link.front_end.console import Console
 from ephys_link.utils.base_binding import BaseBinding
 from ephys_link.utils.constants import (
@@ -89,12 +90,15 @@ def get_binding_instance(options: EphysLinkOptions, console: Console) -> BaseBin
             selected_type = "ump"
 
         if binding_cli_name == selected_type:
-            # Pass in HTTP port for Pathfinder MPM.
-            if binding_cli_name == "pathfinder-mpm":
-                return MPMBinding(options.mpm_port)
-
-            # Otherwise just return the binding.
-            return binding_type()
+            # Pass in HTTP port for Pathfinder MPM and Parallax.
+            match binding_cli_name:
+                case "pathfinder-mpm":
+                    return MPMBinding(options.mpm_port)
+                case "parallax":
+                    return ParallaxBinding()
+                case _:
+                    # Otherwise just return the binding.
+                    return binding_type()
 
     # Raise an error if the platform type is not recognized.
     error_message = unrecognized_platform_type_error(selected_type)

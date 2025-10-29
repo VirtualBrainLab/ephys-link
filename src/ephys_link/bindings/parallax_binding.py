@@ -169,9 +169,9 @@ class ParallaxBinding(BaseBinding):
 
         # Wait for the manipulator to reach the target depth or be stopped or get stuck.
         while (
-                not self._movement_stopped
-                and not abs(current_depth - depth) <= self.get_movement_tolerance()
-                and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
+            not self._movement_stopped
+            and not abs(current_depth - depth) <= self.get_movement_tolerance()
+            and unchanged_counter < self.UNCHANGED_COUNTER_LIMIT
         ):
             # Wait for a short time before checking again.
             await sleep(self.SERVER_DATA_UPDATE_RATE)
@@ -215,7 +215,7 @@ class ParallaxBinding(BaseBinding):
             x=platform_space.x,
             y=platform_space.z,
             z=platform_space.y,
-            w=self.get_dimensions().w-platform_space.w,
+            w=self.get_dimensions().w - platform_space.w,
         )
 
     @override
@@ -230,7 +230,7 @@ class ParallaxBinding(BaseBinding):
             x=unified_space.x,
             y=unified_space.z,
             z=unified_space.y,
-            w=self.get_dimensions().w-unified_space.w,
+            w=self.get_dimensions().w - unified_space.w,
         )
 
     # Helper functions.
@@ -257,6 +257,7 @@ class ParallaxBinding(BaseBinding):
 
         if manipulator_id in data:
             return data[manipulator_id]
+        return None
 
     async def _put_request(self, request: dict[str, Any]) -> None:  # pyright: ignore [reportExplicitAny]
         _ = await get_running_loop().run_in_executor(None, put, self._url, dumps(request))
