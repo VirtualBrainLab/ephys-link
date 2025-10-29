@@ -8,12 +8,10 @@ Usage:
 """
 
 from typing import final
-from uuid import uuid4
 
 from vbl_aquarium.models.ephys_link import (
     AngularResponse,
     BooleanStateResponse,
-    EphysLinkOptions,
     GetManipulatorsResponse,
     PlatformInfo,
     PositionalResponse,
@@ -23,84 +21,37 @@ from vbl_aquarium.models.ephys_link import (
     SetPositionRequest,
     ShankCountResponse,
 )
-from vbl_aquarium.models.unity import Vector4
 
-from ephys_link.bindings.mpm_binding import MPMBinding
-from ephys_link.bindings.parallax_binding import ParallaxBinding
+from ephys_link.front_end.console import Console
 from ephys_link.utils.base_binding import BaseBinding
-from ephys_link.utils.console import Console
+from ephys_link.utils.constants import (
+    EMERGENCY_STOP_MESSAGE,
+    NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR,
+    did_not_reach_target_depth_error,
+    did_not_reach_target_position_error,
+)
 from ephys_link.utils.converters import vector4_to_array
-from ephys_link.utils.startup import get_bindings
 
 
 @final
 class PlatformHandler:
     """Handler for platform commands."""
 
-    def __init__(self, options: EphysLinkOptions, console: Console) -> None:
+    def __init__(self, binding: BaseBinding, console: Console) -> None:
         """Initialize platform handler.
 
         Args:
-            options: CLI options.
+            binding: Binding instance for the platform.
             console: Console instance.
         """
-        # Store the CLI options.
-        self._options = options
-
         # Store the console.
         self._console = console
 
         # Define bindings based on platform type.
-        self._bindings = self._get_binding_instance(options)
+        self._bindings = binding
 
         # Record which IDs are inside the brain.
         self._inside_brain: set[str] = set()
-
-        # Generate a Pinpoint ID for proxy usage.
-        self._pinpoint_id = str(uuid4())[:8]
-
-    def _get_binding_instance(self, options: EphysLinkOptions) -> BaseBinding:
-        """Match the platform type to the appropriate bindings.
-
-        Args:
-            options: CLI options.
-
-        Raises:
-            ValueError: If the platform type is not recognized.
-
-        Returns:
-            Bindings for the specified platform type.
-        """
-
-        # What the user supplied.
-        selected_type = options.type
-
-        for binding_type in get_bindings():
-            binding_cli_name = binding_type.get_cli_name()
-
-            # Notify deprecation of "ump-4" and "ump-3" CLI options and fix.
-            if selected_type in ("ump-4", "ump-3"):
-                self._console.error_print(
-                    "DEPRECATION",
-                    f"CLI option '{selected_type}' is deprecated and will be removed in v3.0.0. Use 'ump' instead.",
-                )
-                selected_type = "ump"
-
-            if binding_cli_name == selected_type:
-                # Pass in HTTP port for Pathfinder MPM.
-                if binding_cli_name == "pathfinder-mpm":
-                    return MPMBinding(options.mpm_port)
-                
-                if binding_cli_name == "parallax":
-                    return ParallaxBinding()
-
-                # Otherwise just return the binding.
-                return binding_type()
-
-        # Raise an error if the platform type is not recognized.
-        error_message = f'Platform type "{options.type}" not recognized.'
-        self._console.critical_print(error_message)
-        raise ValueError(error_message)
 
     # Platform metadata.
 
@@ -156,7 +107,7 @@ class PlatformHandler:
             )
         except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Get Position", e)
-            return PositionalResponse(error=str(e))
+            return PositionalResponse(error=self._console.pretty_exception(e))
         else:
             return PositionalResponse(position=unified_position)
 
@@ -206,9 +157,8 @@ class PlatformHandler:
         try:
             # Disallow setting manipulator position while inside the brain.
             if request.manipulator_id in self._inside_brain:
-                error_message = 'Can not move manipulator while inside the brain. Set the depth ("set_depth") instead.'
-                self._console.error_print("Set Position", error_message)
-                return PositionalResponse(error=error_message)
+                self._console.error_print("Set Position", NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR)
+                return PositionalResponse(error=NO_SET_POSITION_WHILE_INSIDE_BRAIN_ERROR)
 
             # Move to the new position.
             final_platform_position = await self._bindings.set_position(
@@ -226,11 +176,7 @@ class PlatformHandler:
 
                 # Check if the axis is within the movement tolerance.
                 if abs(axis) > self._bindings.get_movement_tolerance():
-                    error_message = (
-                        f"Manipulator {request.manipulator_id} did not reach target"
-                        f" position on axis {list(Vector4.model_fields.keys())[index]}."
-                        f" Requested: {request.position}, got: {final_unified_position}."
-                    )
+                    error_message = did_not_reach_target_position_error(request, index, final_unified_position)
                     self._console.error_print("Set Position", error_message)
                     return PositionalResponse(error=error_message)
         except Exception as e:  # noqa: BLE001
@@ -250,26 +196,22 @@ class PlatformHandler:
         """
         try:
             # Move to the new depth.
-            final_platform_depth = await self._bindings.set_depth(
+            final_depth = await self._bindings.set_depth(
                 manipulator_id=request.manipulator_id,
-                depth=self._bindings.unified_space_to_platform_space(Vector4(w=request.depth)).w,
+                depth=request.depth,
                 speed=request.speed,
             )
-            final_unified_depth = self._bindings.platform_space_to_unified_space(Vector4(w=final_platform_depth)).w
 
             # Return error if movement did not reach target within tolerance.
-            if abs(final_unified_depth - request.depth) > self._bindings.get_movement_tolerance():
-                error_message = (
-                    f"Manipulator {request.manipulator_id} did not reach target depth."
-                    f" Requested: {request.depth}, got: {final_unified_depth}."
-                )
+            if abs(final_depth - request.depth) > self._bindings.get_movement_tolerance():
+                error_message = did_not_reach_target_depth_error(request, final_depth)
                 self._console.error_print("Set Depth", error_message)
                 return SetDepthResponse(error=error_message)
         except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Set Depth", e)
             return SetDepthResponse(error=self._console.pretty_exception(e))
         else:
-            return SetDepthResponse(depth=final_unified_depth)
+            return SetDepthResponse(depth=final_depth)
 
     async def set_inside_brain(self, request: SetInsideBrainRequest) -> BooleanStateResponse:
         """Mark a manipulator as inside the brain or not.
@@ -282,16 +224,11 @@ class PlatformHandler:
         Returns:
             Inside brain state of the manipulator and an error message if any.
         """
-        try:
-            if request.inside:
-                self._inside_brain.add(request.manipulator_id)
-            else:
-                self._inside_brain.discard(request.manipulator_id)
-        except Exception as e:  # noqa: BLE001
-            self._console.exception_error_print("Set Inside Brain", e)
-            return BooleanStateResponse(error=self._console.pretty_exception(e))
+        if request.inside:
+            self._inside_brain.add(request.manipulator_id)
         else:
-            return BooleanStateResponse(state=request.inside)
+            self._inside_brain.discard(request.manipulator_id)
+        return BooleanStateResponse(state=request.inside)
 
     async def stop(self, manipulator_id: str) -> str:
         """Stop a manipulator.
@@ -320,12 +257,12 @@ class PlatformHandler:
             for manipulator_id in await self._bindings.get_manipulators():
                 await self._bindings.stop(manipulator_id)
         except Exception as e:  # noqa: BLE001
-            self._console.exception_error_print("Stop", e)
+            self._console.exception_error_print("Stop All", e)
             return self._console.pretty_exception(e)
         else:
             return ""
 
     async def emergency_stop(self) -> None:
         """Stops all manipulators with a message."""
-        self._console.critical_print("Emergency Stopping All Manipulators...")
+        self._console.critical_print(EMERGENCY_STOP_MESSAGE)
         _ = await self.stop_all()

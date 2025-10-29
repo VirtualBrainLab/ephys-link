@@ -5,17 +5,18 @@ on [GitHub](https://github.com/VirtualBrainLab/ephys-link), and we welcome contr
 
 This section describes:
 
-- [The Socket.IO server's API](socketio_api.md) and how to communicate with Ephys Link from a client application
-- How to [add a new manipulator](adding_a_manipulator.md) to Ephys Link
-- General [code organization](code_organization.md) for Ephys Link
-- Auto-generated [source code reference](../reference/SUMMARY.md) intended for developers who are maintaining Ephys Link
+- [The Socket.IO server's API](socketio_api.md) and how to communicate with Ephys Link from a client application.
+- How to [add a new manipulator](adding_a_manipulator.md) to Ephys Link.
+- General [code organization](code_organization.md) for Ephys Link.
+- Auto-generated [source code reference](../reference/SUMMARY.md) intended for developers who are maintaining Ephys Link.
+- Testing [Jackhammer Mode](jackhammer_mode.md).
 
 ## Installing for Development
 
 1. Clone the repository.
-2. Install [UV](https://docs.astral.sh/uv/#installation)
-3. Install [Hatch](https://hatch.pypa.io/latest/install/)
-4. In a terminal, navigate to the repository's root directory and run
+2. Install [UV](https://docs.astral.sh/uv/#installation).
+3. Install [Hatch](https://hatch.pypa.io/latest/install/).
+4. In a terminal, navigate to the repository's root directory and run.
 
    ```bash
    hatch shell

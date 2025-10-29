@@ -21,14 +21,12 @@ flowchart LR
         n6["Rectangle"]
         n2["Server"]
     end
-    n6["Bindings"] ---|" Manipulator 1 API "| n3
-    n1 ---|" Send Request "| n2
-    n2 ---|" Callback Response "| n1
-    n6 ---|" Manipulator 2 API "| n4
-    n3 --- n6
-    n4 --- n6
-    n2 ---|" Parse Request "| n6
-    n6 ---|" Send Response "| n2
+    n6["Bindings"] <-->|" Manipulator 1 API "| n3
+    n1 -->|" Send Request "| n2
+    n2 -->|" Callback Response "| n1
+    n6 <-->|" Manipulator 2 API "| n4
+    n2 -->|" Parse Request "| n6
+    n6 -->|" Send Response "| n2
 ```
 
 This diagram shows the high-level architecture of Ephys Link. Ephys Link acts as an intermediary between a client

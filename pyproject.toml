@@ -7,14 +7,13 @@ name = "ephys-link"
 dynamic = ["version"]
 description = "A Python Socket.IO server that allows any Socket.IO-compliant application to communicate with manipulators used in electrophysiology experiments."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 license = "GPL-3.0-only"
 keywords = ["socket-io", "manipulator", "electrophysiology", "ephys", "sensapex", "neuroscience", "neurotech", "virtualbrainlab", "new-scale"]
 authors = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 maintainers = [{ name = "Kenneth Yang", email = "kjy5@uw.edu" }]
 classifiers = [
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python :: 3",
@@ -26,17 +25,17 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
 dependencies = [
-    "aiohttp==3.11.18",
+    "aiohttp==3.13.0",
     "colorama==0.4.6",
     "keyboard==0.13.5",
     "packaging==25.0",
-    "platformdirs==4.3.7",
+    "platformdirs==4.5.0",
     "pyserial==3.5",
-    "python-socketio[asyncio_client]==5.13.0",
-    "requests==2.32.3",
+    "python-socketio[asyncio_client]==5.14.1",
+    "requests==2.32.5",
     "sensapex==1.400.4",
-    "rich==14.0.0",
-    "vbl-aquarium==1.0.0"
+    "rich==14.2.0",
+    "vbl-aquarium==1.0.1"
 ]
 
 [project.urls]
@@ -57,24 +56,30 @@ exclude = ["/.github", "/.idea", "/docs"]
 
 [tool.hatch.envs.default]
 installer = "uv"
-python = "3.13"
+python = "3.14"
 dependencies = [
-    "pyinstaller==6.12.0",
-    "basedpyright==1.28.5",
+    "pyinstaller==6.16.0",
+    "basedpyright==1.32.1",
+    "pytest==8.4.2",
+    "pytest-cov==7.0.0",
+    "pytest-mock==3.15.1",
+    "pytest-asyncio==1.2.0"
 ]
 [tool.hatch.envs.default.scripts]
 exe = "pyinstaller.exe ephys_link.spec -y -- -d && pyinstaller.exe ephys_link.spec -y"
 exe-clean = "pyinstaller.exe ephys_link.spec -y --clean"
 check = "basedpyright"
 check-watched = "basedpyright --watch"
+tests = "pytest"
+cov = "pytest --cov=ephys_link --cov-report=html --cov-report=term-missing"
 
 [tool.hatch.envs.docs]
 installer = "uv"
-python = "3.13"
+python = "3.14"
 skip-install = true
 dependencies = [
-    "mkdocs-material==9.6.11",
-    "mkdocstrings-python==1.16.10",
+    "mkdocs-material==9.6.19",
+    "mkdocstrings-python==1.18.2",
     "mkdocs-gen-files==0.5.0",
     "mkdocs-literate-nav==0.6.2",
     "mkdocs-section-index==0.3.10"
@@ -88,5 +93,16 @@ exclude = ["typings"]
 unsafe-fixes = true
 
 [tool.basedpyright]
-include = ["src/ephys_link"]
-strict = ["src/ephys_link"]
+include = ["src/ephys_link", "tests"]
+strict = ["src/ephys_link", "tests"]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.run]
+source_pkgs = ["ephys_link"]
+branch = true
+omit = [
+    "tests/*",
+    "scripts/*",
+]

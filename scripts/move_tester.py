@@ -1,13 +1,14 @@
 from asyncio import run
 
-from vbl_aquarium.models.ephys_link import EphysLinkOptions, SetDepthRequest
+from vbl_aquarium.models.ephys_link import SetDepthRequest
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.back_end.platform_handler import PlatformHandler
-from ephys_link.utils.console import Console
+from ephys_link.bindings.mpm_binding import MPMBinding
+from ephys_link.front_end.console import Console
 
 c = Console(enable_debug=True)
-p = PlatformHandler(EphysLinkOptions(type="pathfinder-mpm"), c)
+p = PlatformHandler(MPMBinding(), c)
 # target = Vector4()
 target = Vector4(x=7.5, y=7.5, z=7.5, w=7.5)
 

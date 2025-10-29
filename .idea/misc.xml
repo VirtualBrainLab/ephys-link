@@ -3,7 +3,7 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.12 (ephys-link)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Hatch (ephys-link) [Python 3.13.3]" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Hatch (ephys-link) [Python 3.14.0]" project-jdk-type="Python SDK" />
   <component name="PythonCompatibilityInspectionAdvertiser">
     <option name="version" value="3" />
   </component>

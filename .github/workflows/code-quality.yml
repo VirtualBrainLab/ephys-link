@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: 🛎 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.WORKFLOW_COMMIT }}
@@ -28,11 +28,9 @@ jobs:
         run: hatch fmt
 
       - name: ✅ Commit Code Format Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "Hatch static analysis"
-          skip_fetch: true
-          skip_checkout: true
   
   type-check:
     name: Type Check
@@ -41,19 +39,19 @@ jobs:
 
     steps:
       - name: 🛎 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.WORKFLOW_COMMIT }}
 
       - name: 🔭 Install UV
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: "**/pyproject.toml"
          
       - name: 🐍 Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 

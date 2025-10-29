@@ -1,6 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 from argparse import ArgumentParser
+from importlib import resources
 
 from PyInstaller.utils.hooks import collect_submodules
 
@@ -15,11 +16,14 @@ FILE_NAME = f"EphysLink-v{version}"
 # Collect binding modules.
 bindings = [binding for binding in collect_submodules("ephys_link.bindings") if binding != "ephys_link.bindings"]
 
+# Collect Sensapex SDK.
+ump_sdk_path = str(resources.files('sensapex').joinpath('libum.dll'))
+
 # noinspection PyUnresolvedReferences
 a = Analysis(
     ['src\\ephys_link\\__main__.py'],
     pathex=[],
-    binaries=[('src\\ephys_link\\resources', 'ephys_link\\resources')],
+    binaries=[(ump_sdk_path, 'sensapex')],
     datas=[],
     hiddenimports=['engineio.async_drivers.aiohttp'] + bindings,
     hookspath=[],

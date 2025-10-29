@@ -6,6 +6,7 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
 [![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
+[![Test](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/test.yml/badge.svg)](https://github.com/VirtualBrainLab/ephys-link/actions/workflows/test.yml)
 
 The [Electrophysiology Manipulator Link](https://github.com/VirtualBrainLab/ephys-link)
 (or Ephys Link for short) is a Python [Socket.IO](https://socket.io/docs/v4/#what-socketio-is) server that allows any
