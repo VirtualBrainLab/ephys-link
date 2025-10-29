@@ -146,7 +146,7 @@ class TestServer:
         patched_get_event_loop.assert_called_once()
         spied_info_print.assert_any_call("PLATFORM", platform_handler.get_display_name())
         spied_info_print.assert_any_call("MANIPULATORS", str(DUMMY_STRING_LIST))
-        spied_info_print.assert_any_call("PINPOINT ID", mocker.ANY)  # pyright: ignore[reportAny]
+        spied_info_print.assert_any_call("PINPOINT ID", mocker.ANY)
         patched_connect.assert_awaited_once()  # pyright: ignore[reportUnusedCallResult]
         patched_wait.assert_awaited_once()  # pyright: ignore[reportUnusedCallResult]
 
@@ -194,7 +194,7 @@ class TestServer:
         patched_get_event_loop.assert_called_once()
         spied_info_print.assert_any_call("PLATFORM", platform_handler.get_display_name())
         spied_info_print.assert_any_call("MANIPULATORS", str(DUMMY_STRING_LIST))
-        spied_info_print.assert_any_call("PINPOINT ID", mocker.ANY)  # pyright: ignore[reportAny]
+        spied_info_print.assert_any_call("PINPOINT ID", mocker.ANY)
         assert init_error.value.args[0] == PROXY_CLIENT_NOT_INITIALIZED_ERROR
         patched_connect.assert_not_awaited()  # pyright: ignore[reportUnusedCallResult]
         patched_wait.assert_not_awaited()  # pyright: ignore[reportUnusedCallResult]
