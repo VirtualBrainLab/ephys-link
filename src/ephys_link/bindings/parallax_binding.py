@@ -1,3 +1,8 @@
+"""Bindings for Parallax for New Scale platform.
+
+Usage: Instantiate ParallaxBinding to interact with the Parallax for New Scale Pathfinder platform.
+"""
+
 from asyncio import get_running_loop, sleep
 from json import dumps
 from typing import Any, final, override
@@ -11,7 +16,7 @@ from ephys_link.utils.converters import scalar_mm_to_um, vector4_to_array
 
 @final
 class ParallaxBinding(BaseBinding):
-    """Bindings for Parallax platform."""
+    """Bindings for Parallax for New Scale platform."""
 
     # Server data update rate (30 FPS).
     SERVER_DATA_UPDATE_RATE = 1 / 30
@@ -39,7 +44,7 @@ class ParallaxBinding(BaseBinding):
     @staticmethod
     @override
     def get_display_name() -> str:
-        return "Parallax"
+        return "Parallax for New Scale"
 
     @staticmethod
     @override
