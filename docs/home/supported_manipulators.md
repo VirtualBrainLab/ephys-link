@@ -9,4 +9,4 @@ contact [Kenneth Yang and Daniel Birman](https://virtualbrainlab.org/about/overv
 | Sensapex     | <ul> <li>uMp-4</li> <li>uMp-3</li> </ul> |
 | New Scale    | <ul> <li>Pathfinder MPM Control v2.8+</li> </ul>       |
 | Scientifica  | <ul> <li>InVivoStar (Coming Soon!)</li> </ul>          |
-| LabMaker     | <ul> <li>(Coming Soon!)</li> </ul>                     |
+| PhenoSys     | <ul> <li>(Coming Soon!)</li> </ul>                     |
