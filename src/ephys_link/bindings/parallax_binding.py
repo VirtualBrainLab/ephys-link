@@ -66,7 +66,7 @@ class ParallaxBinding(BaseBinding):
 
     @override
     async def get_position(self, manipulator_id: str) -> Vector4:
-        manipulator_data: dict[str, Any] = await self._manipulator_data(manipulator_id)
+        manipulator_data: dict[str, Any] = await self._manipulator_data(manipulator_id)  # pyright: ignore [reportExplicitAny]
         global_z = float(manipulator_data.get("global_Z", 0.0) or 0.0)
 
         await sleep(self.SERVER_DATA_UPDATE_RATE)  # Wait for the stage to stabilize.
@@ -78,7 +78,7 @@ class ParallaxBinding(BaseBinding):
 
     @override
     async def get_angles(self, manipulator_id: str) -> Vector3:
-        manipulator_data: dict[str, Any] = await self._manipulator_data(manipulator_id)
+        manipulator_data: dict[str, Any] = await self._manipulator_data(manipulator_id)  # pyright: ignore [reportExplicitAny]
 
         yaw = int(manipulator_data.get("yaw", 0) or 0)
         pitch = int(manipulator_data.get("pitch", 90) or 90)
@@ -88,7 +88,7 @@ class ParallaxBinding(BaseBinding):
 
     @override
     async def get_shank_count(self, manipulator_id: str) -> int:
-        manipulator_data: dict[str, Any] = await self._manipulator_data(manipulator_id)
+        manipulator_data: dict[str, Any] = await self._manipulator_data(manipulator_id)  # pyright: ignore [reportExplicitAny]
         return int(manipulator_data.get("shank_cnt", 1) or 1)
 
     @staticmethod
@@ -261,8 +261,11 @@ class ParallaxBinding(BaseBinding):
         data = await self._query_data()
 
         if manipulator_id in data:
-            return data[manipulator_id]
-        return None
+            return data[manipulator_id]  # pyright: ignore [reportAny]
+
+        # If we get here, that means the manipulator doesn't exist.
+        error_message = f"Manipulator {manipulator_id} not found."
+        raise ValueError(error_message)
 
     async def _put_request(self, request: dict[str, Any]) -> None:  # pyright: ignore [reportExplicitAny]
         _ = await get_running_loop().run_in_executor(None, put, self._url, dumps(request))
