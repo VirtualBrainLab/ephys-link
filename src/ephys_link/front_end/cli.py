@@ -47,7 +47,7 @@ class CLI:
             type=str,
             dest="type",
             default="ump",
-            help='Manipulator type (i.e. "ump", "pathfinder-mpm", "fake"). Default: "ump".',
+            help='Manipulator type ("ump", "pathfinder-mpm", "parallax", "fake"). Default: "ump".',
         )
         _ = self._parser.add_argument(
             "-d",
