@@ -12,7 +12,7 @@ Usage:
     ```
 """
 
-from asyncio import get_event_loop, run
+from asyncio import new_event_loop, run, set_event_loop
 from collections.abc import Callable, Coroutine
 from json import JSONDecodeError, dumps, loads
 from typing import Any, TypeVar, final
@@ -96,10 +96,17 @@ class Server:
 
         # List platform and available manipulators.
         self._console.info_print("PLATFORM", self._platform_handler.get_display_name())
-        self._console.info_print(
-            "MANIPULATORS",
-            str(get_event_loop().run_until_complete(self._platform_handler.get_manipulators()).manipulators),
-        )
+
+        # Create event loop if one doesn't exist for getting manipulators
+        loop = new_event_loop()
+        set_event_loop(loop)
+        try:
+            self._console.info_print(
+                "MANIPULATORS",
+                str(loop.run_until_complete(self._platform_handler.get_manipulators()).manipulators),
+            )
+        finally:
+            loop.close()
 
         # Launch server
         if self._options.use_proxy:
