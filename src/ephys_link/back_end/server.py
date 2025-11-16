@@ -99,7 +99,6 @@ class Server:
 
         # Create a temporary event loop for getting manipulators
         loop = new_event_loop()
-        set_event_loop(loop)
         try:
             self._console.info_print(
                 "MANIPULATORS",
