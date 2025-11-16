@@ -12,7 +12,7 @@ Usage:
     ```
 """
 
-from asyncio import new_event_loop, run, set_event_loop
+from asyncio import new_event_loop, run
 from collections.abc import Callable, Coroutine
 from json import JSONDecodeError, dumps, loads
 from typing import Any, TypeVar, final
