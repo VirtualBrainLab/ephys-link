@@ -88,8 +88,8 @@ class TestServer:
         patched_run_until_complete = mocker.patch.object(
             asyncio_loop, "run_until_complete", return_value=GetManipulatorsResponse(manipulators=DUMMY_STRING_LIST)
         )
-        patched_get_event_loop = mocker.patch.object(
-            ephys_link.back_end.server, "get_event_loop", return_value=asyncio_loop
+        patched_new_event_loop = mocker.patch.object(
+            ephys_link.back_end.server, "new_event_loop", return_value=asyncio_loop
         )
 
         # Mock out run_app.
@@ -102,7 +102,7 @@ class TestServer:
         patched_get_display_name.assert_called_once()
         patched_get_manipulators.assert_called_once()
         patched_run_until_complete.assert_called_once()
-        patched_get_event_loop.assert_called_once()
+        patched_new_event_loop.assert_called_once()
         spied_info_print.assert_any_call("PLATFORM", platform_handler.get_display_name())
         spied_info_print.assert_any_call("MANIPULATORS", str(DUMMY_STRING_LIST))
         mocked_run_app.assert_called_once()
@@ -123,8 +123,8 @@ class TestServer:
         patched_run_until_complete = mocker.patch.object(
             asyncio_loop, "run_until_complete", return_value=GetManipulatorsResponse(manipulators=DUMMY_STRING_LIST)
         )
-        patched_get_event_loop = mocker.patch.object(
-            ephys_link.back_end.server, "get_event_loop", return_value=asyncio_loop
+        patched_new_event_loop = mocker.patch.object(
+            ephys_link.back_end.server, "new_event_loop", return_value=asyncio_loop
         )
 
         # Mock out run.
@@ -143,7 +143,7 @@ class TestServer:
         patched_get_display_name.assert_called_once()
         patched_get_manipulators.assert_called_once()
         patched_run_until_complete.assert_called_once()
-        patched_get_event_loop.assert_called_once()
+        patched_new_event_loop.assert_called_once()
         spied_info_print.assert_any_call("PLATFORM", platform_handler.get_display_name())
         spied_info_print.assert_any_call("MANIPULATORS", str(DUMMY_STRING_LIST))
         spied_info_print.assert_any_call("PINPOINT ID", mocker.ANY)
@@ -166,8 +166,8 @@ class TestServer:
         patched_run_until_complete = mocker.patch.object(
             asyncio_loop, "run_until_complete", return_value=GetManipulatorsResponse(manipulators=DUMMY_STRING_LIST)
         )
-        patched_get_event_loop = mocker.patch.object(
-            ephys_link.back_end.server, "get_event_loop", return_value=asyncio_loop
+        patched_new_event_loop = mocker.patch.object(
+            ephys_link.back_end.server, "new_event_loop", return_value=asyncio_loop
         )
 
         # Mock out run.
@@ -191,7 +191,7 @@ class TestServer:
         patched_get_display_name.assert_called_once()
         patched_get_manipulators.assert_called_once()
         patched_run_until_complete.assert_called_once()
-        patched_get_event_loop.assert_called_once()
+        patched_new_event_loop.assert_called_once()
         spied_info_print.assert_any_call("PLATFORM", platform_handler.get_display_name())
         spied_info_print.assert_any_call("MANIPULATORS", str(DUMMY_STRING_LIST))
         spied_info_print.assert_any_call("PINPOINT ID", mocker.ANY)
