@@ -97,7 +97,7 @@ class Server:
         # List platform and available manipulators.
         self._console.info_print("PLATFORM", self._platform_handler.get_display_name())
 
-        # Create event loop if one doesn't exist for getting manipulators
+        # Create a temporary event loop for getting manipulators
         loop = new_event_loop()
         set_event_loop(loop)
         try:
