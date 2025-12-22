@@ -75,7 +75,7 @@ jobs:
         uses: pypa/hatch@install
       
       - name: 📥 Cache Build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build
           key: build-${{ runner.os }}
