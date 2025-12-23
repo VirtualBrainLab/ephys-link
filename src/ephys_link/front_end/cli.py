@@ -57,21 +57,6 @@ class CLI:
             help="Enable debug mode.",
         )
         _ = self._parser.add_argument(
-            "-p",
-            "--use-proxy",
-            dest="use_proxy",
-            action="store_true",
-            help="Enable proxy mode.",
-        )
-        _ = self._parser.add_argument(
-            "-a",
-            "--proxy-address",
-            type=str,
-            default="proxy2.virtualbrainlab.org",
-            dest="proxy_address",
-            help="Proxy IP address.",
-        )
-        _ = self._parser.add_argument(
             "--mpm-port",
             type=int,
             default=8080,

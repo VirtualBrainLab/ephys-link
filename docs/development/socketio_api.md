@@ -37,20 +37,6 @@ Response:
 - `"2.0.0"`
 - `"2.0.0b2`
 
-### Get Pinpoint ID
-
-| Event             | Input | Response |
-|-------------------|-------|----------|
-| `get_pinpoint_id` | None  | `string` |
-
-Proxy connection ID (first 8 characters of a UUID v4).
-
-__Example:__
-
-Input: None
-
-Response: `"81f8de08"`
-
 ### Get Platform Info
 
 | Event               | Input | Return                                                        |
