@@ -12,7 +12,7 @@ from json import load
 from os import makedirs
 from os.path import exists, join
 from socket import gethostbyname, gethostname
-from sys import exit
+from sys import exit as sys_exit
 from tkinter import CENTER, RIGHT, BooleanVar, E, IntVar, StringVar, Tk, ttk
 from typing import final
 
@@ -71,7 +71,7 @@ class GUI:
 
         # Exit if the user did not submit options.
         if not self._submit:
-            exit(1)
+            sys_exit(1)
 
         # Extract options from GUI.
         options = EphysLinkOptions(

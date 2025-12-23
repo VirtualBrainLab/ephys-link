@@ -5,7 +5,9 @@ from inspect import getmembers, isclass
 from pkgutil import iter_modules
 
 from packaging.version import parse
-from requests import ConnectionError, ConnectTimeout, get
+from requests import ConnectionError as RequestsConnectionError
+from requests import ConnectTimeout as RequestsConnectTimeout
+from requests import get
 from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
 from ephys_link.__about__ import __version__
@@ -45,7 +47,7 @@ def check_for_updates(console: Console) -> None:
         if parse(latest_version) > parse(__version__):
             console.critical_print(f"Update available: {latest_version} (current: {__version__})")
             console.critical_print("Download at: https://github.com/VirtualBrainLab/ephys-link/releases/latest")
-    except (ConnectionError, ConnectTimeout):
+    except (RequestsConnectionError, RequestsConnectTimeout):
         console.error_print("UPDATE", UNABLE_TO_CHECK_FOR_UPDATES_ERROR)
 
 
