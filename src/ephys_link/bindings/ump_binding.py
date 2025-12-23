@@ -142,7 +142,7 @@ class UmpBinding(BaseBinding):
 
     @override
     async def stop(self, manipulator_id: str) -> None:
-        self._get_device(manipulator_id).stop()
+        self._get_device(manipulator_id).stop() # pyright: ignore [reportUnknownMemberType]
 
     @override
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
