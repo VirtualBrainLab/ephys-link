@@ -3,7 +3,8 @@ from io import StringIO
 
 import pytest
 from pytest_mock import MockerFixture
-from requests import ConnectionError, ConnectTimeout
+from requests import ConnectionError as RequestsConnectionError
+from requests import ConnectTimeout as RequestsConnectTimeout
 from vbl_aquarium.models.ephys_link import EphysLinkOptions
 
 from ephys_link.__about__ import __version__
@@ -76,9 +77,9 @@ class TestStartup:
         # Assert: critical_print should be called since an update is available.
         spied_critical_print.assert_called()
 
-    @pytest.mark.parametrize("exception", [ConnectionError, ConnectTimeout])
+    @pytest.mark.parametrize("exception", [RequestsConnectionError, RequestsConnectTimeout])
     def test_check_for_updates_connection_errors(
-        self, exception: ConnectionError | ConnectTimeout, console: Console, mocker: MockerFixture
+        self, exception: RequestsConnectionError | RequestsConnectTimeout, console: Console, mocker: MockerFixture
     ) -> None:
         """Test the check_for_updates function with connection-related errors."""
         # Add mocks and spies.
