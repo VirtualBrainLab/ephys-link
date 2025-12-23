@@ -1,9 +1,7 @@
-import asyncio
 from json import dumps, loads
 
 import pytest
 from pytest_mock import MockerFixture
-from socketio import AsyncServer  # pyright: ignore[reportMissingTypeStubs]
 from vbl_aquarium.models.ephys_link import (
     AngularResponse,
     BooleanStateResponse,
@@ -25,7 +23,6 @@ from ephys_link.back_end.server import Server
 from ephys_link.front_end.console import Console
 from ephys_link.utils.constants import (
     MALFORMED_REQUEST_ERROR,
-    SERVER_NOT_INITIALIZED_ERROR,
     UNKNOWN_EVENT_ERROR,
     cannot_connect_as_client_is_already_connected_error,
     client_disconnected_without_being_connected_error,
@@ -48,21 +45,6 @@ class TestServer:
     def server(self, platform_handler: PlatformHandler, console: Console) -> Server:
         """Fixture for server."""
         return Server(EphysLinkOptions(), platform_handler, console)
-
-    def test_failed_server_init(
-        self, platform_handler: PlatformHandler, console: Console, mocker: MockerFixture
-    ) -> None:
-        """Server should raise error if sio is not an AsyncServer."""
-        # Mock out the AsyncServer init.
-        patched_async_server = mocker.patch.object(AsyncServer, "__new__")
-
-        # Act
-        with pytest.raises(TypeError) as init_error:
-            _ = Server(EphysLinkOptions(), platform_handler, console)
-
-        # Assert
-        patched_async_server.assert_called_once()
-        assert init_error.value.args[0] == SERVER_NOT_INITIALIZED_ERROR
 
     def test_launch_server(
         self, server: Server, platform_handler: PlatformHandler, console: Console, mocker: MockerFixture

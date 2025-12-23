@@ -34,7 +34,6 @@ from ephys_link.front_end.console import Console
 from ephys_link.utils.constants import (
     MALFORMED_REQUEST_ERROR,
     PORT,
-    SERVER_NOT_INITIALIZED_ERROR,
     UNKNOWN_EVENT_ERROR,
     cannot_connect_as_client_is_already_connected_error,
     client_disconnected_without_being_connected_error,
@@ -63,10 +62,6 @@ class Server:
 
         # Initialize server.
         self._sio: AsyncServer = AsyncServer()
-        # Exit if _sio is not a Server.
-        if not isinstance(self._sio, AsyncServer):
-            self._console.critical_print(SERVER_NOT_INITIALIZED_ERROR)
-            raise TypeError(SERVER_NOT_INITIALIZED_ERROR)
 
         self._app = Application()
         self._sio.attach(self._app)  # pyright: ignore [reportUnknownMemberType]
