@@ -19,7 +19,7 @@ pip install .
 You need to replace the `um.dll` file in the Sensapex library folder. This is located at `<virtual env>\Lib\site-packages\sensapex`. If you made a virtual environment named `venv` in the previous step, it would be `.\venv\Lib\site-packages\sensapex`.
 
 1. Download the custom SDK [here](../assets/um.dll).
-2. (Optional) Make a backup of the old `um.dll` in the Sensapex library folder by renaming it to `libum.dll.bck` or something like that.
+2. (Optional) Make a backup of the old `um.dll` in the Sensapex library folder by renaming it to `um.dll.bck` or something like that.
 3. Copy the downloaded `um.dll` to the Sensapex library folder.
 4. Modify `sensapex.py` in the Sensapex library folder to enable using this custom DLL. Set the `max_version` variable at line `398` to `(1, 510)`.
 
