@@ -28,9 +28,9 @@ As described in the [system overview](../home/how_it_works.md), Ephys Link conve
 common "unified space" which is
 the [left-hand cartesian coordinate system](https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/coordinate-systems.html).
 The two methods [
-`platform_space_to_unified_space`](../../reference/ephys_link/utils/base_binding/#ephys_link.utils.base_binding.BaseBinding.platform_space_to_unified_space)
+`platform_space_to_unified_space`](../reference/ephys_link/utils/base_binding.md#ephys_link.utils.base_binding.BaseBinding.platform_space_to_unified_space)
 and [
-`unified_space_to_platform_space`](../../reference/ephys_link/utils/base_binding/#ephys_link.utils.base_binding.BaseBinding.unified_space_to_platform_space)
+`unified_space_to_platform_space`](../reference/ephys_link/utils/base_binding.md#ephys_link.utils.base_binding.BaseBinding.unified_space_to_platform_space)
 are used to convert between your manipulator's coordinate system and the unified space.
 
 !!! tip
@@ -44,9 +44,9 @@ are used to convert between your manipulator's coordinate system and the unified
 ### Binding Names
 
 The two naming methods [
-`get_display_name`](../../reference/ephys_link/utils/base_binding/#ephys_link.utils.base_binding.BaseBinding.get_display_name)
+`get_display_name`](../reference/ephys_link/utils/base_binding.md#ephys_link.utils.base_binding.BaseBinding.get_display_name)
 and [
-`get_cli_name`](../../reference/ephys_link/utils/base_binding/#ephys_link.utils.base_binding.BaseBinding.get_cli_name)
+`get_cli_name`](../reference/ephys_link/utils/base_binding.md#ephys_link.utils.base_binding.BaseBinding.get_cli_name)
 are used to identify the binding in the user interface. As described by their documentation, `get_display_name` should
 return a human-readable name for the binding, while `get_cli_name` should return the name used to launch the binding
 from the command line (what is passed to the `-t` flag). For example, Sensapex uMp-4 manipulator's `get_cli_name`
