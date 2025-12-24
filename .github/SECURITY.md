@@ -6,8 +6,8 @@ This project is in its early stages, and we are open to suggestions and contribu
 
 | Version | Supported          |
 |---------|--------------------|
-| 1.1.x   | :white_check_mark: |
-| 1.0.x   | :x:                |
+| 2.x     | :white_check_mark: |
+| 1.x     | :x:                |
 
 ## Reporting a Vulnerability
 
