@@ -12,22 +12,20 @@ Usage:
     ```
 """
 
-from asyncio import new_event_loop, run
+from asyncio import new_event_loop
 from collections.abc import Callable, Coroutine
 from json import JSONDecodeError, dumps, loads
 from typing import Any, TypeVar, final
-from uuid import uuid4
 
 from aiohttp.web import Application, run_app
 from pydantic import ValidationError
-from socketio import AsyncClient, AsyncServer  # pyright: ignore [reportMissingTypeStubs]
+from socketio import AsyncServer  # pyright: ignore [reportMissingTypeStubs]
 from vbl_aquarium.models.ephys_link import (
     EphysLinkOptions,
     SetDepthRequest,
     SetInsideBrainRequest,
     SetPositionRequest,
 )
-from vbl_aquarium.models.proxy import PinpointIdResponse
 from vbl_aquarium.utils.vbl_base_model import VBLBaseModel
 
 from ephys_link.__about__ import __version__
@@ -36,8 +34,6 @@ from ephys_link.front_end.console import Console
 from ephys_link.utils.constants import (
     MALFORMED_REQUEST_ERROR,
     PORT,
-    PROXY_CLIENT_NOT_INITIALIZED_ERROR,
-    SERVER_NOT_INITIALIZED_ERROR,
     UNKNOWN_EVENT_ERROR,
     cannot_connect_as_client_is_already_connected_error,
     client_disconnected_without_being_connected_error,
@@ -64,35 +60,24 @@ class Server:
         self._platform_handler = platform_handler
         self._console = console
 
-        # Initialize based on proxy usage.
-        self._sio: AsyncServer | AsyncClient = AsyncClient() if self._options.use_proxy else AsyncServer()
-        if not self._options.use_proxy:
-            # Exit if _sio is not a Server.
-            if not isinstance(self._sio, AsyncServer):
-                self._console.critical_print(SERVER_NOT_INITIALIZED_ERROR)
-                raise TypeError(SERVER_NOT_INITIALIZED_ERROR)
+        # Initialize server.
+        self._sio: AsyncServer = AsyncServer()
 
-            self._app = Application()
-            self._sio.attach(self._app)  # pyright: ignore [reportUnknownMemberType]
+        self._app = Application()
+        self._sio.attach(self._app)  # pyright: ignore [reportUnknownMemberType]
 
-            # Bind connection events.
-            _ = self._sio.on("connect", self.connect)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
-            _ = self._sio.on("disconnect", self.disconnect)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
+        # Bind connection events.
+        _ = self._sio.on("connect", self.connect)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
+        _ = self._sio.on("disconnect", self.disconnect)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
 
         # Store connected client.
         self._client_sid: str = ""
-
-        # Generate Pinpoint ID for proxy usage.
-        self._pinpoint_id = str(uuid4())[:8]
 
         # Bind events.
         _ = self._sio.on("*", self.platform_event_handler)  # pyright: ignore [reportUnknownMemberType, reportUnknownVariableType]
 
     def launch(self) -> None:
-        """Launch the server.
-
-        Based on the options, either connect to a proxy or launch the server locally.
-        """
+        """Launch the server."""
 
         # List platform and available manipulators.
         self._console.info_print("PLATFORM", self._platform_handler.get_display_name())
@@ -108,22 +93,7 @@ class Server:
             loop.close()
 
         # Launch server
-        if self._options.use_proxy:
-            self._console.info_print("PINPOINT ID", self._pinpoint_id)
-
-            async def connect_proxy() -> None:
-                # Exit if _sio is not a proxy client.
-                if not isinstance(self._sio, AsyncClient):
-                    self._console.critical_print(PROXY_CLIENT_NOT_INITIALIZED_ERROR)
-                    raise TypeError(PROXY_CLIENT_NOT_INITIALIZED_ERROR)
-
-                # noinspection HttpUrlsUsage
-                await self._sio.connect(f"http://{self._options.proxy_address}:{PORT}")  # pyright: ignore [reportUnknownMemberType]
-                await self._sio.wait()
-
-            run(connect_proxy())
-        else:
-            run_app(self._app, port=PORT)
+        run_app(self._app, port=PORT)
 
     # Helper functions.
     def _malformed_request_response(self, request: str, data: tuple[tuple[Any], ...]) -> str:  # pyright: ignore [reportExplicitAny]
@@ -250,8 +220,6 @@ class Server:
             # Server metadata.
             case "get_version":
                 return __version__
-            case "get_pinpoint_id":
-                return PinpointIdResponse(pinpoint_id=self._pinpoint_id, is_requester=False).to_json_string()
             case "get_platform_info":
                 return (await self._platform_handler.get_platform_info()).to_json_string()
 

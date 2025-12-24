@@ -52,8 +52,6 @@ class GUI:
         self._ignore_updates = BooleanVar(value=options.ignore_updates)
         self._type = StringVar(value=options.type)
         self._debug = BooleanVar(value=options.debug)
-        self._use_proxy = BooleanVar(value=options.use_proxy)
-        self._proxy_address = StringVar(value=options.proxy_address)
         self._mpm_port = IntVar(value=options.mpm_port)
         self._serial = StringVar(value=options.serial)
 
@@ -80,8 +78,6 @@ class GUI:
             ignore_updates=self._ignore_updates.get(),
             type=self._type.get(),
             debug=self._debug.get(),
-            use_proxy=self._use_proxy.get(),
-            proxy_address=self._proxy_address.get(),
             mpm_port=self._mpm_port.get(),
             serial=self._serial.get(),
         )
@@ -115,40 +111,23 @@ class GUI:
         ttk.Label(server_serving_settings, text="Local IP:", anchor=E, justify=RIGHT).grid(column=0, row=0, sticky="we")
         ttk.Label(server_serving_settings, text=gethostbyname(gethostname())).grid(column=1, row=0, sticky="we")
 
-        # Proxy.
-        ttk.Label(server_serving_settings, text="Use Proxy:", anchor=E, justify=RIGHT).grid(
+        # Ignore updates.
+        ttk.Label(server_serving_settings, text="Ignore Updates:", anchor=E, justify=RIGHT).grid(
             column=0, row=1, sticky="we"
         )
         ttk.Checkbutton(
             server_serving_settings,
-            variable=self._use_proxy,
-        ).grid(column=1, row=1, sticky="we")
-
-        # Proxy address.
-        ttk.Label(server_serving_settings, text="Proxy Address:", anchor=E, justify=RIGHT).grid(
-            column=0, row=2, sticky="we"
-        )
-        ttk.Entry(server_serving_settings, textvariable=self._proxy_address, justify=CENTER).grid(
-            column=1, row=2, sticky="we"
-        )
-
-        # Ignore updates.
-        ttk.Label(server_serving_settings, text="Ignore Updates:", anchor=E, justify=RIGHT).grid(
-            column=0, row=4, sticky="we"
-        )
-        ttk.Checkbutton(
-            server_serving_settings,
             variable=self._ignore_updates,
-        ).grid(column=1, row=4, sticky="we")
+        ).grid(column=1, row=1, sticky="we")
 
         # Debug mode.
         ttk.Label(server_serving_settings, text="Debug mode:", anchor=E, justify=RIGHT).grid(
-            column=0, row=5, sticky="we"
+            column=0, row=2, sticky="we"
         )
         ttk.Checkbutton(
             server_serving_settings,
             variable=self._debug,
-        ).grid(column=1, row=5, sticky="we")
+        ).grid(column=1, row=2, sticky="we")
 
         # ---
 

@@ -58,9 +58,6 @@ def did_not_reach_target_depth_error(request: SetDepthRequest, final_unified_dep
 
 EMERGENCY_STOP_MESSAGE = "Emergency Stopping All Manipulators..."
 
-SERVER_NOT_INITIALIZED_ERROR = "Server not initialized."
-PROXY_CLIENT_NOT_INITIALIZED_ERROR = "Proxy client not initialized."
-
 
 def cannot_connect_as_client_is_already_connected_error(new_client_sid: str, current_client_sid: str) -> str:
     """Generate an error message for when the client is already connected.
