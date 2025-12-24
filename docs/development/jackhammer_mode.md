@@ -16,11 +16,11 @@ pip install .
 
 ## 2. Change the Sensapex SDK to support Jackhammer Mode
 
-You need to replace the `libum.dll` file in the Sensapex library folder. This is located at `<virtual env>\Lib\site-packages\sensapex`. If you made a virtual environment named `venv` in the previous step, it would be `.\venv\Lib\site-packages\sensapex`.
+You need to replace the `um.dll` file in the Sensapex library folder. This is located at `<virtual env>\Lib\site-packages\sensapex`. If you made a virtual environment named `venv` in the previous step, it would be `.\venv\Lib\site-packages\sensapex`.
 
-1. Download the custom SDK [here](../assets/libum.dll).
-2. (Optional) Make a backup of the old `libum.dll` in the Sensapex library folder by renaming it to `libum.dll.bck` or something like that.
-3. Copy the downloaded `libum.dll` to the Sensapex library folder.
+1. Download the custom SDK [here](../assets/um.dll).
+2. (Optional) Make a backup of the old `um.dll` in the Sensapex library folder by renaming it to `um.dll.bck` or something like that.
+3. Copy the downloaded `um.dll` to the Sensapex library folder.
 4. Modify `sensapex.py` in the Sensapex library folder to enable using this custom DLL. Set the `max_version` variable at line `398` to `(1, 510)`.
 
 You can (optionally) test if everything is still working by [running Ephys Link](../usage/starting_ephys_link.md) and checking to see if it can still see and control Sensapex manipulators.
