@@ -206,6 +206,7 @@ class MPMBinding(BaseBinding):
         # Keep track of the previous depth to check if the manipulator stopped advancing unexpectedly.
         current_depth = (await self.get_position(manipulator_id)).w
         previous_depth = current_depth
+        depth = self.get_dimensions().w - depth
         unchanged_counter = 0
 
         # Send move request.
@@ -244,7 +245,7 @@ class MPMBinding(BaseBinding):
         self._movement_stopped = False
 
         # Return the final depth.
-        return float((await self.get_position(manipulator_id)).w)
+        return float(self.get_dimensions().w - (await self.get_position(manipulator_id)).w)
 
     @override
     async def stop(self, manipulator_id: str) -> None:
