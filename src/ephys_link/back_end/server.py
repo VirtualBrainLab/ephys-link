@@ -242,6 +242,24 @@ class Server:
                 return await self._run_if_data_parses(
                     self._platform_handler.set_inside_brain, SetInsideBrainRequest, event, data
                 )
+            case "jackhammer":
+                if data:
+                    try:
+                        parsed = loads(str(data))
+                        return (
+                            await self._platform_handler.jackhammer(
+                                manipulator_id=parsed.get("manipulator_id", parsed.get("ManipulatorId", "")),
+                                axis=parsed.get("axis", parsed.get("Axis", 3)),
+                                iterations=parsed.get("iterations", parsed.get("Iterations", 10)),
+                                phase1_steps=parsed.get("phase1_steps", parsed.get("Phase1Steps", 10)),
+                                phase1_pulses=parsed.get("phase1_pulses", parsed.get("Phase1Pulses", 15)),
+                                phase2_steps=parsed.get("phase2_steps", parsed.get("Phase2Steps", 5)),
+                                phase2_pulses=parsed.get("phase2_pulses", parsed.get("Phase2Pulses", -15)),
+                            )
+                        ).to_json_string()
+                    except JSONDecodeError:
+                        return self._malformed_request_response(event, data)
+                return self._malformed_request_response(event, data)
             case "stop":
                 if data:
                     return await self._platform_handler.stop(str(data))  # pyright: ignore[reportAny]

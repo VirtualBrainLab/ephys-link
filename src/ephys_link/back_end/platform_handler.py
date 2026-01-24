@@ -229,6 +229,43 @@ class PlatformHandler:
         else:
             self._inside_brain.discard(request.manipulator_id)
         return BooleanStateResponse(state=request.inside)
+    
+    async def jackhammer(
+        self,
+        manipulator_id: str,
+        axis: int,
+        iterations: int,
+        phase1_steps: int,
+        phase1_pulses: int,
+        phase2_steps: int,
+        phase2_pulses: int,
+    ) -> PositionalResponse:
+        """Perform jackhammer motion to break through dura.
+
+        Args:
+            manipulator_id: Manipulator ID.
+            axis: Axis to move (0=X, 1=Y, 2=Z, 3=W/Depth).
+            iterations: Number of jackhammer cycles.
+            phase1_steps: Number of steps in phase 1.
+            phase1_pulses: Pulse count for phase 1.
+            phase2_steps: Number of steps in phase 2.
+            phase2_pulses: Pulse count for phase 2.
+
+        Returns:
+            Final position of the manipulator after jackhammer and an error message if any.
+        """
+        try:
+            await self._bindings.jackhammer(
+                manipulator_id, axis, iterations, phase1_steps, phase1_pulses, phase2_steps, phase2_pulses
+            )
+            final_position = self._bindings.platform_space_to_unified_space(
+                await self._bindings.get_position(manipulator_id)
+            )
+        except Exception as e:  # noqa: BLE001
+            self._console.exception_error_print("Jackhammer", e)
+            return PositionalResponse(error=self._console.pretty_exception(e))
+        else:
+            return PositionalResponse(position=final_position)
 
     async def stop(self, manipulator_id: str) -> str:
         """Stop a manipulator.

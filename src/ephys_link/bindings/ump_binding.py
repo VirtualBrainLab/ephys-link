@@ -10,6 +10,7 @@ from sensapex import UMP, SensapexDevice  # pyright: ignore [reportMissingTypeSt
 from vbl_aquarium.models.unity import Vector4
 
 from ephys_link.utils.base_binding import BaseBinding
+from ctypes import c_char, c_int
 from ephys_link.utils.converters import (
     list_to_vector4,
     scalar_mm_to_um,
@@ -143,6 +144,28 @@ class UmpBinding(BaseBinding):
     @override
     async def stop(self, manipulator_id: str) -> None:
         self._get_device(manipulator_id).stop()  # pyright: ignore [reportUnknownMemberType]
+
+    @override
+    async def jackhammer(
+        self,
+        manipulator_id: str,
+        axis: int,
+        iterations: int,
+        phase1_steps: int,
+        phase1_pulses: int,
+        phase2_steps: int,
+        phase2_pulses: int,
+    ) -> None:
+        self._ump.call(
+            "um_take_jackhammer_step",
+            c_int(int(manipulator_id)),
+            c_char(axis),
+            c_int(iterations),
+            c_int(phase1_steps),
+            c_int(phase1_pulses),
+            c_int(phase2_steps),
+            c_int(phase2_pulses),
+        )
 
     @override
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:

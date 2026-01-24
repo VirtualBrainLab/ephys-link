@@ -147,6 +147,31 @@ class BaseBinding(ABC):
             manipulator_id: Manipulator ID.
         """
 
+
+    async def jackhammer(
+        self,
+        manipulator_id: str,
+        axis: int,
+        iterations: int,
+        phase1_steps: int,
+        phase1_pulses: int,
+        phase2_steps: int,
+        phase2_pulses: int,
+    ) -> None:
+        """Perform jackhammer motion to break through dura.
+
+        Args:
+            manipulator_id: Manipulator ID.
+            axis: Axis to move (0=X, 1=Y, 2=Z, 3=W/Depth).
+            iterations: Number of jackhammer cycles.
+            phase1_steps: Number of steps in phase 1.
+            phase1_pulses: Pulse count for phase 1 (positive=forward).
+            phase2_steps: Number of steps in phase 2.
+            phase2_pulses: Pulse count for phase 2 (negative=backward).
+        """
+        error_message = f"{self.get_display_name()} does not support jackhammer mode"
+        raise NotImplementedError(error_message)
+
     @abstractmethod
     def platform_space_to_unified_space(self, platform_space: Vector4) -> Vector4:
         """Convert platform space coordinates to unified space coordinates.
