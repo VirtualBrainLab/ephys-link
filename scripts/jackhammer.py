@@ -3,7 +3,7 @@ from ctypes import c_char, c_int
 from sensapex import UMP
 
 # Edit these parameters:
-DEVICE_ID = 3  # Manipulator ID.
+DEVICE_ID = 6  # Manipulator ID.
 AXIS = 3  # Axis (0=X, 1=Y, 2=Z, 3=D).
 
 NUMBER_OF_CYCLES = 20  # Number of time the first and second stage are repeated.
