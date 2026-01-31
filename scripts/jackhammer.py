@@ -6,16 +6,22 @@ from sensapex import UMP
 DEVICE_ID = 6  # Manipulator ID.
 AXIS = 3  # Axis (0=X, 1=Y, 2=Z, 3=D).
 
-NUMBER_OF_CYCLES = 20  # Number of time the first and second stage are repeated.
+NUMBER_OF_CYCLES = 120  # Number of time the first and second stage are repeated.
 
 NUMBER_OF_STEP_IN_FIRST_STAGE = 10
 FIRST_STAGE_THRUST_LENGTH = 15  # +/- 0 - 100
 
-NUMBER_OF_STEP_IN_SECOND_STAGE = 5
+NUMBER_OF_STEP_IN_SECOND_STAGE = 10
 SECOND_STAGE_THRUST_LENGTH = -15  # +/- 0 - 100
 
 # Do not edit below this line.
 um = UMP.get_ump()
+# test how much advancement is made after each iteration
+# test if looping thru each iteration is much slower than 20 in one call
+# Add delta variable and compare the advancement after each call until the manipulator either goes back or reaches the desired delta
+# Add get_position calls to monitor the position in the um.call
+# have a for loop or hard code number of iterations to compare the advancement after each call
+
 
 um.call(
     "um_take_jackhammer_step",

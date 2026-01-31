@@ -6,7 +6,7 @@ Instantiates the appropriate bindings based on the platform type and uses them t
 Usage:
     Instantiate PlatformHandler with the platform type and call the desired command.
 """
-
+import asyncio
 from typing import final
 
 from vbl_aquarium.models.ephys_link import (
@@ -258,6 +258,7 @@ class PlatformHandler:
             await self._bindings.jackhammer(
                 manipulator_id, axis, iterations, phase1_steps, phase1_pulses, phase2_steps, phase2_pulses
             )
+            await asyncio.sleep(2)  # wait for movement to settle
             final_position = self._bindings.platform_space_to_unified_space(
                 await self._bindings.get_position(manipulator_id)
             )
