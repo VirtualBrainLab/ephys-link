@@ -239,35 +239,118 @@ class PlatformHandler:
         phase1_pulses: int,
         phase2_steps: int,
         phase2_pulses: int,
-    ) -> PositionalResponse:
+        closed_loop: bool = False,
+        target_um: float = 0.0,
+    ) -> dict:
         """Perform jackhammer motion to break through dura.
 
         Args:
             manipulator_id: Manipulator ID.
             axis: Axis to move (0=X, 1=Y, 2=Z, 3=W/Depth).
-            iterations: Number of jackhammer cycles.
+            iterations: Number of jackhammer cycles (ignored if closed_loop=True).
             phase1_steps: Number of steps in phase 1.
             phase1_pulses: Pulse count for phase 1.
             phase2_steps: Number of steps in phase 2.
             phase2_pulses: Pulse count for phase 2.
+            closed_loop: If True, run closed-loop until target reached.
+            target_um: Target advancement in micrometers (required if closed_loop=True).
 
         Returns:
-            Final position of the manipulator after jackhammer and an error message if any.
+            Dictionary with position, error, and iterations_used (if closed_loop).
         """
+        # Closed-loop constants
+        MAX_ITERATIONS = 50
+        MAX_BACKWARD_UM = 250.0
+
         try:
-            await self._bindings.jackhammer(
-                manipulator_id, axis, iterations, phase1_steps, phase1_pulses, phase2_steps, phase2_pulses
-            )
-            await asyncio.sleep(2)  # wait for movement to settle
-            final_position = self._bindings.platform_space_to_unified_space(
-                await self._bindings.get_position(manipulator_id)
-            )
+            if closed_loop:
+                # Get starting position
+                start_pos = await self._bindings.get_position(manipulator_id)
+                start_depth = start_pos.w  # mm
+
+                total_backward_count = 0
+                consecutive_backward_count = 0
+                iterations_used = 0
+                last_depth = start_depth
+
+                for i in range(MAX_ITERATIONS):
+                    # Run single iteration
+                    await self._bindings.jackhammer(
+                        manipulator_id, axis, 1, phase1_steps, phase1_pulses, phase2_steps, phase2_pulses
+                    )
+                    iterations_used = i + 1
+
+                    # Get current position
+                    current_pos = await self._bindings.get_position(manipulator_id)
+                    current_depth = current_pos.w  # mm
+
+                    # Calculate total delta from start (in µm)
+                    total_delta_um = (current_depth - start_depth) * 1000
+
+                    # Check if target reached
+                    if total_delta_um >= target_um:
+                        final_position = self._bindings.platform_space_to_unified_space(current_pos)
+                        return {
+                            "position": final_position,
+                            "error": "",
+                            "iterations_used": iterations_used,
+                            "stop_reason": "target_reached",
+                            "advancement_um": total_delta_um,
+                        }
+
+                    # Check for backward movement this iteration
+                    iteration_delta = (current_depth - last_depth) * 1000
+                    if iteration_delta < -MAX_BACKWARD_UM:
+                        total_backward_count += 1
+                        consecutive_backward_count += 1
+                    else:
+                        consecutive_backward_count = 0
+
+                    # Stop if too many backward movements
+                    if total_backward_count >= 3 or consecutive_backward_count >= 2:
+                        final_position = self._bindings.platform_space_to_unified_space(current_pos)
+                        return {
+                            "position": final_position,
+                            "error": "",
+                            "iterations_used": iterations_used,
+                            "stop_reason": "backward_movement",
+                            "advancement_um": total_delta_um,
+                        }
+
+                    last_depth = current_depth
+
+                # Max iterations reached
+                final_pos = await self._bindings.get_position(manipulator_id)
+                final_position = self._bindings.platform_space_to_unified_space(final_pos)
+                total_delta_um = (final_pos.w - start_depth) * 1000
+                return {
+                    "position": final_position,
+                    "error": "",
+                    "iterations_used": iterations_used,
+                    "stop_reason": "max_iterations",
+                    "advancement_um": total_delta_um,
+                }
+
+            else:
+                # Open-loop: run all iterations at once
+                await self._bindings.jackhammer(
+                    manipulator_id, axis, iterations, phase1_steps, phase1_pulses, phase2_steps, phase2_pulses
+                )
+                await asyncio.sleep(0.5)  # wait for movement to settle
+                final_position = self._bindings.platform_space_to_unified_space(
+                    await self._bindings.get_position(manipulator_id)
+                )
+                return {
+                    "position": final_position,
+                    "error": "",
+                }
+
         except Exception as e:  # noqa: BLE001
             self._console.exception_error_print("Jackhammer", e)
-            return PositionalResponse(error=self._console.pretty_exception(e))
-        else:
-            return PositionalResponse(position=final_position)
-
+            return {
+                "position": None,
+                "error": self._console.pretty_exception(e),
+            }
     async def stop(self, manipulator_id: str) -> str:
         """Stop a manipulator.
 

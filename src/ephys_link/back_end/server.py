@@ -246,17 +246,31 @@ class Server:
                 if data:
                     try:
                         parsed = loads(str(data))
-                        return (
-                            await self._platform_handler.jackhammer(
-                                manipulator_id=parsed.get("manipulator_id", parsed.get("ManipulatorId", "")),
-                                axis=parsed.get("axis", parsed.get("Axis", 3)),
-                                iterations=parsed.get("iterations", parsed.get("Iterations", 10)),
-                                phase1_steps=parsed.get("phase1_steps", parsed.get("Phase1Steps", 10)),
-                                phase1_pulses=parsed.get("phase1_pulses", parsed.get("Phase1Pulses", 15)),
-                                phase2_steps=parsed.get("phase2_steps", parsed.get("Phase2Steps", 5)),
-                                phase2_pulses=parsed.get("phase2_pulses", parsed.get("Phase2Pulses", -15)),
-                            )
-                        ).to_json_string()
+                        result = await self._platform_handler.jackhammer(
+                            manipulator_id=parsed.get("manipulator_id", parsed.get("ManipulatorId", "")),
+                            axis=parsed.get("axis", parsed.get("Axis", 3)),
+                            iterations=parsed.get("iterations", parsed.get("Iterations", 10)),
+                            phase1_steps=parsed.get("phase1_steps", parsed.get("Phase1Steps", 10)),
+                            phase1_pulses=parsed.get("phase1_pulses", parsed.get("Phase1Pulses", 15)),
+                            phase2_steps=parsed.get("phase2_steps", parsed.get("Phase2Steps", 5)),
+                            phase2_pulses=parsed.get("phase2_pulses", parsed.get("Phase2Pulses", -15)),
+                            closed_loop=parsed.get("closed_loop", parsed.get("ClosedLoop", False)),
+                            target_um=parsed.get("target_um", parsed.get("TargetUm", 0.0)),
+                        )
+                        # Build response
+                        position = result.get("position")
+                        response = {
+                            "Position": {"x": position.x, "y": position.y, "z": position.z, "w": position.w} if position else {"x": 0, "y": 0, "z": 0, "w": 0},
+                            "Error": result.get("error", ""),
+                        }
+                        # Add closed-loop fields if present
+                        if "iterations_used" in result:
+                            response["IterationsUsed"] = result["iterations_used"]
+                        if "stop_reason" in result:
+                            response["StopReason"] = result["stop_reason"]
+                        if "advancement_um" in result:
+                            response["AdvancementUm"] = result["advancement_um"]
+                        return dumps(response)
                     except JSONDecodeError:
                         return self._malformed_request_response(event, data)
                 return self._malformed_request_response(event, data)
