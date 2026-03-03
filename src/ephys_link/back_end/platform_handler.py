@@ -279,16 +279,24 @@ class PlatformHandler:
                         manipulator_id, axis, 1, phase1_steps, phase1_pulses, phase2_steps, phase2_pulses
                     )
                     iterations_used = i + 1
+                    
+                    await asyncio.sleep(0.1)  # Let hardware settle before reading position
 
                     # Get current position
                     current_pos = await self._bindings.get_position(manipulator_id)
                     current_depth = current_pos.w  # mm
 
-                    # Calculate total delta from start (in µm)
+                    # Calculate deltas
                     total_delta_um = (current_depth - start_depth) * 1000
+                    iteration_delta_um = (current_depth - last_depth) * 1000
+                    
+                    # Log progress
+                    self._console.info_print(
+                        "Jackhammer", f"Iteration {iterations_used}: this={iteration_delta_um:+.1f} µm, total={total_delta_um:.1f} µm"
+                    )
 
-                    # Check if target reached
-                    if total_delta_um >= target_um:
+                    # Check if 90% of target reached
+                    if total_delta_um >= target_um * 0.9:
                         final_position = self._bindings.platform_space_to_unified_space(current_pos)
                         return {
                             "position": final_position,
@@ -299,8 +307,7 @@ class PlatformHandler:
                         }
 
                     # Check for backward movement this iteration
-                    iteration_delta = (current_depth - last_depth) * 1000
-                    if iteration_delta < -MAX_BACKWARD_UM:
+                    if iteration_delta_um < -MAX_BACKWARD_UM:
                         total_backward_count += 1
                         consecutive_backward_count += 1
                     else:

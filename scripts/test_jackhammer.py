@@ -8,9 +8,9 @@ result = sio.call("jackhammer", '''{
     "manipulator_id": "6",
     "closed_loop": true,
     "target_um": 50,
-    "phase1_steps": 1,
+    "phase1_steps": 2,
     "phase1_pulses": 70,
-    "phase2_steps": 1,
+    "phase2_steps": 2,
     "phase2_pulses": -70
 }''', timeout=120)
 
