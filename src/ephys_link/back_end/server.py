@@ -275,6 +275,11 @@ class Server:
                     except JSONDecodeError:
                         return self._malformed_request_response(event, data)
                 return self._malformed_request_response(event, data)
+            
+            case "abort_jackhammer":
+                await self._platform_handler.abort_jackhammer()
+                return dumps({"success": True})
+
             case "stop":
                 if data:
                     return await self._platform_handler.stop(str(data))  # pyright: ignore[reportAny]

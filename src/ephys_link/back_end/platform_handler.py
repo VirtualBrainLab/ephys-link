@@ -47,6 +47,9 @@ class PlatformHandler:
         # Store the console.
         self._console = console
 
+        # Emergency stop flag for closed-loop jackhammering.
+        self._abort_closed_loop = False
+
         # Define bindings based on platform type.
         self._bindings = binding
 
@@ -230,6 +233,11 @@ class PlatformHandler:
             self._inside_brain.discard(request.manipulator_id)
         return BooleanStateResponse(state=request.inside)
     
+    # Stop closed loop jackhammer if abort flag is set(emergency button pressed)
+    async def abort_jackhammer(self) -> None:
+        """Abort closed loop jackhammer."""
+        self._abort_closed_loop = True
+
     async def jackhammer(
         self,
         manipulator_id: str,
@@ -274,6 +282,20 @@ class PlatformHandler:
                 last_depth = start_depth
 
                 for i in range(max_iterations):
+                    # Check for abort
+                    if self._abort_closed_loop:
+                        self._abort_closed_loop = False
+                        final_pos = await self._bindings.get_position(manipulator_id)
+                        final_position = self._bindings.platform_space_to_unified_space(final_pos)
+                        total_delta_um = (final_pos.w - start_depth) * 1000
+                        return {
+                            "position": final_position,
+                            "error": "",
+                            "iterations_used": iterations_used,
+                            "stop_reason": "aborted",
+                            "advancement_um": total_delta_um,
+                        }
+
                     # Run single iteration
                     await self._bindings.jackhammer(
                         manipulator_id, axis, 1, phase1_steps, phase1_pulses, phase2_steps, phase2_pulses
