@@ -241,6 +241,7 @@ class PlatformHandler:
         phase2_pulses: int,
         closed_loop: bool = False,
         target_um: float = 0.0,
+        max_iterations: int = 50,
     ) -> dict:
         """Perform jackhammer motion to break through dura.
 
@@ -259,7 +260,6 @@ class PlatformHandler:
             Dictionary with position, error, and iterations_used (if closed_loop).
         """
         # Closed-loop constants
-        MAX_ITERATIONS = 50
         MAX_BACKWARD_UM = 250.0
 
         try:
@@ -273,7 +273,7 @@ class PlatformHandler:
                 iterations_used = 0
                 last_depth = start_depth
 
-                for i in range(MAX_ITERATIONS):
+                for i in range(max_iterations):
                     # Run single iteration
                     await self._bindings.jackhammer(
                         manipulator_id, axis, 1, phase1_steps, phase1_pulses, phase2_steps, phase2_pulses

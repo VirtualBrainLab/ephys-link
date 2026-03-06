@@ -256,6 +256,7 @@ class Server:
                             phase2_pulses=parsed.get("phase2_pulses", parsed.get("Phase2Pulses", -15)),
                             closed_loop=parsed.get("closed_loop", parsed.get("ClosedLoop", False)),
                             target_um=parsed.get("target_um", parsed.get("TargetUm", 0.0)),
+                            max_iterations=parsed.get("max_iterations", parsed.get("MaxIterations", 50)),
                         )
                         # Build response
                         position = result.get("position")
