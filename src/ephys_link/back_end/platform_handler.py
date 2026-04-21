@@ -270,6 +270,23 @@ class PlatformHandler:
         # Closed-loop constants
         MAX_BACKWARD_UM = 250.0
 
+          # Auto-detect axis if -1: uMp-4 uses W (axis 3), uMp-3 uses X (axis 0)
+        # Auto-detect depth axis if -1
+        if axis == -1:
+            axis = self._bindings.get_depth_axis()
+
+        # Helper to get depth based on manipulator type
+        def get_depth(pos) -> float:
+            """Get depth value based on axis (mm)."""
+            if axis == 3:
+                return pos.w
+            elif axis == 0:
+                return pos.x
+            elif axis == 1:
+                return pos.y
+            else:
+                return pos.z
+
         try:
             if closed_loop:
                 # Get starting position

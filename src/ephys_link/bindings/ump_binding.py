@@ -98,6 +98,10 @@ class UmpBinding(BaseBinding):
     @override
     def get_movement_tolerance() -> float:
         return 0.001
+    
+    def get_depth_axis(self) -> int:
+        """Get the depth axis index (0 for uMp-3, 3 for uMp-4)."""
+        return 0 if self._is_ump_3() else 3
 
     @override
     async def set_position(self, manipulator_id: str, position: Vector4, speed: float) -> Vector4:

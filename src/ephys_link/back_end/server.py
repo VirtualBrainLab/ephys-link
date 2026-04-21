@@ -248,7 +248,7 @@ class Server:
                         parsed = loads(str(data))
                         result = await self._platform_handler.jackhammer(
                             manipulator_id=parsed.get("manipulator_id", parsed.get("ManipulatorId", "")),
-                            axis=parsed.get("axis", parsed.get("Axis", 3)),
+                            axis=parsed.get("axis", parsed.get("Axis", -1)),
                             iterations=parsed.get("iterations", parsed.get("Iterations", 10)),
                             phase1_steps=parsed.get("phase1_steps", parsed.get("Phase1Steps", 10)),
                             phase1_pulses=parsed.get("phase1_pulses", parsed.get("Phase1Pulses", 15)),

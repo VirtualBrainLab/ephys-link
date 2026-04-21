@@ -147,6 +147,9 @@ class BaseBinding(ABC):
             manipulator_id: Manipulator ID.
         """
 
+    def get_depth_axis(self) -> int:
+        """Get the depth axis index for jackhammer."""
+        return 3  # Default to W axis
 
     async def jackhammer(
         self,
